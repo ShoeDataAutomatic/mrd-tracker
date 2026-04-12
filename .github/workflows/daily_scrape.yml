@@ -37,8 +37,14 @@ jobs:
       - name: Install Python dependencies
         run: pip install -r requirements.txt
 
-      - name: Install Playwright browser
-        run: playwright install chromium --with-deps
+      - name: Install Playwright browser and dependencies
+        run: |
+          playwright install chromium
+          sudo apt-get install -y --no-install-recommends \
+            libasound2t64 libatk1.0-0 libatk-bridge2.0-0 \
+            libcups2 libdrm2 libgtk-3-0 libgbm1 libnss3 \
+            libxcomposite1 libxdamage1 libxfixes3 libxrandr2 \
+            libxss1 libxtst6 xvfb
 
       - name: Initialise database (safe on first run)
         run: python run.py --init
