@@ -43,6 +43,16 @@ class PrimarkScraper(BaseScraper):
         slug = category_path.split('/en-gb/c/')[-1].strip('/')
         url  = f'https://www.primark.com/en-gb/c/{slug}'
 
+        # Clean category label for storage and filtering
+        # Maps slug to a simple label the dashboard pills can match against
+        _label_map = {
+            'women/shoes':               'women/shoes',
+            'men/shoes':                 'men/shoes',
+            'kids/girls/girls-shoes':    'girls/shoes',
+            'kids/boys/boys-shoes':      'boys/shoes',
+        }
+        category_label = _label_map.get(slug, slug)
+
         all_docs = []
         total    = None
 
@@ -62,7 +72,7 @@ class PrimarkScraper(BaseScraper):
 
         products = []
         for rank, item in enumerate(all_docs, start=1):
-            product = self._parse_product(item, category_path, rank)
+            product = self._parse_product(item, category_path, rank, category_label)
             if product:
                 products.append(product)
         return products
@@ -184,7 +194,7 @@ class PrimarkScraper(BaseScraper):
         resp  = (pd.get('response')               or {})
         return resp.get('docs') or [], resp.get('numFound')
 
-    def _parse_product(self, item, category_path, rank):
+    def _parse_product(self, item, category_path, rank, category_label=None):
         pid = str(item.get('pid', '')).strip()
         if not pid:
             return None
@@ -199,13 +209,17 @@ class PrimarkScraper(BaseScraper):
         is_markdown = bool(was_price and price and was_price > price)
         thumb       = item.get('thumb_image', '').strip()
         image_url   = f'{thumb}?w=400&fmt=auto' if thumb else None
-        category    = category_path.split('/en-gb/c/')[-1].strip('/')
+
+        # Use provided label, otherwise derive from category_path
+        if not category_label:
+            slug = category_path.split('/en-gb/c/')[-1].strip('/')
+            category_label = '/'.join(slug.split('/')[-2:]) if slug.count('/') >= 2 else slug
 
         return {
             'sku':             pid,
             'name':            self.clean_text(item.get('title', 'Unknown')),
             'url':             f'https://www.primark.com/en-gb/p/{url_slug}',
-            'category':        category,
+            'category':        category_label,
             'price':           price,
             'rank':            rank,
             'review_count':    None,

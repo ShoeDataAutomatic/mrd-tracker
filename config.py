@@ -23,7 +23,8 @@ RETAILERS = {
         'categories': [
             '/en-gb/c/women/shoes',
             '/en-gb/c/men/shoes',
-            '/en-gb/c/kids/shoes',
+            '/en-gb/c/kids/girls/girls-shoes',
+            '/en-gb/c/kids/boys/boys-shoes',
         ],
         'enabled': True,
 

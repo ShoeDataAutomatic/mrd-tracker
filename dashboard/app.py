@@ -42,7 +42,8 @@ def index():
 def api_rankings():
     retailer = request.args.get('retailer') or None
     days     = int(request.args.get('days', 30))
-    limit    = int(request.args.get('limit', 50))
+    limit    = request.args.get('limit', '50')
+    limit    = 9999 if limit == '9999' else int(limit)
     products = scorer.get_rankings(limit=limit, days=days, retailer=retailer)
 
     # Serialise score_history as a simple list of [date, score] for sparklines
