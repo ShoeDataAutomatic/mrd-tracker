@@ -1,0 +1,20 @@
+# MRD Trend Tracker — Python dependencies
+# Install with: pip install -r requirements.txt
+
+# Scraping
+playwright==1.44.0          # Headless browser for JS-rendered pages
+beautifulsoup4==4.12.3      # HTML parsing utility
+requests==2.32.3            # HTTP (used for simpler pages if playwright not needed)
+
+# Web dashboard
+flask==3.0.3
+
+# Scheduler
+schedule==1.2.2
+
+# Google Sheets output
+gspread==6.1.2
+google-auth==2.30.0
+
+# Utilities
+python-dotenv==1.0.1        # Optional: load .env for secrets

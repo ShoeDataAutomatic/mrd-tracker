@@ -1,0 +1,413 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>MRD Trend Tracker</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Arial, sans-serif;
+      background: #f4f4f2;
+      color: #1a1a1a;
+      font-size: 14px;
+    }
+
+    /* ---- Product image thumbnail ---- */
+    .thumb-wrap {
+      width: 52px;
+      height: 52px;
+      border-radius: 6px;
+      overflow: hidden;
+      background: #f0f0ec;
+      flex-shrink: 0;
+      position: relative;
+    }
+    .thumb-wrap img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      display: block;
+    }
+    .thumb-wrap .no-img {
+      width: 100%;
+      height: 100%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: #ccc;
+      font-size: 20px;
+    }
+
+    /* ---- Image preview popover on hover ---- */
+    .thumb-wrap:hover .preview {
+      display: block;
+    }
+    .preview {
+      display: none;
+      position: absolute;
+      top: 0;
+      left: 60px;
+      z-index: 100;
+      width: 160px;
+      height: 160px;
+      border-radius: 8px;
+      overflow: hidden;
+      box-shadow: 0 4px 16px rgba(0,0,0,0.18);
+      background: #f0f0ec;
+      pointer-events: none;
+    }
+    .preview img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+
+    /* ---- Header ---- */
+    .header {
+      background: #1a1a1a;
+      padding: 18px 28px;
+      display: flex;
+      align-items: center;
+      gap: 16px;
+    }
+    .header h1 { color: #fff; font-size: 17px; font-weight: 500; }
+    .header .sub { color: #888; font-size: 12px; }
+
+    /* ---- Controls bar ---- */
+    .controls {
+      background: #fff;
+      padding: 12px 28px;
+      border-bottom: 1px solid #e8e8e4;
+      display: flex;
+      gap: 12px;
+      align-items: center;
+      flex-wrap: wrap;
+    }
+    .controls label { font-size: 12px; color: #888; margin-right: 4px; }
+    .controls select, .controls input {
+      border: 1px solid #ddd;
+      border-radius: 6px;
+      padding: 6px 10px;
+      font-size: 13px;
+      background: #fff;
+      color: #1a1a1a;
+      outline: none;
+    }
+    .controls select:focus, .controls input:focus { border-color: #888; }
+    .btn-refresh {
+      margin-left: auto;
+      background: #1a1a1a;
+      color: #fff;
+      border: none;
+      padding: 7px 16px;
+      border-radius: 6px;
+      cursor: pointer;
+      font-size: 13px;
+    }
+    .btn-refresh:hover { background: #333; }
+
+    /* ---- Stats row ---- */
+    .stats {
+      display: flex;
+      gap: 16px;
+      padding: 16px 28px;
+    }
+    .stat-card {
+      background: #fff;
+      border-radius: 8px;
+      padding: 14px 20px;
+      min-width: 140px;
+      border: 1px solid #e8e8e4;
+    }
+    .stat-card .label { font-size: 11px; color: #888; text-transform: uppercase; letter-spacing: .5px; }
+    .stat-card .value { font-size: 22px; font-weight: 600; margin-top: 4px; color: #1a1a1a; }
+    .stat-card .sub   { font-size: 11px; color: #aaa; margin-top: 2px; }
+
+    /* ---- Table ---- */
+    .table-wrap {
+      padding: 0 28px 28px;
+    }
+    .table-container {
+      background: #fff;
+      border-radius: 8px;
+      border: 1px solid #e8e8e4;
+      overflow: hidden;
+    }
+    table { width: 100%; border-collapse: collapse; }
+    thead tr { background: #f9f9f7; }
+    th {
+      padding: 10px 14px;
+      text-align: left;
+      font-size: 11px;
+      font-weight: 500;
+      color: #888;
+      text-transform: uppercase;
+      letter-spacing: .5px;
+      border-bottom: 1px solid #e8e8e4;
+      white-space: nowrap;
+    }
+    td {
+      padding: 11px 14px;
+      border-bottom: 1px solid #f0f0ec;
+      vertical-align: middle;
+    }
+    tbody tr:last-child td { border-bottom: none; }
+    tbody tr:hover { background: #fafafa; }
+
+    .rank-num { color: #bbb; font-size: 12px; width: 32px; }
+    .product-name {
+      font-weight: 500;
+      color: #1a1a1a;
+      text-decoration: none;
+      display: block;
+    }
+    .product-name:hover { color: #0066cc; }
+    .product-cat { font-size: 11px; color: #aaa; margin-top: 2px; text-transform: capitalize; }
+
+    .score-val {
+      font-weight: 600;
+      font-size: 15px;
+      color: #1a6699;
+    }
+    .score-bar-wrap { height: 4px; background: #f0f0ec; border-radius: 2px; margin-top: 4px; width: 70px; }
+    .score-bar { height: 4px; background: #1a6699; border-radius: 2px; }
+
+    .price { font-size: 13px; color: #555; }
+    .page-rank { font-size: 12px; color: #888; }
+    .days { font-size: 12px; color: #aaa; }
+
+    /* ---- Signal tags ---- */
+    .tags { display: flex; gap: 4px; flex-wrap: wrap; }
+    .tag {
+      font-size: 11px;
+      padding: 2px 7px;
+      border-radius: 10px;
+      white-space: nowrap;
+    }
+    .tag-new      { background: #e8f5e9; color: #2e7d32; }
+    .tag-runner   { background: #e3f2fd; color: #1565c0; }
+    .tag-featured { background: #fff3e0; color: #e65100; }
+    .tag-rising   { background: #f3e5f5; color: #6a1b9a; }
+    .tag-restock  { background: #e0f7fa; color: #006064; }
+    .tag-selling  { background: #fce4ec; color: #880e4f; }
+    .tag-review   { background: #f9fbe7; color: #558b2f; }
+    .tag-markdown { background: #fafafa; color: #999; }
+    .tag-removed  { background: #ffebee; color: #c62828; }
+
+    /* ---- Sparkline ---- */
+    .sparkline { width: 60px; height: 24px; }
+
+    /* ---- Empty / loading state ---- */
+    .empty-state {
+      text-align: center;
+      padding: 60px 20px;
+      color: #aaa;
+    }
+    .empty-state p { margin-top: 8px; font-size: 13px; }
+
+    .loading { opacity: .4; }
+  </style>
+</head>
+<body>
+
+<div class="header">
+  <div>
+    <h1>MRD Trend Tracker</h1>
+    <div class="sub">Footwear trend intelligence</div>
+  </div>
+</div>
+
+<div class="controls">
+  <div>
+    <label>Retailer</label>
+    <select id="filter-retailer">
+      <option value="">All retailers</option>
+      {% for r in retailers %}
+      <option value="{{ r.key }}">{{ r.name }}</option>
+      {% endfor %}
+    </select>
+  </div>
+  <div>
+    <label>Window</label>
+    <select id="filter-days">
+      <option value="7">7 days</option>
+      <option value="30" selected>30 days</option>
+      <option value="60">60 days</option>
+      <option value="90">90 days</option>
+    </select>
+  </div>
+  <div>
+    <label>Show</label>
+    <select id="filter-limit">
+      <option value="20">Top 20</option>
+      <option value="50" selected>Top 50</option>
+      <option value="100">Top 100</option>
+    </select>
+  </div>
+  <div>
+    <label>Search</label>
+    <input type="text" id="filter-search" placeholder="Filter by name..." style="width:200px;">
+  </div>
+  <button class="btn-refresh" onclick="loadAll()">Refresh</button>
+</div>
+
+<div class="stats" id="stats-row">
+  <div class="stat-card"><div class="label">Products tracked</div><div class="value" id="stat-total">—</div></div>
+  <div class="stat-card"><div class="label">New today</div><div class="value" id="stat-new">—</div></div>
+  <div class="stat-card"><div class="label">Top product</div><div class="value" id="stat-top" style="font-size:14px;font-weight:500;margin-top:8px;">—</div><div class="sub" id="stat-top-score"></div></div>
+</div>
+
+<div class="table-wrap">
+  <div class="table-container">
+    <table>
+      <thead>
+        <tr>
+          <th style="width:40px;">#</th>
+          <th style="width:60px;"></th>
+          <th>Product</th>
+          <th>Score</th>
+          <th>Price</th>
+          <th>Page rank</th>
+          <th>Age</th>
+          <th>Signals</th>
+          <th>Trend</th>
+        </tr>
+      </thead>
+      <tbody id="product-table-body">
+        <tr><td colspan="8"><div class="empty-state">Loading...</div></td></tr>
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<script>
+  let allProducts = [];
+  let maxScore    = 1;
+
+  const TAG_CLASSES = {
+    'New arrival':    'tag-new',
+    'Long runner':    'tag-runner',
+    'Featured':       'tag-featured',
+    'Rising':         'tag-rising',
+    'Restocked':      'tag-restock',
+    'Selling through':'tag-selling',
+    'Review spike':   'tag-review',
+    'Marked down':    'tag-markdown',
+    'Removed':        'tag-removed',
+  };
+
+  async function loadStats() {
+    const retailer = document.getElementById('filter-retailer').value;
+    const params   = retailer ? `?retailer=${retailer}` : '';
+    const res      = await fetch('/api/stats' + params);
+    const data     = await res.json();
+    document.getElementById('stat-total').textContent  = data.total_products;
+    document.getElementById('stat-new').textContent    = data.new_today;
+    document.getElementById('stat-top').textContent    = data.top_product;
+    document.getElementById('stat-top-score').textContent = data.top_score ? `${data.top_score.toFixed(0)} pts` : '';
+  }
+
+  async function loadRankings() {
+    const retailer = document.getElementById('filter-retailer').value;
+    const days     = document.getElementById('filter-days').value;
+    const limit    = document.getElementById('filter-limit').value;
+
+    const params = new URLSearchParams({ days, limit });
+    if (retailer) params.set('retailer', retailer);
+
+    const res  = await fetch('/api/rankings?' + params);
+    allProducts = await res.json();
+    maxScore    = Math.max(...allProducts.map(p => p.total_score), 1);
+    renderTable();
+  }
+
+  function renderTable() {
+    const search  = document.getElementById('filter-search').value.toLowerCase();
+    const tbody   = document.getElementById('product-table-body');
+    const visible = allProducts.filter(p =>
+      !search || p.name.toLowerCase().includes(search) || (p.category || '').toLowerCase().includes(search)
+    );
+
+    if (!visible.length) {
+      tbody.innerHTML = `<tr><td colspan="8"><div class="empty-state">
+        <strong>No products found.</strong>
+        <p>The scraper hasn't run yet, or no data matches your filters.</p>
+        <p style="margin-top:8px;">Run <code>python run.py --scrape</code> to collect data.</p>
+      </div></td></tr>`;
+      return;
+    }
+
+    tbody.innerHTML = visible.map((p, i) => {
+      const price    = p.latest_price ? `£${p.latest_price.toFixed(2)}` : '—';
+      const rank     = p.latest_rank  ? `#${p.latest_rank}` : '—';
+      const days     = p.days_tracked ? `${p.days_tracked}d` : '—';
+      const barPct   = Math.min(100, (p.total_score / maxScore) * 100).toFixed(0);
+      const cat      = (p.category || '').replace(/-/g, ' ');
+
+      const tagsHtml = (p.signal_tags || []).map(t =>
+        `<span class="tag ${TAG_CLASSES[t] || 'tag-markdown'}">${t}</span>`
+      ).join('');
+
+      const sparkSvg = buildSparkline(p.score_series || []);
+
+      const imgHtml = p.image_url
+        ? `<div class="thumb-wrap" style="position:relative;">
+             <img src="${p.image_url}" alt="${p.name}" loading="lazy"
+                  onerror="this.parentElement.innerHTML='<div class=\\'no-img\\'>&#128094;</div>'">
+             <div class="preview"><img src="${p.image_url}" alt="${p.name}"></div>
+           </div>`
+        : `<div class="thumb-wrap"><div class="no-img">&#128094;</div></div>`;
+
+      return `<tr>
+        <td class="rank-num">${i + 1}</td>
+        <td style="padding:8px 6px;">${imgHtml}</td>
+        <td>
+          <a class="product-name" href="${p.url}" target="_blank">${p.name}</a>
+          <div class="product-cat">${p.retailer} &middot; ${cat}</div>
+        </td>
+        <td>
+          <div class="score-val">${p.total_score.toFixed(0)}</div>
+          <div class="score-bar-wrap"><div class="score-bar" style="width:${barPct}%"></div></div>
+        </td>
+        <td class="price">${price}</td>
+        <td class="page-rank">${rank}</td>
+        <td class="days">${days}</td>
+        <td><div class="tags">${tagsHtml}</div></td>
+        <td>${sparkSvg}</td>
+      </tr>`;
+    }).join('');
+  }
+
+  function buildSparkline(series) {
+    if (!series || series.length < 2) return '<svg class="sparkline"></svg>';
+    const vals   = series.map(s => s.score);
+    const maxVal = Math.max(...vals, 1);
+    const w = 60, h = 24;
+    const pts = vals.map((v, i) => {
+      const x = (i / (vals.length - 1)) * w;
+      const y = h - (v / maxVal) * (h - 4) - 2;
+      return `${x.toFixed(1)},${y.toFixed(1)}`;
+    }).join(' ');
+    return `<svg class="sparkline" viewBox="0 0 ${w} ${h}">
+      <polyline points="${pts}" fill="none" stroke="#1a6699" stroke-width="1.5" stroke-linejoin="round"/>
+    </svg>`;
+  }
+
+  function loadAll() {
+    loadStats();
+    loadRankings();
+  }
+
+  // Event listeners
+  ['filter-retailer','filter-days','filter-limit'].forEach(id =>
+    document.getElementById(id).addEventListener('change', loadAll)
+  );
+  document.getElementById('filter-search').addEventListener('input', renderTable);
+
+  // Initial load
+  loadAll();
+</script>
+</body>
+</html>

@@ -1,0 +1,77 @@
+name: Daily scrape
+
+on:
+  schedule:
+    # 7:30am Sydney time (AEDT, UTC+11). Adjust if needed:
+    # AEDT (Oct–Apr): subtract 11hrs → 20:30 UTC
+    # AEST (Apr–Oct): subtract 10hrs → 21:30 UTC
+    - cron: '30 20 * * *'
+  workflow_dispatch:    # Allows you to trigger a manual run from GitHub at any time
+
+permissions:
+  contents: write       # Required to commit the updated database back to the repo
+
+jobs:
+  scrape:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Cache pip packages
+        uses: actions/cache@v4
+        with:
+          path: ~/.cache/pip
+          key: ${{ runner.os }}-pip-${{ hashFiles('requirements.txt') }}
+          restore-keys: ${{ runner.os }}-pip-
+
+      - name: Install Python dependencies
+        run: pip install -r requirements.txt
+
+      - name: Install Playwright browser
+        run: playwright install chromium --with-deps
+
+      - name: Initialise database (safe on first run)
+        run: python run.py --init
+
+      - name: Run scrape
+        run: python run.py --scrape
+
+      - name: Refresh image URLs
+        run: python run.py --refresh-images
+
+      - name: Run scoring
+        run: python run.py --score
+
+      - name: Send email digest (Mondays only)
+        if: ${{ github.event_name == 'schedule' && steps.day.outputs.day == 'Monday' }}
+        run: python run.py --email
+        env:
+          EMAIL_USERNAME: ${{ secrets.EMAIL_USERNAME }}
+          EMAIL_PASSWORD: ${{ secrets.EMAIL_PASSWORD }}
+          EMAIL_FROM:     ${{ secrets.EMAIL_FROM }}
+          EMAIL_TO:       ${{ secrets.EMAIL_TO }}
+
+      - name: Sync to Google Sheets
+        run: python run.py --sheets
+        env:
+          GOOGLE_CREDENTIALS_JSON: ${{ secrets.GOOGLE_CREDENTIALS_JSON }}
+        continue-on-error: true   # Don't fail the whole run if Sheets isn't configured
+
+      - name: Commit updated database to repo
+        run: |
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git config user.name  "github-actions[bot]"
+          git add mrd_tracker.db
+          git diff --staged --quiet \
+            && echo "No database changes to commit." \
+            || (git commit -m "data: daily scrape $(date +'%Y-%m-%d')" && git push)

@@ -1,0 +1,36 @@
+# Python
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.Python
+*.egg-info/
+dist/
+build/
+
+# Environment
+.env
+.venv/
+venv/
+
+# Secrets — never commit these
+credentials.json
+
+# Logs
+*.log
+
+# Discovery output
+primark_page.html
+*_page.html
+
+# Local OS
+.DS_Store
+Thumbs.db
+
+# IDE
+.vscode/
+.idea/
+
+# Note: mrd_tracker.db is intentionally NOT ignored.
+# The database is committed to the repo so Railway always has
+# the latest scraped data when it deploys.
