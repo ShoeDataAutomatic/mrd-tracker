@@ -31,9 +31,10 @@ RETAILERS = {
         # If products stop appearing, the query_hash has likely changed.
         # Re-run the network capture script (see README) and update the hash below.
         'api': {
-            'endpoint':   'https://api001-arh.primark.com/bff-cae-green',
-            'query_hash': '3cd7900849277a5c5a81004be10d0a0a073b05fd2200c8b6c52aa3b20d86c744',
-            'page_size':  24,
+            'endpoint':      'https://api001-arh.primark.com/bff-cae-green',
+            'query_hash':    '3cd7900849277a5c5a81004be10d0a0a073b05fd2200c8b6c52aa3b20d86c744',
+            'page_size':     24,
+            'rows_override': 100,   # Server accepts max 100 per request
         },
     },
     # Add more retailers here following the same pattern, e.g.:
