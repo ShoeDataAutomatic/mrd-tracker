@@ -372,7 +372,11 @@
 
     const visible = allProducts.filter(p => {
       const cat = (p.category || '').toLowerCase();
-      if (activeCategory && !cat.includes(activeCategory)) return false;
+      if (activeCategory) {
+        // Use exact segment matching to prevent 'men' matching 'women'
+        const segments = cat.split('/');
+        if (!segments.includes(activeCategory)) return false;
+      }
       if (search && !p.name.toLowerCase().includes(search) && !cat.includes(search)) return false;
       return true;
     });
