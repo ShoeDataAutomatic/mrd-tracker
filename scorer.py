@@ -79,9 +79,9 @@ def _score_product(product):
     # ------------------------------------------------------------------
     # 2. Long runner
     #    Primark cycles their online catalog quickly, so a product that
-    #    has been present for 14+ days is likely a sustained performer.
+    #    has been present for 30+ days is likely a sustained performer.
     # ------------------------------------------------------------------
-    if first_seen and (today - first_seen).days >= 14:
+    if first_seen and (today - first_seen).days >= 30:
         signals['long_runner'] = SCORING['long_runner']
         score += SCORING['long_runner']
 

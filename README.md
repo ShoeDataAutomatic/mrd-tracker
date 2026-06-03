@@ -11,7 +11,7 @@ via a web dashboard, weekly email digest, and Google Sheets.
 | Signal | Description |
 |--------|-------------|
 | New arrival | Product appeared for the first time |
-| Long runner | Still present after 14+ days (Primark cycles fast) |
+| Long runner | Still present after 30+ days (Primark cycles fast) |
 | Featured | Placed in top-4 / promoted position on category page |
 | Rising | Moved up in category page rank |
 | Restocked | Went OOS then came back (e-com retailers) |
@@ -24,7 +24,7 @@ via a web dashboard, weekly email digest, and Google Sheets.
 > markets, so size/stock signals are not available. The most reliable
 > signals for Primark are: **New arrival**, **Long runner**, **Featured**,
 > and **Rising**. A product that remains prominently placed on Primark's
-> website for 2+ weeks is almost certainly a sustained seller.
+> website for 30+ days is almost certainly a sustained seller.
 
 ---
 
