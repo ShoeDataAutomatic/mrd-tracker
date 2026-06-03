@@ -137,6 +137,8 @@
     }
     table { width: 100%; border-collapse: collapse; }
     thead tr { background: #f9f9f7; }
+
+    /* Sort header row */
     th {
       padding: 10px 14px;
       text-align: left;
@@ -148,6 +150,40 @@
       border-bottom: 1px solid #e8e8e4;
       white-space: nowrap;
     }
+    th.sortable {
+      cursor: pointer;
+      user-select: none;
+    }
+    th.sortable:hover { color: #444; }
+    th .sort-icon { margin-left: 4px; opacity: 0.3; }
+    th.sort-asc  .sort-icon::after { content: ' ▲'; opacity: 1; color: #1a6699; }
+    th.sort-desc .sort-icon::after { content: ' ▼'; opacity: 1; color: #1a6699; }
+    th:not(.sort-asc):not(.sort-desc) .sort-icon::after { content: ' ⇅'; }
+
+    /* Filter input row */
+    .filter-row th {
+      padding: 5px 8px;
+      background: #f4f4f2;
+      border-bottom: 2px solid #e0e0dc;
+      cursor: default;
+    }
+    .filter-row input,
+    .filter-row select {
+      width: 100%;
+      border: 1px solid #ddd;
+      border-radius: 4px;
+      padding: 4px 7px;
+      font-size: 11px;
+      background: #fff;
+      color: #1a1a1a;
+      outline: none;
+      text-transform: none;
+      letter-spacing: 0;
+      font-weight: normal;
+    }
+    .filter-row input:focus,
+    .filter-row select:focus { border-color: #888; }
+
     td {
       padding: 11px 14px;
       border-bottom: 1px solid #f0f0ec;
@@ -164,7 +200,7 @@
       display: block;
     }
     .product-name:hover { color: #0066cc; }
-    .product-cat { font-size: 11px; color: #aaa; margin-top: 2px; text-transform: capitalize; }
+    .product-retailer { font-size: 11px; color: #aaa; margin-top: 2px; }
 
     .score-val {
       font-weight: 600;
@@ -177,6 +213,15 @@
     .price { font-size: 13px; color: #555; }
     .page-rank { font-size: 12px; color: #888; }
     .days { font-size: 12px; color: #aaa; }
+    .cat-badge {
+      display: inline-block;
+      font-size: 11px;
+      padding: 2px 8px;
+      border-radius: 10px;
+      background: #f0f0ec;
+      color: #666;
+      text-transform: capitalize;
+    }
 
     /* ---- Signal tags ---- */
     .tags { display: flex; gap: 4px; flex-wrap: wrap; }
@@ -297,30 +342,65 @@
   <div class="table-container">
     <table>
       <thead>
-        <tr>
-          <th style="width:40px;">#</th>
-          <th style="width:60px;"></th>
-          <th>Product</th>
-          <th>Score</th>
-          <th>Price</th>
-          <th>Page rank</th>
-          <th>Age</th>
-          <th>Signals</th>
-          <th>Trend</th>
+        <!-- Sort header row -->
+        <tr id="sort-row">
+          <th style="width:40px;" class="no-sort">#</th>
+          <th style="width:60px;" class="no-sort"></th>
+          <th class="sortable" data-col="name">Product<span class="sort-icon"></span></th>
+          <th class="sortable" data-col="retailer">Retailer<span class="sort-icon"></span></th>
+          <th class="sortable" data-col="category">Category<span class="sort-icon"></span></th>
+          <th class="sortable sort-desc" data-col="total_score">Score<span class="sort-icon"></span></th>
+          <th class="sortable" data-col="latest_price">Price<span class="sort-icon"></span></th>
+          <th class="sortable" data-col="latest_rank">Page rank<span class="sort-icon"></span></th>
+          <th class="sortable" data-col="days_tracked">Age<span class="sort-icon"></span></th>
+          <th class="no-sort">Signals</th>
+          <th class="no-sort">Trend</th>
+        </tr>
+        <!-- Per-column filter row -->
+        <tr class="filter-row">
+          <th></th>
+          <th></th>
+          <th><input type="text"   id="col-filter-name"     placeholder="Name…"></th>
+          <th><input type="text"   id="col-filter-retailer" placeholder="Retailer…"></th>
+          <th><input type="text"   id="col-filter-category" placeholder="Category…"></th>
+          <th><input type="number" id="col-filter-score-min" placeholder="Min score" style="width:48%;margin-right:2%;">
+              <input type="number" id="col-filter-score-max" placeholder="Max" style="width:48%;"></th>
+          <th><input type="number" id="col-filter-price-min" placeholder="Min £" style="width:48%;margin-right:2%;">
+              <input type="number" id="col-filter-price-max" placeholder="Max £" style="width:48%;"></th>
+          <th><input type="number" id="col-filter-rank-max"  placeholder="≤ rank"></th>
+          <th><input type="number" id="col-filter-age-min"   placeholder="Min days"></th>
+          <th>
+            <select id="col-filter-signal">
+              <option value="">Any signal</option>
+              <option>New arrival</option>
+              <option>Long runner</option>
+              <option>Featured</option>
+              <option>Rising</option>
+              <option>Restocked</option>
+              <option>Selling through</option>
+              <option>Review spike</option>
+              <option>Marked down</option>
+              <option>Removed</option>
+            </select>
+          </th>
+          <th></th>
         </tr>
       </thead>
       <tbody id="product-table-body">
-        <tr><td colspan="8"><div class="empty-state">Loading...</div></td></tr>
+        <tr><td colspan="11"><div class="empty-state">Loading...</div></td></tr>
       </tbody>
     </table>
   </div>
 </div>
 
 <script>
-  let allProducts = [];
-  let maxScore    = 1;
+  let allProducts    = [];
+  let maxScore       = 1;
   let activeCategory = '';
+  let sortCol        = 'total_score';
+  let sortDir        = 'desc';   // 'asc' | 'desc'
 
+  // ── Category pills ──────────────────────────────────────────────────────────
   function setCategory(cat) {
     activeCategory = cat;
     document.querySelectorAll('.pill').forEach(p => {
@@ -328,6 +408,36 @@
     });
     renderTable();
   }
+
+  // ── Sorting ─────────────────────────────────────────────────────────────────
+  document.querySelectorAll('th.sortable').forEach(th => {
+    th.addEventListener('click', () => {
+      const col = th.dataset.col;
+      if (sortCol === col) {
+        sortDir = sortDir === 'asc' ? 'desc' : 'asc';
+      } else {
+        sortCol = col;
+        sortDir = col === 'total_score' ? 'desc' : 'asc';
+      }
+      // Update header classes
+      document.querySelectorAll('th.sortable').forEach(h => {
+        h.classList.remove('sort-asc', 'sort-desc');
+      });
+      th.classList.add(sortDir === 'asc' ? 'sort-asc' : 'sort-desc');
+      renderTable();
+    });
+  });
+
+  // ── Column filters ───────────────────────────────────────────────────────────
+  const COL_FILTER_IDS = [
+    'col-filter-name', 'col-filter-retailer', 'col-filter-category',
+    'col-filter-score-min', 'col-filter-score-max',
+    'col-filter-price-min', 'col-filter-price-max',
+    'col-filter-rank-max', 'col-filter-age-min', 'col-filter-signal'
+  ];
+  COL_FILTER_IDS.forEach(id =>
+    document.getElementById(id).addEventListener('input', renderTable)
+  );
 
   const TAG_CLASSES = {
     'New arrival':    'tag-new',
@@ -341,17 +451,19 @@
     'Removed':        'tag-removed',
   };
 
+  // ── Stats ────────────────────────────────────────────────────────────────────
   async function loadStats() {
     const retailer = document.getElementById('filter-retailer').value;
     const params   = retailer ? `?retailer=${retailer}` : '';
     const res      = await fetch('/api/stats' + params);
     const data     = await res.json();
-    document.getElementById('stat-total').textContent  = data.total_products;
-    document.getElementById('stat-new').textContent    = data.new_today;
-    document.getElementById('stat-top').textContent    = data.top_product;
-    document.getElementById('stat-top-score').textContent = data.top_score ? `${data.top_score.toFixed(0)} pts` : '';
+    document.getElementById('stat-total').textContent      = data.total_products;
+    document.getElementById('stat-new').textContent        = data.new_today;
+    document.getElementById('stat-top').textContent        = data.top_product;
+    document.getElementById('stat-top-score').textContent  = data.top_score ? `${data.top_score.toFixed(0)} pts` : '';
   }
 
+  // ── Rankings ─────────────────────────────────────────────────────────────────
   async function loadRankings() {
     const retailer = document.getElementById('filter-retailer').value;
     const days     = document.getElementById('filter-days').value;
@@ -360,29 +472,72 @@
     const params = new URLSearchParams({ days, limit });
     if (retailer) params.set('retailer', retailer);
 
-    const res  = await fetch('/api/rankings?' + params);
+    const res   = await fetch('/api/rankings?' + params);
     allProducts = await res.json();
     maxScore    = Math.max(...allProducts.map(p => p.total_score), 1);
     renderTable();
   }
 
+  // ── Render ───────────────────────────────────────────────────────────────────
   function renderTable() {
-    const search  = document.getElementById('filter-search').value.toLowerCase();
-    const tbody   = document.getElementById('product-table-body');
+    const globalSearch = document.getElementById('filter-search').value.toLowerCase();
 
-    const visible = allProducts.filter(p => {
-      const cat = (p.category || '').toLowerCase();
+    // Read column filters
+    const colName      = document.getElementById('col-filter-name').value.toLowerCase();
+    const colRetailer  = document.getElementById('col-filter-retailer').value.toLowerCase();
+    const colCategory  = document.getElementById('col-filter-category').value.toLowerCase();
+    const colScoreMin  = parseFloat(document.getElementById('col-filter-score-min').value) || null;
+    const colScoreMax  = parseFloat(document.getElementById('col-filter-score-max').value) || null;
+    const colPriceMin  = parseFloat(document.getElementById('col-filter-price-min').value) || null;
+    const colPriceMax  = parseFloat(document.getElementById('col-filter-price-max').value) || null;
+    const colRankMax   = parseInt(document.getElementById('col-filter-rank-max').value)   || null;
+    const colAgeMin    = parseInt(document.getElementById('col-filter-age-min').value)    || null;
+    const colSignal    = document.getElementById('col-filter-signal').value;
+
+    const tbody = document.getElementById('product-table-body');
+
+    let visible = allProducts.filter(p => {
+      const cat      = (p.category || '').toLowerCase();
+      const name     = (p.name     || '').toLowerCase();
+      const retailer = (p.retailer || '').toLowerCase();
+
+      // Category pills
       if (activeCategory) {
-        // Use exact segment matching to prevent 'men' matching 'women'
         const segments = cat.split('/');
         if (!segments.includes(activeCategory)) return false;
       }
-      if (search && !p.name.toLowerCase().includes(search) && !cat.includes(search)) return false;
+      // Global search
+      if (globalSearch && !name.includes(globalSearch) && !cat.includes(globalSearch)) return false;
+
+      // Column filters
+      if (colName     && !name.includes(colName))         return false;
+      if (colRetailer && !retailer.includes(colRetailer)) return false;
+      if (colCategory && !cat.includes(colCategory))      return false;
+      if (colScoreMin !== null && p.total_score < colScoreMin) return false;
+      if (colScoreMax !== null && p.total_score > colScoreMax) return false;
+      if (colPriceMin !== null && (p.latest_price == null || p.latest_price < colPriceMin)) return false;
+      if (colPriceMax !== null && (p.latest_price == null || p.latest_price > colPriceMax)) return false;
+      if (colRankMax  !== null && (p.latest_rank  == null || p.latest_rank  > colRankMax))  return false;
+      if (colAgeMin   !== null && (p.days_tracked == null || p.days_tracked < colAgeMin))   return false;
+      if (colSignal   && !(p.signal_tags || []).includes(colSignal)) return false;
+
       return true;
     });
 
+    // Sort
+    visible.sort((a, b) => {
+      let va = a[sortCol], vb = b[sortCol];
+      if (va == null) va = sortDir === 'asc' ? Infinity : -Infinity;
+      if (vb == null) vb = sortDir === 'asc' ? Infinity : -Infinity;
+      if (typeof va === 'string') va = va.toLowerCase();
+      if (typeof vb === 'string') vb = vb.toLowerCase();
+      if (va < vb) return sortDir === 'asc' ? -1 :  1;
+      if (va > vb) return sortDir === 'asc' ?  1 : -1;
+      return 0;
+    });
+
     if (!visible.length) {
-      tbody.innerHTML = `<tr><td colspan="8"><div class="empty-state">
+      tbody.innerHTML = `<tr><td colspan="11"><div class="empty-state">
         <strong>No products found.</strong>
         <p>The scraper hasn't run yet, or no data matches your filters.</p>
         <p style="margin-top:8px;">Run <code>python run.py --scrape</code> to collect data.</p>
@@ -391,11 +546,12 @@
     }
 
     tbody.innerHTML = visible.map((p, i) => {
-      const price    = p.latest_price ? `£${p.latest_price.toFixed(2)}` : '—';
-      const rank     = p.latest_rank  ? `#${p.latest_rank}` : '—';
-      const days     = p.days_tracked ? `${p.days_tracked}d` : '—';
+      const price    = p.latest_price  != null ? `£${p.latest_price.toFixed(2)}` : '—';
+      const rank     = p.latest_rank   != null ? `#${p.latest_rank}` : '—';
+      const age      = p.days_tracked  != null ? `${p.days_tracked}d` : '—';
       const barPct   = Math.min(100, (p.total_score / maxScore) * 100).toFixed(0);
-      const cat      = (p.category || '').replace(/-/g, ' ');
+      const catRaw   = (p.category || '').replace(/-/g, ' ');
+      const catDisp  = catRaw || '—';
 
       const tagsHtml = (p.signal_tags || []).map(t =>
         `<span class="tag ${TAG_CLASSES[t] || 'tag-markdown'}">${t}</span>`
@@ -416,15 +572,16 @@
         <td style="padding:8px 6px;">${imgHtml}</td>
         <td>
           <a class="product-name" href="${p.url}" target="_blank">${p.name}</a>
-          <div class="product-cat">${p.retailer} &middot; ${cat}</div>
         </td>
+        <td style="font-size:12px;color:#555;">${p.retailer}</td>
+        <td><span class="cat-badge">${catDisp}</span></td>
         <td>
           <div class="score-val">${p.total_score.toFixed(0)}</div>
           <div class="score-bar-wrap"><div class="score-bar" style="width:${barPct}%"></div></div>
         </td>
         <td class="price">${price}</td>
         <td class="page-rank">${rank}</td>
-        <td class="days">${days}</td>
+        <td class="days">${age}</td>
         <td><div class="tags">${tagsHtml}</div></td>
         <td>${sparkSvg}</td>
       </tr>`;
@@ -451,7 +608,7 @@
     loadRankings();
   }
 
-  // Event listeners
+  // Top-bar event listeners
   ['filter-retailer','filter-days','filter-limit'].forEach(id =>
     document.getElementById(id).addEventListener('change', loadAll)
   );
