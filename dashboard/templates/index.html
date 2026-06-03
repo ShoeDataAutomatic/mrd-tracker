@@ -349,6 +349,7 @@
           <th class="sortable" data-col="name">Product<span class="sort-icon"></span></th>
           <th class="sortable" data-col="retailer">Retailer<span class="sort-icon"></span></th>
           <th class="sortable" data-col="category">Category<span class="sort-icon"></span></th>
+          <th class="sortable" data-col="subcategory">Subcategory<span class="sort-icon"></span></th>
           <th class="sortable sort-desc" data-col="total_score">Score<span class="sort-icon"></span></th>
           <th class="sortable" data-col="latest_price">Price<span class="sort-icon"></span></th>
           <th class="sortable" data-col="latest_rank">Page rank<span class="sort-icon"></span></th>
@@ -362,7 +363,8 @@
           <th></th>
           <th><input type="text"   id="col-filter-name"     placeholder="Name…"></th>
           <th><input type="text"   id="col-filter-retailer" placeholder="Retailer…"></th>
-          <th><input type="text"   id="col-filter-category" placeholder="Category…"></th>
+          <th><input type="text"   id="col-filter-category"    placeholder="Category…"></th>
+          <th><input type="text"   id="col-filter-subcategory" placeholder="Subcategory…"></th>
           <th><input type="number" id="col-filter-score-min" placeholder="Min score" style="width:48%;margin-right:2%;">
               <input type="number" id="col-filter-score-max" placeholder="Max" style="width:48%;"></th>
           <th><input type="number" id="col-filter-price-min" placeholder="Min £" style="width:48%;margin-right:2%;">
@@ -387,7 +389,7 @@
         </tr>
       </thead>
       <tbody id="product-table-body">
-        <tr><td colspan="11"><div class="empty-state">Loading...</div></td></tr>
+        <tr><td colspan="12"><div class="empty-state">Loading...</div></td></tr>
       </tbody>
     </table>
   </div>
@@ -430,7 +432,7 @@
 
   // ── Column filters ───────────────────────────────────────────────────────────
   const COL_FILTER_IDS = [
-    'col-filter-name', 'col-filter-retailer', 'col-filter-category',
+    'col-filter-name', 'col-filter-retailer', 'col-filter-category', 'col-filter-subcategory',
     'col-filter-score-min', 'col-filter-score-max',
     'col-filter-price-min', 'col-filter-price-max',
     'col-filter-rank-max', 'col-filter-age-min', 'col-filter-signal'
@@ -485,7 +487,8 @@
     // Read column filters
     const colName      = document.getElementById('col-filter-name').value.toLowerCase();
     const colRetailer  = document.getElementById('col-filter-retailer').value.toLowerCase();
-    const colCategory  = document.getElementById('col-filter-category').value.toLowerCase();
+    const colCategory    = document.getElementById('col-filter-category').value.toLowerCase();
+    const colSubcategory = document.getElementById('col-filter-subcategory').value.toLowerCase();
     const colScoreMin  = parseFloat(document.getElementById('col-filter-score-min').value) || null;
     const colScoreMax  = parseFloat(document.getElementById('col-filter-score-max').value) || null;
     const colPriceMin  = parseFloat(document.getElementById('col-filter-price-min').value) || null;
@@ -512,7 +515,8 @@
       // Column filters
       if (colName     && !name.includes(colName))         return false;
       if (colRetailer && !retailer.includes(colRetailer)) return false;
-      if (colCategory && !cat.includes(colCategory))      return false;
+      if (colCategory    && !cat.includes(colCategory))                                          return false;
+      if (colSubcategory && !(p.subcategory || '').toLowerCase().includes(colSubcategory))      return false;
       if (colScoreMin !== null && p.total_score < colScoreMin) return false;
       if (colScoreMax !== null && p.total_score > colScoreMax) return false;
       if (colPriceMin !== null && (p.latest_price == null || p.latest_price < colPriceMin)) return false;
@@ -537,7 +541,7 @@
     });
 
     if (!visible.length) {
-      tbody.innerHTML = `<tr><td colspan="11"><div class="empty-state">
+      tbody.innerHTML = `<tr><td colspan="12"><div class="empty-state">
         <strong>No products found.</strong>
         <p>The scraper hasn't run yet, or no data matches your filters.</p>
         <p style="margin-top:8px;">Run <code>python run.py --scrape</code> to collect data.</p>
@@ -550,8 +554,9 @@
       const rank     = p.latest_rank   != null ? `#${p.latest_rank}` : '—';
       const age      = p.days_tracked  != null ? `${p.days_tracked}d` : '—';
       const barPct   = Math.min(100, (p.total_score / maxScore) * 100).toFixed(0);
-      const catRaw   = (p.category || '').replace(/-/g, ' ');
+      const catRaw   = (p.category    || '').replace(/-/g, ' ');
       const catDisp  = catRaw || '—';
+      const subDisp  = (p.subcategory || '').replace(/-/g, ' ') || '—';
 
       const tagsHtml = (p.signal_tags || []).map(t =>
         `<span class="tag ${TAG_CLASSES[t] || 'tag-markdown'}">${t}</span>`
@@ -575,6 +580,7 @@
         </td>
         <td style="font-size:12px;color:#555;">${p.retailer}</td>
         <td><span class="cat-badge">${catDisp}</span></td>
+        <td><span class="cat-badge">${subDisp}</span></td>
         <td>
           <div class="score-val">${p.total_score.toFixed(0)}</div>
           <div class="score-bar-wrap"><div class="score-bar" style="width:${barPct}%"></div></div>

@@ -43,15 +43,18 @@ class PrimarkScraper(BaseScraper):
         slug = category_path.split('/en-gb/c/')[-1].strip('/')
         url  = f'https://www.primark.com/en-gb/c/{slug}'
 
-        # Clean category label for storage and filtering
-        # Maps slug to a simple label the dashboard pills can match against
-        _label_map = {
-            'women/shoes':               'women/shoes',
-            'men/shoes':                 'men/shoes',
-            'kids/girls/girls-shoes':    'girls/shoes',
-            'kids/boys/boys-shoes':      'boys/shoes',
-        }
-        category_label = _label_map.get(slug, slug)
+        # Derive top-level category label and subcategory from the slug.
+        # e.g. 'women/shoes/heels'           → category='women', subcategory='heels'
+        #      'kids/girls/girls-shoes/boots' → category='girls', subcategory='boots'
+        #      'women/shoes'                  → category='women',  subcategory=None
+        parts  = slug.split('/')
+        gender = parts[0] if parts else 'unknown'
+        if gender == 'kids' and len(parts) > 1:
+            gender = parts[1]   # 'girls' or 'boys'
+        category_label = gender   # 'women', 'men', 'girls', 'boys'
+
+        _base_slugs = {'women/shoes', 'men/shoes', 'kids/girls/girls-shoes', 'kids/boys/boys-shoes'}
+        subcategory = None if slug in _base_slugs else parts[-1].replace('-', ' ')
 
         all_docs = []
         total    = None
@@ -72,7 +75,7 @@ class PrimarkScraper(BaseScraper):
 
         products = []
         for rank, item in enumerate(all_docs, start=1):
-            product = self._parse_product(item, category_path, rank, category_label)
+            product = self._parse_product(item, category_path, rank, category_label, subcategory)
             if product:
                 products.append(product)
         return products
@@ -194,7 +197,7 @@ class PrimarkScraper(BaseScraper):
         resp  = (pd.get('response')               or {})
         return resp.get('docs') or [], resp.get('numFound')
 
-    def _parse_product(self, item, category_path, rank, category_label=None):
+    def _parse_product(self, item, category_path, rank, category_label=None, subcategory=None):
         pid = str(item.get('pid', '')).strip()
         if not pid:
             return None
@@ -220,6 +223,7 @@ class PrimarkScraper(BaseScraper):
             'name':            self.clean_text(item.get('title', 'Unknown')),
             'url':             f'https://www.primark.com/en-gb/p/{url_slug}',
             'category':        category_label,
+            'subcategory':     subcategory,
             'price':           price,
             'rank':            rank,
             'review_count':    None,

@@ -21,10 +21,33 @@ RETAILERS = {
         'base_url': 'https://www.primark.com',
         'region':   'en-gb',
         'categories': [
-            '/en-gb/c/women/shoes',
-            '/en-gb/c/men/shoes',
-            '/en-gb/c/kids/girls/girls-shoes',
-            '/en-gb/c/kids/boys/boys-shoes',
+            # Women's subcategories
+            '/en-gb/c/women/shoes/flats',
+            '/en-gb/c/women/shoes/heels',
+            '/en-gb/c/women/shoes/sandals',
+            '/en-gb/c/women/shoes/boots',
+            '/en-gb/c/women/shoes/trainers',
+            '/en-gb/c/women/shoes/mules',
+            '/en-gb/c/women/shoes/wedges',
+            '/en-gb/c/women/shoes/sliders',
+            # Men's subcategories
+            '/en-gb/c/men/shoes/trainers',
+            '/en-gb/c/men/shoes/boots',
+            '/en-gb/c/men/shoes/sandals',
+            '/en-gb/c/men/shoes/sliders',
+            '/en-gb/c/men/shoes/formal-shoes',
+            '/en-gb/c/men/shoes/loafers',
+            # Girls
+            '/en-gb/c/kids/girls/girls-shoes/sandals',
+            '/en-gb/c/kids/girls/girls-shoes/boots',
+            '/en-gb/c/kids/girls/girls-shoes/trainers',
+            '/en-gb/c/kids/girls/girls-shoes/school-shoes',
+            '/en-gb/c/kids/girls/girls-shoes/flats',
+            # Boys
+            '/en-gb/c/kids/boys/boys-shoes/trainers',
+            '/en-gb/c/kids/boys/boys-shoes/boots',
+            '/en-gb/c/kids/boys/boys-shoes/sandals',
+            '/en-gb/c/kids/boys/boys-shoes/school-shoes',
         ],
         'enabled': True,
 

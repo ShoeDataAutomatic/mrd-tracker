@@ -53,12 +53,13 @@ def run_scrape():
 
         for p in products:
             product_id = db.upsert_product(
-                retailer  = key,
-                sku       = p['sku'],
-                name      = p['name'],
-                url       = p['url'],
-                category  = p.get('category'),
-                image_url = p.get('image_url'),
+                retailer    = key,
+                sku         = p['sku'],
+                name        = p['name'],
+                url         = p['url'],
+                category    = p.get('category'),
+                subcategory = p.get('subcategory'),
+                image_url   = p.get('image_url'),
             )
             db.save_snapshot(
                 product_id      = product_id,

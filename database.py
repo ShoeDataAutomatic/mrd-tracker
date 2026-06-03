@@ -41,6 +41,7 @@ def init_db():
             name               TEXT,
             url                TEXT NOT NULL,
             category           TEXT,
+            subcategory        TEXT,
             image_url          TEXT,
             image_refreshed_at TEXT,
             first_seen         TEXT NOT NULL,
@@ -49,12 +50,16 @@ def init_db():
         )
     ''')
 
-    # Migration: add image_refreshed_at to existing databases that predate this column
-    try:
-        c.execute('ALTER TABLE products ADD COLUMN image_refreshed_at TEXT')
-        conn.commit()
-    except Exception:
-        pass   # Column already exists — safe to ignore
+    # Migrations: add columns to existing databases that predate them
+    for col, definition in [
+        ('image_refreshed_at', 'TEXT'),
+        ('subcategory',        'TEXT'),
+    ]:
+        try:
+            c.execute(f'ALTER TABLE products ADD COLUMN {col} {definition}')
+            conn.commit()
+        except Exception:
+            pass   # Column already exists — safe to ignore
 
     c.execute('''
         CREATE TABLE IF NOT EXISTS snapshots (
@@ -97,7 +102,7 @@ def init_db():
 # Products
 # ---------------------------------------------------------------------------
 
-def upsert_product(retailer, sku, name, url, category, image_url=None):
+def upsert_product(retailer, sku, name, url, category, subcategory=None, image_url=None):
     """Insert or update a product. Returns the product's id."""
     conn = get_connection()
     c = conn.cursor()
@@ -106,22 +111,26 @@ def upsert_product(retailer, sku, name, url, category, image_url=None):
     # Only update image_refreshed_at when we actually have a fresh image URL
     if image_url:
         c.execute('''
-            INSERT INTO products (retailer, sku, name, url, category, image_url, image_refreshed_at, first_seen, last_seen)
-            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+            INSERT INTO products (retailer, sku, name, url, category, subcategory, image_url, image_refreshed_at, first_seen, last_seen)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
             ON CONFLICT(retailer, sku) DO UPDATE SET
                 name               = excluded.name,
+                category           = excluded.category,
+                subcategory        = excluded.subcategory,
                 image_url          = excluded.image_url,
                 image_refreshed_at = excluded.image_refreshed_at,
                 last_seen          = excluded.last_seen
-        ''', (retailer, sku, name, url, category, image_url, now, now, now))
+        ''', (retailer, sku, name, url, category, subcategory, image_url, now, now, now))
     else:
         c.execute('''
-            INSERT INTO products (retailer, sku, name, url, category, image_url, first_seen, last_seen)
-            VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+            INSERT INTO products (retailer, sku, name, url, category, subcategory, image_url, first_seen, last_seen)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
             ON CONFLICT(retailer, sku) DO UPDATE SET
-                name      = excluded.name,
-                last_seen = excluded.last_seen
-        ''', (retailer, sku, name, url, category, image_url, now, now))
+                name        = excluded.name,
+                category    = excluded.category,
+                subcategory = excluded.subcategory,
+                last_seen   = excluded.last_seen
+        ''', (retailer, sku, name, url, category, subcategory, image_url, now, now))
 
     conn.commit()
     c.execute('SELECT id FROM products WHERE retailer=? AND sku=?', (retailer, sku))
