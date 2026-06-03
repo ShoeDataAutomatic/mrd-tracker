@@ -4,271 +4,499 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>MRD Trend Tracker</title>
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700&family=Inter:wght@300;400;500&display=swap" rel="stylesheet">
   <style>
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
     body {
-      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Arial, sans-serif;
-      background: #f4f4f2;
+      font-family: 'Inter', -apple-system, sans-serif;
+      background: #ede9e2;
       color: #1a1a1a;
       font-size: 14px;
     }
 
-    /* ---- Product image thumbnail ---- */
-    .thumb-wrap {
-      width: 52px; height: 52px;
-      border-radius: 6px; overflow: hidden;
-      background: #f0f0ec; flex-shrink: 0; position: relative;
-    }
-    .thumb-wrap img { width: 100%; height: 100%; object-fit: cover; display: block; }
-    .thumb-wrap .no-img {
-      width: 100%; height: 100%;
-      display: flex; align-items: center; justify-content: center;
-      color: #ccc; font-size: 20px;
-    }
-    .thumb-wrap:hover .preview { display: block; }
-    .preview {
-      display: none; position: absolute; top: 0; left: 60px; z-index: 100;
-      width: 160px; height: 160px; border-radius: 8px; overflow: hidden;
-      box-shadow: 0 4px 16px rgba(0,0,0,0.18); background: #f0f0ec; pointer-events: none;
-    }
-    .preview img { width: 100%; height: 100%; object-fit: cover; }
-
     /* ---- Header ---- */
-    .header { background: #1a1a1a; padding: 18px 28px; display: flex; align-items: center; gap: 16px; }
-    .header h1 { color: #fff; font-size: 17px; font-weight: 500; }
-    .header .sub { color: #888; font-size: 12px; }
+    .header {
+      background: #f7f4ef;
+      border-bottom: 1.5px solid #1a1a1a;
+      padding: 20px 28px;
+      display: flex;
+      align-items: flex-end;
+      justify-content: space-between;
+    }
+    .header-title {
+      font-family: 'Playfair Display', serif;
+      font-size: 38px;
+      font-weight: 700;
+      color: #1a1a1a;
+      letter-spacing: -1px;
+      line-height: 1;
+    }
+    .header-sub {
+      font-size: 10px;
+      color: #888;
+      letter-spacing: 3px;
+      text-transform: uppercase;
+      margin-top: 5px;
+      font-weight: 300;
+    }
+    .header-right { text-align: right; }
+    .header-right .scrape-label {
+      font-size: 10px;
+      color: #aaa;
+      letter-spacing: 1.5px;
+      text-transform: uppercase;
+      font-weight: 300;
+    }
+    .header-right .scrape-time {
+      font-family: 'Playfair Display', serif;
+      font-size: 22px;
+      color: #1a1a1a;
+      margin-top: 2px;
+    }
 
     /* ---- Tab bar ---- */
     .tab-bar {
-      background: #fff;
-      border-bottom: 1px solid #e8e8e4;
+      background: #f7f4ef;
+      border-bottom: 1.5px solid #1a1a1a;
       padding: 0 28px;
       display: flex;
       gap: 0;
     }
     .tab-btn {
-      background: none; border: none; border-bottom: 3px solid transparent;
-      padding: 13px 20px 11px; font-size: 13px; font-weight: 500;
-      color: #888; cursor: pointer; transition: color .15s;
+      background: none;
+      border: none;
+      border-bottom: 3px solid transparent;
+      padding: 12px 20px 10px 0;
+      margin-right: 24px;
+      font-size: 11px;
+      font-weight: 500;
+      font-family: 'Inter', sans-serif;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      color: #aaa;
+      cursor: pointer;
     }
-    .tab-btn:hover { color: #1a1a1a; }
     .tab-btn.active { color: #1a1a1a; border-bottom-color: #1a1a1a; }
+    .tab-btn:hover { color: #555; }
 
     /* ---- Controls bar ---- */
     .controls {
-      background: #fff; padding: 12px 28px;
-      border-bottom: 1px solid #e8e8e4;
-      display: flex; gap: 12px; align-items: center; flex-wrap: wrap;
+      background: #f0ede6;
+      padding: 11px 28px;
+      border-bottom: 0.5px solid #d0cdc8;
+      display: flex;
+      gap: 10px;
+      align-items: center;
+      flex-wrap: wrap;
     }
-    .controls label { font-size: 12px; color: #888; margin-right: 4px; }
+    .controls label { font-size: 10px; color: #aaa; margin-right: 3px; letter-spacing: 1px; text-transform: uppercase; font-weight: 300; }
     .controls select, .controls input {
-      border: 1px solid #ddd; border-radius: 6px; padding: 6px 10px;
-      font-size: 13px; background: #fff; color: #1a1a1a; outline: none;
+      border: 0.5px solid #c0bdb8;
+      padding: 6px 10px;
+      font-size: 12px;
+      font-family: 'Inter', sans-serif;
+      background: #f7f4ef;
+      color: #1a1a1a;
+      outline: none;
+      border-radius: 0;
     }
-    .controls select:focus, .controls input:focus { border-color: #888; }
+    .controls select:focus, .controls input:focus { border-color: #1a1a1a; }
     .btn-refresh {
-      margin-left: auto; background: #1a1a1a; color: #fff; border: none;
-      padding: 7px 16px; border-radius: 6px; cursor: pointer; font-size: 13px;
+      margin-left: auto;
+      background: #1a1a1a;
+      color: #f7f4ef;
+      border: none;
+      padding: 7px 20px;
+      font-size: 10px;
+      font-family: 'Inter', sans-serif;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      cursor: pointer;
+      font-weight: 500;
     }
     .btn-refresh:hover { background: #333; }
 
-    /* ---- Stats row ---- */
-    .stats { display: flex; gap: 16px; padding: 16px 28px; }
-    .stat-card {
-      background: #fff; border-radius: 8px; padding: 14px 20px;
-      min-width: 140px; border: 1px solid #e8e8e4;
-    }
-    .stat-card .label { font-size: 11px; color: #888; text-transform: uppercase; letter-spacing: .5px; }
-    .stat-card .value { font-size: 22px; font-weight: 600; margin-top: 4px; color: #1a1a1a; }
-    .stat-card .sub   { font-size: 11px; color: #aaa; margin-top: 2px; }
-
-    /* ---- Rankings table ---- */
-    .table-wrap { padding: 0 28px 28px; }
-    .table-container { background: #fff; border-radius: 8px; border: 1px solid #e8e8e4; overflow: hidden; }
-    table { width: 100%; border-collapse: collapse; }
-    thead tr { background: #f9f9f7; }
-    th {
-      padding: 10px 14px; text-align: left; font-size: 11px; font-weight: 500;
-      color: #888; text-transform: uppercase; letter-spacing: .5px;
-      border-bottom: 1px solid #e8e8e4; white-space: nowrap;
-    }
-    th.sortable { cursor: pointer; user-select: none; }
-    th.sortable:hover { color: #444; }
-    th .sort-icon { margin-left: 4px; opacity: 0.3; }
-    th.sort-asc  .sort-icon::after { content: ' ▲'; opacity: 1; color: #1a6699; }
-    th.sort-desc .sort-icon::after { content: ' ▼'; opacity: 1; color: #1a6699; }
-    th:not(.sort-asc):not(.sort-desc) .sort-icon::after { content: ' ⇅'; }
-    .filter-row th { padding: 5px 8px; background: #f4f4f2; border-bottom: 2px solid #e0e0dc; cursor: default; }
-    .filter-row input, .filter-row select {
-      width: 100%; border: 1px solid #ddd; border-radius: 4px; padding: 4px 7px;
-      font-size: 11px; background: #fff; color: #1a1a1a; outline: none;
-      text-transform: none; letter-spacing: 0; font-weight: normal;
-    }
-    .filter-row input:focus, .filter-row select:focus { border-color: #888; }
-    td { padding: 11px 14px; border-bottom: 1px solid #f0f0ec; vertical-align: middle; }
-    tbody tr:last-child td { border-bottom: none; }
-    tbody tr:hover { background: #fafafa; }
-
-    .rank-num { color: #bbb; font-size: 12px; width: 32px; }
-    .product-name { font-weight: 500; color: #1a1a1a; text-decoration: none; display: block; }
-    .product-name:hover { color: #0066cc; }
-    .score-val { font-weight: 600; font-size: 15px; color: #1a6699; }
-    .score-bar-wrap { height: 4px; background: #f0f0ec; border-radius: 2px; margin-top: 4px; width: 70px; }
-    .score-bar { height: 4px; background: #1a6699; border-radius: 2px; }
-    .price { font-size: 13px; color: #555; }
-    .page-rank { font-size: 12px; color: #888; }
-    .days { font-size: 12px; color: #aaa; }
-    .cat-badge { display: inline-block; font-size: 11px; padding: 2px 8px; border-radius: 10px; background: #f0f0ec; color: #666; text-transform: capitalize; }
-    .tags { display: flex; gap: 4px; flex-wrap: wrap; }
-    .tag { font-size: 11px; padding: 2px 7px; border-radius: 10px; white-space: nowrap; }
-    .tag-new      { background: #e8f5e9; color: #2e7d32; }
-    .tag-runner   { background: #e3f2fd; color: #1565c0; }
-    .tag-featured { background: #fff3e0; color: #e65100; }
-    .tag-rising   { background: #f3e5f5; color: #6a1b9a; }
-    .tag-restock  { background: #e0f7fa; color: #006064; }
-    .tag-selling  { background: #fce4ec; color: #880e4f; }
-    .tag-review   { background: #f9fbe7; color: #558b2f; }
-    .tag-markdown { background: #fafafa; color: #999; }
-    .tag-removed  { background: #ffebee; color: #c62828; }
-    .sparkline { width: 60px; height: 24px; }
-
     /* ---- Category pills ---- */
     .category-pills {
-      background: #fff; padding: 10px 28px;
-      border-bottom: 1px solid #e8e8e4;
-      display: flex; gap: 8px;
+      background: #f7f4ef;
+      padding: 10px 28px;
+      border-bottom: 0.5px solid #d0cdc8;
+      display: flex;
+      gap: 6px;
     }
     .pill {
-      background: #f4f4f2; border: 1px solid #e0e0dc; border-radius: 20px;
-      padding: 5px 16px; font-size: 13px; cursor: pointer; color: #555; transition: all .15s;
+      background: transparent;
+      border: 0.5px solid #c0bdb8;
+      padding: 4px 16px;
+      font-size: 11px;
+      font-family: 'Inter', sans-serif;
+      letter-spacing: 1.5px;
+      text-transform: uppercase;
+      cursor: pointer;
+      color: #888;
+      font-weight: 300;
+      border-radius: 0;
     }
-    .pill:hover { background: #eaeae6; border-color: #ccc; }
-    .pill.active { background: #1a1a1a; border-color: #1a1a1a; color: #fff; }
+    .pill:hover { border-color: #1a1a1a; color: #1a1a1a; }
+    .pill.active { background: #1a1a1a; border-color: #1a1a1a; color: #f7f4ef; }
+
+    /* ---- Stats row ---- */
+    .stats {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      border-bottom: 1.5px solid #1a1a1a;
+      background: #f7f4ef;
+    }
+    .stat-card {
+      padding: 20px 24px;
+      border-right: 0.5px solid #d0cdc8;
+    }
+    .stat-card:last-child { border-right: none; }
+    .stat-card .label {
+      font-size: 10px;
+      color: #888;
+      text-transform: uppercase;
+      letter-spacing: 2px;
+      font-weight: 300;
+      margin-bottom: 8px;
+    }
+    .stat-card .value {
+      font-family: 'Playfair Display', serif;
+      font-size: 42px;
+      color: #1a1a1a;
+      line-height: 1;
+    }
+    .stat-card .value.text-val {
+      font-size: 18px;
+      margin-top: 5px;
+      line-height: 1.2;
+    }
+    .stat-card .sub {
+      font-size: 11px;
+      color: #888;
+      margin-top: 6px;
+      font-weight: 300;
+    }
+    .stat-card .sub.rising { color: #2e7d32; }
+
+    /* ---- Table ---- */
+    .table-wrap { padding: 0 28px 28px; background: #ede9e2; }
+    .table-container {
+      background: #f7f4ef;
+      border: 1.5px solid #1a1a1a;
+      overflow: hidden;
+    }
+    table { width: 100%; border-collapse: collapse; }
+    thead tr { background: #f7f4ef; }
+
+    th {
+      padding: 10px 14px;
+      text-align: left;
+      font-size: 10px;
+      font-weight: 300;
+      font-family: 'Inter', sans-serif;
+      color: #aaa;
+      text-transform: uppercase;
+      letter-spacing: 2px;
+      border-bottom: 1px solid #1a1a1a;
+      white-space: nowrap;
+    }
+    th.sortable { cursor: pointer; user-select: none; }
+    th.sortable:hover { color: #1a1a1a; }
+    th .sort-icon { margin-left: 4px; opacity: 0.3; }
+    th.sort-asc  .sort-icon::after { content: ' ▲'; opacity: 1; color: #d42b2b; }
+    th.sort-desc .sort-icon::after { content: ' ▼'; opacity: 1; color: #d42b2b; }
+    th:not(.sort-asc):not(.sort-desc) .sort-icon::after { content: ' ⇅'; }
+
+    .filter-row th {
+      padding: 5px 8px;
+      background: #f0ede6;
+      border-bottom: 1.5px solid #d0cdc8;
+      cursor: default;
+    }
+    .filter-row input, .filter-row select {
+      width: 100%;
+      border: 0.5px solid #c0bdb8;
+      padding: 4px 7px;
+      font-size: 11px;
+      font-family: 'Inter', sans-serif;
+      background: #f7f4ef;
+      color: #1a1a1a;
+      outline: none;
+      text-transform: none;
+      letter-spacing: 0;
+      font-weight: normal;
+      border-radius: 0;
+    }
+    .filter-row input:focus, .filter-row select:focus { border-color: #1a1a1a; }
+
+    td {
+      padding: 13px 14px;
+      border-bottom: 0.5px solid #d0cdc8;
+      vertical-align: middle;
+    }
+    tbody tr:last-child td { border-bottom: none; }
+    tbody tr:nth-child(even) { background: #f0ede6; }
+    tbody tr:hover { background: #ebe7e0; }
+
+    .rank-num {
+      font-family: 'Playfair Display', serif;
+      font-size: 15px;
+      color: #ccc;
+    }
+    .product-name {
+      font-weight: 500;
+      color: #1a1a1a;
+      text-decoration: none;
+      display: block;
+      font-size: 13px;
+    }
+    .product-name:hover { color: #d42b2b; }
+
+    .score-val {
+      font-family: 'Playfair Display', serif;
+      font-size: 22px;
+      color: #1a1a1a;
+    }
+    .score-bar-wrap { height: 3px; background: #e0ddd8; margin-top: 5px; width: 60px; }
+    .score-bar { height: 3px; background: #1a1a1a; }
+
+    .price { font-size: 12px; color: #666; font-weight: 300; }
+    .page-rank { font-size: 12px; color: #aaa; font-weight: 300; }
+    .age-val { font-size: 11px; color: #bbb; font-weight: 300; }
+    .cat-badge {
+      display: inline-block;
+      font-size: 10px;
+      padding: 2px 8px;
+      border: 0.5px solid #c0bdb8;
+      color: #888;
+      text-transform: capitalize;
+      letter-spacing: .5px;
+      font-weight: 300;
+    }
+
+    /* ---- Product thumb ---- */
+    .thumb-wrap {
+      width: 46px; height: 46px;
+      overflow: hidden;
+      background: #e8e4de;
+      flex-shrink: 0;
+      position: relative;
+      border: 0.5px solid #d0cdc8;
+    }
+    .thumb-wrap img { width: 100%; height: 100%; object-fit: cover; display: block; }
+    .thumb-wrap .no-img {
+      width: 100%; height: 100%;
+      display: flex; align-items: center; justify-content: center;
+      color: #ccc; font-size: 18px;
+    }
+    .thumb-wrap:hover .preview { display: block; }
+    .preview {
+      display: none; position: absolute; top: 0; left: 54px; z-index: 100;
+      width: 160px; height: 160px; overflow: hidden;
+      box-shadow: 2px 2px 0 #1a1a1a;
+      background: #e8e4de; pointer-events: none;
+      border: 1px solid #1a1a1a;
+    }
+    .preview img { width: 100%; height: 100%; object-fit: cover; }
+
+    /* ---- Signal tags ---- */
+    .tags { display: flex; gap: 4px; flex-wrap: wrap; }
+    .tag {
+      font-size: 10px;
+      padding: 2px 7px;
+      letter-spacing: .5px;
+      white-space: nowrap;
+      font-weight: 300;
+    }
+    .tag-new      { background: #1a1a1a; color: #f7f4ef; }
+    .tag-runner   { border: 0.5px solid #1a1a1a; color: #1a1a1a; }
+    .tag-featured { background: #d42b2b; color: #f7f4ef; }
+    .tag-rising   { border: 0.5px solid #d42b2b; color: #d42b2b; }
+    .tag-restock  { border: 0.5px solid #1a1a1a; color: #1a1a1a; }
+    .tag-selling  { background: #1a1a1a; color: #f7f4ef; }
+    .tag-review   { border: 0.5px solid #888; color: #888; }
+    .tag-markdown { border: 0.5px solid #ccc; color: #aaa; }
+    .tag-removed  { background: #d42b2b; color: #f7f4ef; }
+
+    /* ---- Sparkline ---- */
+    .sparkline { width: 60px; height: 24px; }
 
     /* ---- Empty / loading ---- */
     .empty-state { text-align: center; padding: 60px 20px; color: #aaa; }
-    .empty-state p { margin-top: 8px; font-size: 13px; }
-    .loading { opacity: .4; }
+    .empty-state p { margin-top: 8px; font-size: 13px; font-weight: 300; }
 
     /* ---- Keywords tab ---- */
     .kw-layout {
       display: grid;
       grid-template-columns: minmax(0, 55%) minmax(0, 45%);
-      gap: 0;
-      background: #fff;
-      border-radius: 8px;
-      border: 1px solid #e8e8e4;
-      overflow: hidden;
+      background: #f7f4ef;
+      border: 1.5px solid #1a1a1a;
       margin: 0 28px 28px;
     }
     .kw-list-panel {
-      border-right: 1px solid #e8e8e4;
-      overflow-x: auto;
+      border-right: 0.5px solid #d0cdc8;
       overflow-y: auto;
       max-height: calc(100vh - 260px);
     }
     .kw-list-controls {
       padding: 10px 14px;
-      border-bottom: 1px solid #e8e8e4;
-      background: #f9f9f7;
+      border-bottom: 0.5px solid #d0cdc8;
+      background: #f0ede6;
       display: flex;
       gap: 8px;
       align-items: center;
     }
     .kw-list-controls input {
-      border: 1px solid #ddd; border-radius: 6px; padding: 5px 9px;
-      font-size: 12px; outline: none; flex: 1;
+      border: 0.5px solid #c0bdb8;
+      padding: 5px 9px;
+      font-size: 11px;
+      font-family: 'Inter', sans-serif;
+      outline: none;
+      flex: 1;
+      background: #f7f4ef;
+      border-radius: 0;
     }
-    .kw-list-controls input:focus { border-color: #888; }
+    .kw-list-controls input:focus { border-color: #1a1a1a; }
     .kw-table { width: 100%; border-collapse: collapse; }
-    .kw-table thead tr { background: #f9f9f7; }
+    .kw-table thead tr { background: #f7f4ef; }
     .kw-table th {
-      padding: 9px 14px; text-align: left; font-size: 11px; font-weight: 500;
-      color: #888; text-transform: uppercase; letter-spacing: .5px;
-      border-bottom: 1px solid #e8e8e4; white-space: nowrap; cursor: pointer; user-select: none;
+      padding: 9px 14px;
+      text-align: left;
+      font-size: 10px;
+      font-weight: 300;
+      font-family: 'Inter', sans-serif;
+      color: #aaa;
+      text-transform: uppercase;
+      letter-spacing: 2px;
+      border-bottom: 1px solid #1a1a1a;
+      cursor: pointer;
+      user-select: none;
     }
-    .kw-table th:hover { color: #444; }
-    .kw-table th.kw-sort-asc  .sort-icon::after { content: ' ▲'; opacity: 1; color: #1a6699; }
-    .kw-table th.kw-sort-desc .sort-icon::after { content: ' ▼'; opacity: 1; color: #1a6699; }
+    .kw-table th:hover { color: #1a1a1a; }
+    .kw-table th.kw-sort-asc  .sort-icon::after { content: ' ▲'; opacity: 1; color: #d42b2b; }
+    .kw-table th.kw-sort-desc .sort-icon::after { content: ' ▼'; opacity: 1; color: #d42b2b; }
     .kw-table th:not(.kw-sort-asc):not(.kw-sort-desc) .sort-icon::after { content: ' ⇅'; }
-    .kw-table td { padding: 9px 14px; border-bottom: 1px solid #f0f0ec; vertical-align: middle; }
-    .kw-table tbody tr:last-child td { border-bottom: none; }
+    .kw-table td { padding: 10px 14px; border-bottom: 0.5px solid #e8e4de; vertical-align: middle; }
+    .kw-table tbody tr:nth-child(even) { background: #f0ede6; }
     .kw-table tbody tr { cursor: pointer; }
-    .kw-table tbody tr:hover { background: #f5f5f3; }
-    .kw-table tbody tr.kw-active { background: #e8f0f8; }
-    .kw-word { font-size: 13px; font-weight: 500; color: #1a1a1a; }
-    .kw-active .kw-word { color: #1a6699; }
+    .kw-table tbody tr:hover { background: #ebe7e0; }
+    .kw-table tbody tr.kw-active { background: #1a1a1a; }
+    .kw-word { font-size: 12px; font-weight: 500; color: #1a1a1a; }
+    .kw-active .kw-word { color: #f7f4ef; }
     .kw-bar-wrap { display: flex; align-items: center; gap: 6px; }
-    .kw-bar-bg { flex: 1; height: 6px; background: #f0f0ec; border-radius: 3px; overflow: hidden; min-width: 50px; }
-    .kw-bar-fill { height: 100%; border-radius: 3px; }
-    .kw-count { font-size: 12px; color: #555; min-width: 22px; text-align: right; }
-    .kw-delta-up   { font-size: 11px; color: #2e7d32; font-weight: 500; white-space: nowrap; }
-    .kw-delta-dn   { font-size: 11px; color: #c62828; font-weight: 500; white-space: nowrap; }
-    .kw-delta-new  { font-size: 11px; color: #888; white-space: nowrap; }
+    .kw-bar-bg { flex: 1; height: 4px; background: #e0ddd8; min-width: 50px; }
+    .kw-bar-fill { height: 100%; }
+    .kw-count { font-size: 11px; color: #888; min-width: 22px; text-align: right; font-weight: 300; }
+    .kw-active .kw-count { color: #888; }
+    .kw-delta-up  { font-size: 10px; color: #2e7d32; font-weight: 500; white-space: nowrap; letter-spacing: .5px; }
+    .kw-delta-dn  { font-size: 10px; color: #d42b2b; font-weight: 500; white-space: nowrap; letter-spacing: .5px; }
+    .kw-delta-new { font-size: 10px; color: #aaa; white-space: nowrap; font-weight: 300; }
+    .kw-active .kw-delta-up { color: #7ec87f; }
+    .kw-active .kw-delta-dn { color: #f08080; }
 
-    /* ---- Product panel (right side of kw tab) ---- */
+    /* ---- Keyword product panel ---- */
     .kw-products-panel {
       padding: 16px;
       overflow-y: auto;
       max-height: calc(100vh - 260px);
     }
     .kw-products-header {
-      display: flex; align-items: center; justify-content: space-between;
-      margin-bottom: 14px; position: sticky; top: 0;
-      background: #fff; padding-bottom: 10px;
-      border-bottom: 1px solid #f0f0ec; z-index: 1;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 14px;
+      padding-bottom: 10px;
+      border-bottom: 0.5px solid #d0cdc8;
+      position: sticky;
+      top: 0;
+      background: #f7f4ef;
+      z-index: 1;
     }
-    .kw-products-title { font-size: 12px; font-weight: 500; color: #888; text-transform: uppercase; letter-spacing: .5px; }
+    .kw-products-title {
+      font-size: 10px;
+      font-weight: 300;
+      color: #aaa;
+      text-transform: uppercase;
+      letter-spacing: 2px;
+    }
     .kw-products-count {
-      font-size: 11px; padding: 2px 9px; border-radius: 10px;
-      background: #e3f2fd; color: #1565c0; font-weight: 500;
+      font-size: 10px;
+      padding: 2px 10px;
+      border: 0.5px solid #1a1a1a;
+      color: #1a1a1a;
+      font-weight: 300;
+      letter-spacing: .5px;
     }
     .kw-products-grid {
       display: grid;
       grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
       gap: 16px;
     }
-    .kw-product-card { display: flex; flex-direction: column; align-items: center; gap: 6px; }
+    .kw-product-card { display: flex; flex-direction: column; align-items: center; gap: 6px; text-decoration: none; }
     .kw-product-thumb {
-      width: 160px; height: 160px; border-radius: 10px; overflow: hidden;
-      background: #f0f0ec; border: 1px solid #e8e8e4; flex-shrink: 0;
+      width: 160px; height: 160px;
+      overflow: hidden;
+      background: #e8e4de;
+      border: 0.5px solid #d0cdc8;
+      flex-shrink: 0;
     }
     .kw-product-thumb img { width: 100%; height: 100%; object-fit: cover; display: block; }
     .kw-product-thumb .no-img {
-      width: 100%; height: 100%; display: flex; align-items: center;
-      justify-content: center; color: #ccc; font-size: 36px;
+      width: 100%; height: 100%;
+      display: flex; align-items: center; justify-content: center;
+      color: #ccc; font-size: 36px;
     }
     .kw-product-name {
-      font-size: 12px; color: #555; text-align: center; line-height: 1.3;
-      max-width: 160px; overflow: hidden; display: -webkit-box;
-      -webkit-line-clamp: 2; -webkit-box-orient: vertical;
+      font-size: 11px;
+      color: #555;
+      text-align: center;
+      line-height: 1.3;
+      max-width: 160px;
+      overflow: hidden;
+      display: -webkit-box;
+      -webkit-line-clamp: 2;
+      -webkit-box-orient: vertical;
+      font-weight: 300;
     }
     .kw-product-price { font-size: 12px; font-weight: 500; color: #1a1a1a; }
-    .kw-product-cat   { font-size: 11px; color: #aaa; text-transform: capitalize; }
+    .kw-product-cat   { font-size: 10px; color: #aaa; text-transform: capitalize; letter-spacing: .5px; font-weight: 300; }
     .kw-placeholder {
       display: flex; flex-direction: column; align-items: center; justify-content: center;
       height: 200px; color: #bbb; text-align: center; gap: 8px;
     }
-    .kw-placeholder p { font-size: 13px; }
+    .kw-placeholder p { font-size: 12px; font-weight: 300; letter-spacing: 1px; text-transform: uppercase; }
+
+    /* ---- KW stats ---- */
+    .kw-stats {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      border-bottom: 1.5px solid #1a1a1a;
+      background: #f7f4ef;
+    }
   </style>
 </head>
 <body>
 
 <div class="header">
   <div>
-    <h1>MRD Trend Tracker</h1>
-    <div class="sub">Footwear trend intelligence</div>
+    <div class="header-title">MRD</div>
+    <div class="header-sub">Trend Tracker &middot; Footwear Intelligence</div>
+  </div>
+  <div class="header-right">
+    <div class="scrape-label">Last scrape</div>
+    <div class="scrape-time" id="header-scrape-time">—</div>
   </div>
 </div>
 
-<!-- ═══════════════════════ TAB BAR ═══════════════════════ -->
+<!-- ═══════════ TAB BAR ═══════════ -->
 <div class="tab-bar">
   <button class="tab-btn active" onclick="switchTab('rankings')">Rankings</button>
   <button class="tab-btn" onclick="switchTab('keywords')">Keyword analysis</button>
 </div>
 
-<!-- ═══════════════════════ RANKINGS TAB ═══════════════════════ -->
+<!-- ═══════════ RANKINGS TAB ═══════════ -->
 <div id="tab-rankings">
 
   <div class="controls">
@@ -311,18 +539,32 @@
   </div>
 
   <div class="stats" id="stats-row">
-    <div class="stat-card"><div class="label">Products tracked</div><div class="value" id="stat-total">—</div></div>
-    <div class="stat-card"><div class="label">New today</div><div class="value" id="stat-new">—</div></div>
-    <div class="stat-card"><div class="label">Top product</div><div class="value" id="stat-top" style="font-size:14px;font-weight:500;margin-top:8px;">—</div><div class="sub" id="stat-top-score"></div></div>
+    <div class="stat-card">
+      <div class="label">Products tracked</div>
+      <div class="value" id="stat-total">—</div>
+    </div>
+    <div class="stat-card">
+      <div class="label">New today</div>
+      <div class="value" id="stat-new">—</div>
+    </div>
+    <div class="stat-card">
+      <div class="label">Top product</div>
+      <div class="value text-val" id="stat-top">—</div>
+      <div class="sub" id="stat-top-score"></div>
+    </div>
+    <div class="stat-card">
+      <div class="label">Retailer</div>
+      <div class="value text-val" id="stat-retailer">All</div>
+    </div>
   </div>
 
-  <div class="table-wrap">
+  <div class="table-wrap" style="padding-top:20px;">
     <div class="table-container">
       <table>
         <thead>
           <tr id="sort-row">
-            <th style="width:40px;" class="no-sort">#</th>
-            <th style="width:60px;" class="no-sort"></th>
+            <th style="width:36px;" class="no-sort">#</th>
+            <th style="width:58px;" class="no-sort"></th>
             <th class="sortable" data-col="name">Product<span class="sort-icon"></span></th>
             <th class="sortable" data-col="retailer">Retailer<span class="sort-icon"></span></th>
             <th class="sortable" data-col="category">Category<span class="sort-icon"></span></th>
@@ -372,7 +614,7 @@
 
 </div><!-- /tab-rankings -->
 
-<!-- ═══════════════════════ KEYWORDS TAB ═══════════════════════ -->
+<!-- ═══════════ KEYWORDS TAB ═══════════ -->
 <div id="tab-keywords" style="display:none;">
 
   <div class="controls">
@@ -403,23 +645,28 @@
     <button class="btn-refresh" onclick="loadKeywords()">Refresh</button>
   </div>
 
-  <div class="stats" id="kw-stats-row">
-    <div class="stat-card"><div class="label">Unique keywords</div><div class="value" id="kw-stat-unique">—</div></div>
-    <div class="stat-card"><div class="label">Products analysed</div><div class="value" id="kw-stat-products">—</div></div>
-    <div class="stat-card" style="flex:1;min-width:0;">
+  <div class="kw-stats" id="kw-stats-row">
+    <div class="stat-card">
+      <div class="label">Unique keywords</div>
+      <div class="value" id="kw-stat-unique">—</div>
+    </div>
+    <div class="stat-card">
+      <div class="label">Products analysed</div>
+      <div class="value" id="kw-stat-products">—</div>
+    </div>
+    <div class="stat-card">
       <div class="label">Top keyword</div>
-      <div class="value" id="kw-stat-top" style="font-size:16px;font-weight:600;margin-top:6px;">—</div>
+      <div class="value text-val" id="kw-stat-top">—</div>
       <div class="sub" id="kw-stat-top-count"></div>
     </div>
-    <div class="stat-card" style="flex:1;min-width:0;">
+    <div class="stat-card">
       <div class="label">Fastest rising</div>
-      <div class="value" id="kw-stat-rising" style="font-size:16px;font-weight:600;margin-top:6px;color:#2e7d32;">—</div>
+      <div class="value text-val rising" id="kw-stat-rising">—</div>
       <div class="sub" id="kw-stat-rising-delta"></div>
     </div>
   </div>
 
   <div class="kw-layout">
-    <!-- Left: keyword list -->
     <div class="kw-list-panel">
       <div class="kw-list-controls">
         <input type="text" id="kw-search" placeholder="Search keywords…" oninput="renderKeywords()">
@@ -438,7 +685,6 @@
       </table>
     </div>
 
-    <!-- Right: product examples -->
     <div class="kw-products-panel">
       <div class="kw-products-header">
         <div class="kw-products-title" id="kw-panel-title">Product examples</div>
@@ -446,7 +692,7 @@
       </div>
       <div id="kw-products-grid" class="kw-products-grid">
         <div class="kw-placeholder" style="grid-column:1/-1;">
-          <p>Select a keyword to see matching products</p>
+          <p>Select a keyword</p>
         </div>
       </div>
     </div>
@@ -456,7 +702,7 @@
 
 
 <script>
-// ═══════════════════ TAB SWITCHING ═══════════════════
+// ═══════════ TAB SWITCHING ═══════════
 function switchTab(name) {
   document.getElementById('tab-rankings').style.display = name === 'rankings' ? '' : 'none';
   document.getElementById('tab-keywords').style.display = name === 'keywords' ? '' : 'none';
@@ -466,7 +712,7 @@ function switchTab(name) {
   if (name === 'keywords' && allKeywords.length === 0) loadKeywords();
 }
 
-// ═══════════════════ RANKINGS TAB ═══════════════════
+// ═══════════ RANKINGS TAB ═══════════
 let allProducts    = [];
 let maxScore       = 1;
 let activeCategory = '';
@@ -474,9 +720,15 @@ let sortCol        = 'total_score';
 let sortDir        = 'desc';
 
 const TAG_CLASSES = {
-  'New arrival':'tag-new','Long runner':'tag-runner','Featured':'tag-featured',
-  'Rising':'tag-rising','Restocked':'tag-restock','Selling through':'tag-selling',
-  'Review spike':'tag-review','Marked down':'tag-markdown','Removed':'tag-removed',
+  'New arrival':    'tag-new',
+  'Long runner':    'tag-runner',
+  'Featured':       'tag-featured',
+  'Rising':         'tag-rising',
+  'Restocked':      'tag-restock',
+  'Selling through':'tag-selling',
+  'Review spike':   'tag-review',
+  'Marked down':    'tag-markdown',
+  'Removed':        'tag-removed',
 };
 
 function setCategory(cat) {
@@ -513,6 +765,9 @@ async function loadStats() {
   document.getElementById('stat-new').textContent       = data.new_today;
   document.getElementById('stat-top').textContent       = data.top_product;
   document.getElementById('stat-top-score').textContent = data.top_score ? `${data.top_score.toFixed(0)} pts` : '';
+  document.getElementById('stat-retailer').textContent  = retailer || 'All';
+  document.getElementById('header-scrape-time').textContent =
+    new Date().toLocaleTimeString('en-GB', {hour:'2-digit', minute:'2-digit'});
 }
 
 async function loadRankings() {
@@ -546,9 +801,7 @@ function renderTable() {
     const cat      = (p.category || '').toLowerCase();
     const name     = (p.name     || '').toLowerCase();
     const retailer = (p.retailer || '').toLowerCase();
-    if (activeCategory) {
-      if (!cat.split('/').includes(activeCategory)) return false;
-    }
+    if (activeCategory && !cat.split('/').includes(activeCategory)) return false;
     if (globalSearch   && !name.includes(globalSearch) && !cat.includes(globalSearch)) return false;
     if (colName        && !name.includes(colName))         return false;
     if (colRetailer    && !retailer.includes(colRetailer)) return false;
@@ -599,11 +852,12 @@ function renderTable() {
            <div class="preview"><img src="${p.image_url}" alt="${p.name}"></div>
          </div>`
       : `<div class="thumb-wrap"><div class="no-img">&#128094;</div></div>`;
+
     return `<tr>
       <td class="rank-num">${i+1}</td>
       <td style="padding:8px 6px;">${imgHtml}</td>
       <td><a class="product-name" href="${p.url}" target="_blank">${p.name}</a></td>
-      <td style="font-size:12px;color:#555;">${p.retailer}</td>
+      <td style="font-size:11px;color:#aaa;font-weight:300;letter-spacing:.5px;">${p.retailer}</td>
       <td><span class="cat-badge">${catDisp}</span></td>
       <td><span class="cat-badge">${subDisp}</span></td>
       <td>
@@ -612,7 +866,7 @@ function renderTable() {
       </td>
       <td class="price">${price}</td>
       <td class="page-rank">${rank}</td>
-      <td class="days">${age}</td>
+      <td class="age-val">${age}</td>
       <td><div class="tags">${tagsHtml}</div></td>
       <td>${sparkSvg}</td>
     </tr>`;
@@ -630,7 +884,7 @@ function buildSparkline(series) {
     return `${x.toFixed(1)},${y.toFixed(1)}`;
   }).join(' ');
   return `<svg class="sparkline" viewBox="0 0 ${w} ${h}">
-    <polyline points="${pts}" fill="none" stroke="#1a6699" stroke-width="1.5" stroke-linejoin="round"/>
+    <polyline points="${pts}" fill="none" stroke="#1a1a1a" stroke-width="1.5" stroke-linejoin="round"/>
   </svg>`;
 }
 
@@ -640,17 +894,14 @@ function loadAll() { loadStats(); loadRankings(); }
 document.getElementById('filter-search').addEventListener('input', renderTable);
 
 
-// ═══════════════════ KEYWORDS TAB ═══════════════════
-let allKeywords    = [];
-let kwMaxCount     = 1;
-let kwSortCol      = 'count';
-let kwSortDir      = 'desc';
-let activeKeyword  = null;
+// ═══════════ KEYWORDS TAB ═══════════
+let allKeywords   = [];
+let kwMaxCount    = 1;
+let kwSortCol     = 'count';
+let kwSortDir     = 'desc';
+let activeKeyword = null;
 
-const BAR_COLOURS = [
-  '#185FA5','#1D9E75','#BA7517','#993556','#534AB7',
-  '#3B6D11','#D85A30','#0F6E56','#854F0B','#3C3489',
-];
+const BAR_COLOURS = ['#1a1a1a','#555','#888','#aaa','#d42b2b','#333','#777','#999'];
 
 async function loadKeywords() {
   const retailer   = document.getElementById('kw-filter-retailer').value;
@@ -669,7 +920,6 @@ async function loadKeywords() {
   allKeywords = data.keywords || [];
   kwMaxCount  = Math.max(...allKeywords.map(k => k.count), 1);
 
-  // Stats cards
   document.getElementById('kw-stat-unique').textContent   = data.unique_count ?? '—';
   document.getElementById('kw-stat-products').textContent = data.products_total ?? '—';
 
@@ -677,7 +927,7 @@ async function loadKeywords() {
     document.getElementById('kw-stat-top').textContent       = data.top_keyword.keyword;
     document.getElementById('kw-stat-top-count').textContent = `${data.top_keyword.count} products`;
   } else {
-    document.getElementById('kw-stat-top').textContent       = '—';
+    document.getElementById('kw-stat-top').textContent = '—';
     document.getElementById('kw-stat-top-count').textContent = '';
   }
 
@@ -693,7 +943,7 @@ async function loadKeywords() {
   document.getElementById('kw-panel-title').textContent   = 'Product examples';
   document.getElementById('kw-panel-count').style.display = 'none';
   document.getElementById('kw-products-grid').innerHTML   =
-    '<div class="kw-placeholder" style="grid-column:1/-1;"><p>Select a keyword to see matching products</p></div>';
+    '<div class="kw-placeholder" style="grid-column:1/-1;"><p>Select a keyword</p></div>';
 
   renderKeywords();
 }
@@ -714,7 +964,6 @@ function renderKeywords() {
   });
 
   const tbody = document.getElementById('kw-table-body');
-
   if (!data.length) {
     tbody.innerHTML = '<tr><td colspan="3"><div class="empty-state" style="padding:40px 20px;">No keywords found.</div></td></tr>';
     return;
@@ -724,7 +973,6 @@ function renderKeywords() {
     const barPct   = Math.round((k.count / kwMaxCount) * 100);
     const barColor = BAR_COLOURS[i % BAR_COLOURS.length];
     const isActive = activeKeyword === k.keyword;
-
     let deltaHtml;
     if (k.delta === null || k.delta === undefined) {
       deltaHtml = `<span class="kw-delta-new">new</span>`;
@@ -733,14 +981,13 @@ function renderKeywords() {
     } else if (k.delta < 0) {
       deltaHtml = `<span class="kw-delta-dn">${k.delta}%</span>`;
     } else {
-      deltaHtml = `<span style="font-size:11px;color:#bbb;">—</span>`;
+      deltaHtml = `<span style="font-size:10px;color:#ccc;">—</span>`;
     }
-
     return `<tr class="${isActive ? 'kw-active' : ''}" onclick="selectKeyword('${k.keyword.replace(/'/g,"\\'")}', ${k.count})">
       <td><span class="kw-word">${k.keyword}</span></td>
       <td>
         <div class="kw-bar-wrap">
-          <div class="kw-bar-bg"><div class="kw-bar-fill" style="width:${barPct}%;background:${barColor};"></div></div>
+          <div class="kw-bar-bg"><div class="kw-bar-fill" style="width:${barPct}%;background:${isActive ? '#f7f4ef' : barColor};"></div></div>
           <span class="kw-count">${k.count}</span>
         </div>
       </td>
@@ -761,18 +1008,16 @@ function kwSort(th) {
 async function selectKeyword(keyword, count) {
   activeKeyword = keyword;
   renderKeywords();
-
-  document.getElementById('kw-panel-title').textContent   = `"${keyword}"`;
+  document.getElementById('kw-panel-title').textContent = `"${keyword}"`;
   const pill = document.getElementById('kw-panel-count');
-  pill.textContent    = `${count} products`;
-  pill.style.display  = 'inline-block';
-
+  pill.textContent   = `${count} products`;
+  pill.style.display = 'inline-block';
   const grid = document.getElementById('kw-products-grid');
-  grid.innerHTML = '<div class="kw-placeholder" style="grid-column:1/-1;"><p>Loading products…</p></div>';
+  grid.innerHTML = '<div class="kw-placeholder" style="grid-column:1/-1;"><p>Loading…</p></div>';
 
-  const retailer  = document.getElementById('kw-filter-retailer').value;
-  const category  = document.getElementById('kw-filter-category').value;
-  const params    = new URLSearchParams({ q: keyword });
+  const retailer = document.getElementById('kw-filter-retailer').value;
+  const category = document.getElementById('kw-filter-category').value;
+  const params   = new URLSearchParams({ q: keyword });
   if (retailer) params.set('retailer', retailer);
   if (category) params.set('category', category);
 
@@ -780,18 +1025,18 @@ async function selectKeyword(keyword, count) {
   const products = await res.json();
 
   if (!products.length) {
-    grid.innerHTML = '<div class="kw-placeholder" style="grid-column:1/-1;"><p>No product images available yet.</p></div>';
+    grid.innerHTML = '<div class="kw-placeholder" style="grid-column:1/-1;"><p>No images available yet</p></div>';
     return;
   }
 
   grid.innerHTML = products.map(p => {
-    const price   = p.latest_price != null ? `£${p.latest_price.toFixed(2)}` : '';
-    const cat     = (p.subcategory || p.category || '').replace(/-/g,' ');
+    const price  = p.latest_price != null ? `£${p.latest_price.toFixed(2)}` : '';
+    const cat    = (p.subcategory || p.category || '').replace(/-/g,' ');
     const imgHtml = p.image_url
       ? `<img src="${p.image_url}" alt="${p.name}" loading="lazy"
              onerror="this.parentElement.innerHTML='<div class=\\'no-img\\'>&#128094;</div>'">`
       : `<div class="no-img">&#128094;</div>`;
-    return `<a class="kw-product-card" href="${p.url}" target="_blank" style="text-decoration:none;">
+    return `<a class="kw-product-card" href="${p.url}" target="_blank">
       <div class="kw-product-thumb">${imgHtml}</div>
       <div class="kw-product-name">${p.name}</div>
       ${price ? `<div class="kw-product-price">${price}</div>` : ''}
