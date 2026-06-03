@@ -188,10 +188,10 @@ def api_keyword_products():
     matching = [
         p for p in products
         if keyword in (p.get('name') or '').lower()
-        and (not category or (p.get('category') or '').lower() == category)
+        and (not category or (p.get('category') or '').lower().startswith(category))
     ]
     matching.sort(key=lambda p: p.get('last_seen') or '', reverse=True)
-    return jsonify(matching[:12])
+    return jsonify(matching)
 
 
 # ---------------------------------------------------------------------------
