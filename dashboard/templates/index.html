@@ -4,286 +4,250 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>MRD Trend Tracker</title>
-  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700&family=Inter:wght@300;400;500&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700&display=swap" rel="stylesheet">
   <style>
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
     body {
-      font-family: 'Inter', -apple-system, sans-serif;
-      background: #ede9e2;
-      color: #1a1a1a;
-      font-size: 14px;
+      font-family: 'Montserrat', sans-serif;
+      background: #f2f2f2;
+      color: #111;
+      font-size: 13px;
     }
 
-    /* ---- Header ---- */
+    /* ── Header ── */
     .header {
-      background: #f7f4ef;
-      border-bottom: 1.5px solid #1a1a1a;
-      padding: 20px 28px;
+      background: #000;
+      padding: 14px 28px;
       display: flex;
-      align-items: flex-end;
+      align-items: center;
       justify-content: space-between;
     }
-    .header-title {
-      font-family: 'Playfair Display', serif;
-      font-size: 38px;
+    .header-logo {
+      font-size: 18px;
       font-weight: 700;
-      color: #1a1a1a;
-      letter-spacing: -1px;
-      line-height: 1;
-    }
-    .header-sub {
-      font-size: 10px;
-      color: #888;
       letter-spacing: 3px;
       text-transform: uppercase;
-      margin-top: 5px;
-      font-weight: 300;
+      color: #fff;
     }
-    .header-right { text-align: right; }
-    .header-right .scrape-label {
+    .header-logo span { color: #ff0066; }
+    .header-meta {
+      display: flex;
+      align-items: center;
+      gap: 20px;
       font-size: 10px;
-      color: #aaa;
       letter-spacing: 1.5px;
       text-transform: uppercase;
-      font-weight: 300;
+      font-weight: 600;
     }
-    .header-right .scrape-time {
-      font-family: 'Playfair Display', serif;
-      font-size: 22px;
-      color: #1a1a1a;
-      margin-top: 2px;
+    .header-meta .live-dot {
+      width: 6px; height: 6px;
+      background: #ff0066;
+      border-radius: 50%;
+      display: inline-block;
+      margin-right: 6px;
     }
+    .header-meta .live { color: #ff0066; }
+    .header-meta .scrape { color: #666; }
+    .header-meta .time { color: #fff; }
 
-    /* ---- Tab bar ---- */
+    /* ── Tab bar ── */
     .tab-bar {
-      background: #f7f4ef;
-      border-bottom: 1.5px solid #1a1a1a;
+      background: #fff;
+      border-bottom: 1px solid #e5e5e5;
       padding: 0 28px;
       display: flex;
-      gap: 0;
     }
     .tab-btn {
-      background: none;
-      border: none;
+      background: none; border: none;
       border-bottom: 3px solid transparent;
-      padding: 12px 20px 10px 0;
+      padding: 14px 22px 12px 0;
       margin-right: 24px;
-      font-size: 11px;
-      font-weight: 500;
-      font-family: 'Inter', sans-serif;
-      letter-spacing: 2px;
-      text-transform: uppercase;
-      color: #aaa;
-      cursor: pointer;
+      font-size: 10px; font-weight: 700;
+      letter-spacing: 2px; text-transform: uppercase;
+      font-family: 'Montserrat', sans-serif;
+      color: #aaa; cursor: pointer;
     }
-    .tab-btn.active { color: #1a1a1a; border-bottom-color: #1a1a1a; }
-    .tab-btn:hover { color: #555; }
+    .tab-btn.active { color: #000; border-bottom-color: #ff0066; }
+    .tab-btn:hover  { color: #000; }
 
-    /* ---- Controls bar ---- */
+    /* ── Controls bar ── */
     .controls {
-      background: #f0ede6;
-      padding: 11px 28px;
-      border-bottom: 0.5px solid #d0cdc8;
+      background: #fff;
+      border-bottom: 1px solid #e5e5e5;
+      padding: 12px 28px;
       display: flex;
-      gap: 10px;
+      gap: 8px;
       align-items: center;
       flex-wrap: wrap;
     }
-    .controls label { font-size: 10px; color: #aaa; margin-right: 3px; letter-spacing: 1px; text-transform: uppercase; font-weight: 300; }
-    .controls select, .controls input {
-      border: 0.5px solid #c0bdb8;
-      padding: 6px 10px;
-      font-size: 12px;
-      font-family: 'Inter', sans-serif;
-      background: #f7f4ef;
-      color: #1a1a1a;
+    .controls select,
+    .controls input[type="text"] {
+      border: 1.5px solid #e0e0e0;
+      border-radius: 24px;
+      padding: 7px 16px;
+      font-size: 11px;
+      font-family: 'Montserrat', sans-serif;
+      font-weight: 500;
+      color: #222;
       outline: none;
-      border-radius: 0;
+      background: #fff;
+      letter-spacing: .3px;
+      appearance: none;
+      -webkit-appearance: none;
     }
-    .controls select:focus, .controls input:focus { border-color: #1a1a1a; }
+    .controls select:focus,
+    .controls input[type="text"]:focus { border-color: #000; }
     .btn-refresh {
       margin-left: auto;
-      background: #1a1a1a;
-      color: #f7f4ef;
+      background: #ff0066;
+      color: #fff;
       border: none;
-      padding: 7px 20px;
+      border-radius: 24px;
+      padding: 8px 22px;
       font-size: 10px;
-      font-family: 'Inter', sans-serif;
+      font-weight: 700;
       letter-spacing: 2px;
       text-transform: uppercase;
+      font-family: 'Montserrat', sans-serif;
       cursor: pointer;
-      font-weight: 500;
     }
-    .btn-refresh:hover { background: #333; }
+    .btn-refresh:hover { background: #cc0052; }
 
-    /* ---- Category pills ---- */
+    /* ── Category pills ── */
     .category-pills {
-      background: #f7f4ef;
+      background: #fff;
+      border-bottom: 1px solid #e5e5e5;
       padding: 10px 28px;
-      border-bottom: 0.5px solid #d0cdc8;
       display: flex;
       gap: 6px;
     }
     .pill {
-      background: transparent;
-      border: 0.5px solid #c0bdb8;
-      padding: 4px 16px;
-      font-size: 11px;
-      font-family: 'Inter', sans-serif;
+      background: #fff;
+      border: 1.5px solid #e0e0e0;
+      border-radius: 24px;
+      padding: 5px 16px;
+      font-size: 10px;
+      font-weight: 700;
+      font-family: 'Montserrat', sans-serif;
       letter-spacing: 1.5px;
       text-transform: uppercase;
       cursor: pointer;
-      color: #888;
-      font-weight: 300;
-      border-radius: 0;
+      color: #999;
     }
-    .pill:hover { border-color: #1a1a1a; color: #1a1a1a; }
-    .pill.active { background: #1a1a1a; border-color: #1a1a1a; color: #f7f4ef; }
+    .pill:hover  { border-color: #000; color: #000; }
+    .pill.active { background: #000; border-color: #000; color: #fff; }
 
-    /* ---- Stats row ---- */
+    /* ── Stats row ── */
     .stats {
       display: grid;
       grid-template-columns: repeat(4, 1fr);
-      border-bottom: 1.5px solid #1a1a1a;
-      background: #f7f4ef;
+      background: #fff;
+      border-bottom: 1px solid #e5e5e5;
     }
     .stat-card {
       padding: 20px 24px;
-      border-right: 0.5px solid #d0cdc8;
+      border-right: 1px solid #f0f0f0;
     }
     .stat-card:last-child { border-right: none; }
     .stat-card .label {
-      font-size: 10px;
-      color: #888;
-      text-transform: uppercase;
+      font-size: 9px;
+      font-weight: 700;
       letter-spacing: 2px;
-      font-weight: 300;
-      margin-bottom: 8px;
+      text-transform: uppercase;
+      color: #bbb;
+      margin-bottom: 10px;
     }
     .stat-card .value {
-      font-family: 'Playfair Display', serif;
-      font-size: 42px;
-      color: #1a1a1a;
+      font-size: 36px;
+      font-weight: 700;
+      color: #000;
+      letter-spacing: -1px;
       line-height: 1;
     }
-    .stat-card .value.text-val {
-      font-size: 18px;
+    .stat-card .value.sm {
+      font-size: 16px;
+      font-weight: 700;
+      letter-spacing: 0;
       margin-top: 5px;
-      line-height: 1.2;
+      line-height: 1.3;
     }
-    .stat-card .sub {
-      font-size: 11px;
-      color: #888;
-      margin-top: 6px;
-      font-weight: 300;
-    }
-    .stat-card .sub.rising { color: #2e7d32; }
+    .stat-card .sub { font-size: 10px; font-weight: 600; margin-top: 6px; }
+    .stat-card .sub.up   { color: #00a651; }
+    .stat-card .sub.pink { color: #ff0066; }
+    .stat-card .sub.mute { color: #bbb; }
 
-    /* ---- Table ---- */
-    .table-wrap { padding: 0 28px 28px; background: #ede9e2; }
+    /* ── Table ── */
+    .table-wrap { padding: 20px 28px 28px; }
     .table-container {
-      background: #f7f4ef;
-      border: 1.5px solid #1a1a1a;
+      background: #fff;
+      border: 1px solid #e5e5e5;
+      border-radius: 4px;
       overflow: hidden;
     }
     table { width: 100%; border-collapse: collapse; }
-    thead tr { background: #f7f4ef; }
 
+    thead tr { background: #000; }
     th {
-      padding: 10px 14px;
+      padding: 11px 14px;
       text-align: left;
-      font-size: 10px;
-      font-weight: 300;
-      font-family: 'Inter', sans-serif;
-      color: #aaa;
+      font-size: 9px;
+      font-weight: 700;
+      font-family: 'Montserrat', sans-serif;
+      color: #fff;
       text-transform: uppercase;
       letter-spacing: 2px;
-      border-bottom: 1px solid #1a1a1a;
       white-space: nowrap;
+      border: none;
     }
     th.sortable { cursor: pointer; user-select: none; }
-    th.sortable:hover { color: #1a1a1a; }
-    th .sort-icon { margin-left: 4px; opacity: 0.3; }
-    th.sort-asc  .sort-icon::after { content: ' ▲'; opacity: 1; color: #d42b2b; }
-    th.sort-desc .sort-icon::after { content: ' ▼'; opacity: 1; color: #d42b2b; }
+    th.sortable:hover { background: #222; }
+    th .sort-icon { margin-left: 4px; opacity: 0.4; }
+    th.sort-asc  .sort-icon::after { content: ' ▲'; opacity: 1; color: #ff0066; }
+    th.sort-desc .sort-icon::after { content: ' ▼'; opacity: 1; color: #ff0066; }
     th:not(.sort-asc):not(.sort-desc) .sort-icon::after { content: ' ⇅'; }
 
+    /* Filter row */
     .filter-row th {
+      background: #f5f5f5;
       padding: 5px 8px;
-      background: #f0ede6;
-      border-bottom: 1.5px solid #d0cdc8;
+      border-bottom: 2px solid #e0e0e0;
       cursor: default;
     }
-    .filter-row input, .filter-row select {
+    .filter-row input,
+    .filter-row select {
       width: 100%;
-      border: 0.5px solid #c0bdb8;
-      padding: 4px 7px;
-      font-size: 11px;
-      font-family: 'Inter', sans-serif;
-      background: #f7f4ef;
-      color: #1a1a1a;
+      border: 1.5px solid #e0e0e0;
+      border-radius: 24px;
+      padding: 4px 10px;
+      font-size: 10px;
+      font-family: 'Montserrat', sans-serif;
+      font-weight: 500;
+      background: #fff;
+      color: #222;
       outline: none;
-      text-transform: none;
       letter-spacing: 0;
-      font-weight: normal;
-      border-radius: 0;
+      text-transform: none;
     }
-    .filter-row input:focus, .filter-row select:focus { border-color: #1a1a1a; }
+    .filter-row input:focus,
+    .filter-row select:focus { border-color: #000; }
 
     td {
-      padding: 13px 14px;
-      border-bottom: 0.5px solid #d0cdc8;
+      padding: 12px 14px;
+      border-bottom: 1px solid #f5f5f5;
       vertical-align: middle;
     }
     tbody tr:last-child td { border-bottom: none; }
-    tbody tr:nth-child(even) { background: #f0ede6; }
-    tbody tr:hover { background: #ebe7e0; }
+    tbody tr:hover { background: #fafafa; }
 
-    .rank-num {
-      font-family: 'Playfair Display', serif;
-      font-size: 15px;
-      color: #ccc;
-    }
-    .product-name {
-      font-weight: 500;
-      color: #1a1a1a;
-      text-decoration: none;
-      display: block;
-      font-size: 13px;
-    }
-    .product-name:hover { color: #d42b2b; }
-
-    .score-val {
-      font-family: 'Playfair Display', serif;
-      font-size: 22px;
-      color: #1a1a1a;
-    }
-    .score-bar-wrap { height: 3px; background: #e0ddd8; margin-top: 5px; width: 60px; }
-    .score-bar { height: 3px; background: #1a1a1a; }
-
-    .price { font-size: 12px; color: #666; font-weight: 300; }
-    .page-rank { font-size: 12px; color: #aaa; font-weight: 300; }
-    .age-val { font-size: 11px; color: #bbb; font-weight: 300; }
-    .cat-badge {
-      display: inline-block;
-      font-size: 10px;
-      padding: 2px 8px;
-      border: 0.5px solid #c0bdb8;
-      color: #888;
-      text-transform: capitalize;
-      letter-spacing: .5px;
-      font-weight: 300;
-    }
-
-    /* ---- Product thumb ---- */
+    .rank-num { font-size: 11px; font-weight: 700; color: #ddd; }
     .thumb-wrap {
       width: 46px; height: 46px;
+      border-radius: 2px;
       overflow: hidden;
-      background: #e8e4de;
-      flex-shrink: 0;
+      background: #f5f5f5;
+      border: 1px solid #eee;
       position: relative;
-      border: 0.5px solid #d0cdc8;
     }
     .thumb-wrap img { width: 100%; height: 100%; object-fit: cover; display: block; }
     .thumb-wrap .no-img {
@@ -294,140 +258,154 @@
     .thumb-wrap:hover .preview { display: block; }
     .preview {
       display: none; position: absolute; top: 0; left: 54px; z-index: 100;
-      width: 160px; height: 160px; overflow: hidden;
-      box-shadow: 2px 2px 0 #1a1a1a;
-      background: #e8e4de; pointer-events: none;
-      border: 1px solid #1a1a1a;
+      width: 160px; height: 160px;
+      border-radius: 4px; overflow: hidden;
+      box-shadow: 0 4px 16px rgba(0,0,0,.15);
+      border: 1px solid #eee;
+      background: #f5f5f5; pointer-events: none;
     }
     .preview img { width: 100%; height: 100%; object-fit: cover; }
 
-    /* ---- Signal tags ---- */
+    .product-name {
+      font-size: 12px; font-weight: 600;
+      color: #000; text-decoration: none; display: block;
+    }
+    .product-name:hover { color: #ff0066; }
+
+    .score-val { font-size: 18px; font-weight: 700; color: #000; letter-spacing: -.5px; }
+    .score-bar-wrap { height: 3px; background: #f0f0f0; border-radius: 2px; margin-top: 5px; width: 60px; }
+    .score-bar      { height: 3px; background: #ff0066; border-radius: 2px; }
+
+    .price    { font-size: 12px; font-weight: 600; color: #222; }
+    .page-rank{ font-size: 11px; color: #aaa; font-weight: 500; }
+    .age-val  { font-size: 10px; color: #ccc; font-weight: 500; }
+
+    .cat-badge {
+      display: inline-block;
+      font-size: 9px; font-weight: 700;
+      letter-spacing: 1px; text-transform: uppercase;
+      padding: 3px 10px;
+      border-radius: 12px;
+      background: #f5f5f5; color: #666;
+    }
+
+    /* Signal tags */
     .tags { display: flex; gap: 4px; flex-wrap: wrap; }
     .tag {
-      font-size: 10px;
-      padding: 2px 7px;
-      letter-spacing: .5px;
+      font-size: 9px; font-weight: 700;
+      letter-spacing: 1px; text-transform: uppercase;
+      padding: 3px 9px;
+      border-radius: 24px;
       white-space: nowrap;
-      font-weight: 300;
     }
-    .tag-new      { background: #1a1a1a; color: #f7f4ef; }
-    .tag-runner   { border: 0.5px solid #1a1a1a; color: #1a1a1a; }
-    .tag-featured { background: #d42b2b; color: #f7f4ef; }
-    .tag-rising   { border: 0.5px solid #d42b2b; color: #d42b2b; }
-    .tag-restock  { border: 0.5px solid #1a1a1a; color: #1a1a1a; }
-    .tag-selling  { background: #1a1a1a; color: #f7f4ef; }
-    .tag-review   { border: 0.5px solid #888; color: #888; }
-    .tag-markdown { border: 0.5px solid #ccc; color: #aaa; }
-    .tag-removed  { background: #d42b2b; color: #f7f4ef; }
+    .tag-new      { background: #000; color: #fff; }
+    .tag-runner   { border: 1.5px solid #000; color: #000; }
+    .tag-featured { background: #ff0066; color: #fff; }
+    .tag-rising   { border: 1.5px solid #ff0066; color: #ff0066; }
+    .tag-restock  { background: #00a651; color: #fff; }
+    .tag-selling  { border: 1.5px solid #00a651; color: #00a651; }
+    .tag-review   { border: 1.5px solid #888; color: #888; }
+    .tag-markdown { border: 1.5px solid #ddd; color: #bbb; }
+    .tag-removed  { background: #ff0066; color: #fff; }
 
-    /* ---- Sparkline ---- */
     .sparkline { width: 60px; height: 24px; }
 
-    /* ---- Empty / loading ---- */
-    .empty-state { text-align: center; padding: 60px 20px; color: #aaa; }
-    .empty-state p { margin-top: 8px; font-size: 13px; font-weight: 300; }
+    /* Empty/loading */
+    .empty-state {
+      text-align: center; padding: 60px 20px; color: #bbb;
+    }
+    .empty-state p { margin-top: 8px; font-size: 12px; font-weight: 500; }
 
-    /* ---- Keywords tab ---- */
+    /* ── Keywords tab ── */
     .kw-layout {
       display: grid;
       grid-template-columns: minmax(0, 55%) minmax(0, 45%);
-      background: #f7f4ef;
-      border: 1.5px solid #1a1a1a;
+      background: #fff;
+      border: 1px solid #e5e5e5;
+      border-radius: 4px;
+      overflow: hidden;
       margin: 0 28px 28px;
     }
     .kw-list-panel {
-      border-right: 0.5px solid #d0cdc8;
+      border-right: 1px solid #e5e5e5;
       overflow-y: auto;
       max-height: calc(100vh - 260px);
     }
     .kw-list-controls {
       padding: 10px 14px;
-      border-bottom: 0.5px solid #d0cdc8;
-      background: #f0ede6;
-      display: flex;
-      gap: 8px;
-      align-items: center;
+      border-bottom: 1px solid #e5e5e5;
+      background: #f5f5f5;
     }
     .kw-list-controls input {
-      border: 0.5px solid #c0bdb8;
-      padding: 5px 9px;
+      width: 100%;
+      border: 1.5px solid #e0e0e0;
+      border-radius: 24px;
+      padding: 6px 14px;
       font-size: 11px;
-      font-family: 'Inter', sans-serif;
+      font-family: 'Montserrat', sans-serif;
+      font-weight: 500;
       outline: none;
-      flex: 1;
-      background: #f7f4ef;
-      border-radius: 0;
+      background: #fff;
     }
-    .kw-list-controls input:focus { border-color: #1a1a1a; }
+    .kw-list-controls input:focus { border-color: #000; }
+
     .kw-table { width: 100%; border-collapse: collapse; }
-    .kw-table thead tr { background: #f7f4ef; }
+    .kw-table thead tr { background: #000; }
     .kw-table th {
-      padding: 9px 14px;
+      padding: 10px 14px;
       text-align: left;
-      font-size: 10px;
-      font-weight: 300;
-      font-family: 'Inter', sans-serif;
-      color: #aaa;
+      font-size: 9px; font-weight: 700;
+      font-family: 'Montserrat', sans-serif;
+      color: #fff;
       text-transform: uppercase;
       letter-spacing: 2px;
-      border-bottom: 1px solid #1a1a1a;
-      cursor: pointer;
-      user-select: none;
+      cursor: pointer; user-select: none;
+      border: none;
     }
-    .kw-table th:hover { color: #1a1a1a; }
-    .kw-table th.kw-sort-asc  .sort-icon::after { content: ' ▲'; opacity: 1; color: #d42b2b; }
-    .kw-table th.kw-sort-desc .sort-icon::after { content: ' ▼'; opacity: 1; color: #d42b2b; }
+    .kw-table th:hover { background: #222; }
+    .kw-table th.kw-sort-asc  .sort-icon::after { content: ' ▲'; opacity: 1; color: #ff0066; }
+    .kw-table th.kw-sort-desc .sort-icon::after { content: ' ▼'; opacity: 1; color: #ff0066; }
     .kw-table th:not(.kw-sort-asc):not(.kw-sort-desc) .sort-icon::after { content: ' ⇅'; }
-    .kw-table td { padding: 10px 14px; border-bottom: 0.5px solid #e8e4de; vertical-align: middle; }
-    .kw-table tbody tr:nth-child(even) { background: #f0ede6; }
+    .kw-table td { padding: 10px 14px; border-bottom: 1px solid #f5f5f5; vertical-align: middle; }
     .kw-table tbody tr { cursor: pointer; }
-    .kw-table tbody tr:hover { background: #ebe7e0; }
-    .kw-table tbody tr.kw-active { background: #1a1a1a; }
-    .kw-word { font-size: 12px; font-weight: 500; color: #1a1a1a; }
-    .kw-active .kw-word { color: #f7f4ef; }
+    .kw-table tbody tr:hover { background: #fafafa; }
+    .kw-table tbody tr.kw-active { background: #000; }
+    .kw-word { font-size: 12px; font-weight: 600; color: #000; }
+    .kw-active .kw-word { color: #fff; }
     .kw-bar-wrap { display: flex; align-items: center; gap: 6px; }
-    .kw-bar-bg { flex: 1; height: 4px; background: #e0ddd8; min-width: 50px; }
-    .kw-bar-fill { height: 100%; }
-    .kw-count { font-size: 11px; color: #888; min-width: 22px; text-align: right; font-weight: 300; }
-    .kw-active .kw-count { color: #888; }
-    .kw-delta-up  { font-size: 10px; color: #2e7d32; font-weight: 500; white-space: nowrap; letter-spacing: .5px; }
-    .kw-delta-dn  { font-size: 10px; color: #d42b2b; font-weight: 500; white-space: nowrap; letter-spacing: .5px; }
-    .kw-delta-new { font-size: 10px; color: #aaa; white-space: nowrap; font-weight: 300; }
-    .kw-active .kw-delta-up { color: #7ec87f; }
-    .kw-active .kw-delta-dn { color: #f08080; }
+    .kw-bar-bg   { flex: 1; height: 4px; background: #f0f0f0; border-radius: 2px; min-width: 50px; }
+    .kw-bar-fill { height: 100%; border-radius: 2px; background: #ff0066; }
+    .kw-active .kw-bar-bg { background: #333; }
+    .kw-active .kw-bar-fill { background: #ff0066; }
+    .kw-count    { font-size: 11px; color: #aaa; min-width: 22px; text-align: right; font-weight: 600; }
+    .kw-active .kw-count { color: #666; }
+    .kw-delta-up  { font-size: 10px; color: #00a651; font-weight: 700; white-space: nowrap; }
+    .kw-delta-dn  { font-size: 10px; color: #ff0066; font-weight: 700; white-space: nowrap; }
+    .kw-delta-new { font-size: 10px; color: #bbb; font-weight: 500; }
+    .kw-active .kw-delta-up { color: #4ecf7f; }
+    .kw-active .kw-delta-dn { color: #ff6699; }
 
-    /* ---- Keyword product panel ---- */
+    /* Keyword product panel */
     .kw-products-panel {
       padding: 16px;
       overflow-y: auto;
       max-height: calc(100vh - 260px);
     }
     .kw-products-header {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      margin-bottom: 14px;
-      padding-bottom: 10px;
-      border-bottom: 0.5px solid #d0cdc8;
-      position: sticky;
-      top: 0;
-      background: #f7f4ef;
-      z-index: 1;
+      display: flex; align-items: center; justify-content: space-between;
+      margin-bottom: 14px; padding-bottom: 10px;
+      border-bottom: 1px solid #f0f0f0;
+      position: sticky; top: 0; background: #fff; z-index: 1;
     }
     .kw-products-title {
-      font-size: 10px;
-      font-weight: 300;
-      color: #aaa;
-      text-transform: uppercase;
-      letter-spacing: 2px;
+      font-size: 9px; font-weight: 700;
+      letter-spacing: 2px; text-transform: uppercase; color: #bbb;
     }
     .kw-products-count {
-      font-size: 10px;
-      padding: 2px 10px;
-      border: 0.5px solid #1a1a1a;
-      color: #1a1a1a;
-      font-weight: 300;
-      letter-spacing: .5px;
+      font-size: 9px; font-weight: 700;
+      letter-spacing: 1px; text-transform: uppercase;
+      padding: 3px 12px; border-radius: 24px;
+      background: #ff0066; color: #fff;
     }
     .kw-products-grid {
       display: grid;
@@ -437,70 +415,54 @@
     .kw-product-card { display: flex; flex-direction: column; align-items: center; gap: 6px; text-decoration: none; }
     .kw-product-thumb {
       width: 160px; height: 160px;
-      overflow: hidden;
-      background: #e8e4de;
-      border: 0.5px solid #d0cdc8;
-      flex-shrink: 0;
+      border-radius: 2px; overflow: hidden;
+      background: #f5f5f5; border: 1px solid #eee;
     }
     .kw-product-thumb img { width: 100%; height: 100%; object-fit: cover; display: block; }
     .kw-product-thumb .no-img {
       width: 100%; height: 100%;
       display: flex; align-items: center; justify-content: center;
-      color: #ccc; font-size: 36px;
+      color: #ccc; font-size: 32px;
     }
     .kw-product-name {
-      font-size: 11px;
-      color: #555;
-      text-align: center;
-      line-height: 1.3;
-      max-width: 160px;
-      overflow: hidden;
-      display: -webkit-box;
-      -webkit-line-clamp: 2;
-      -webkit-box-orient: vertical;
-      font-weight: 300;
+      font-size: 11px; font-weight: 600; color: #333;
+      text-align: center; line-height: 1.3;
+      max-width: 160px; overflow: hidden;
+      display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical;
     }
-    .kw-product-price { font-size: 12px; font-weight: 500; color: #1a1a1a; }
-    .kw-product-cat   { font-size: 10px; color: #aaa; text-transform: capitalize; letter-spacing: .5px; font-weight: 300; }
+    .kw-product-price { font-size: 12px; font-weight: 700; color: #000; }
+    .kw-product-cat   { font-size: 9px; font-weight: 600; letter-spacing: 1px; text-transform: uppercase; color: #bbb; }
     .kw-placeholder {
-      display: flex; flex-direction: column; align-items: center; justify-content: center;
-      height: 200px; color: #bbb; text-align: center; gap: 8px;
+      display: flex; flex-direction: column;
+      align-items: center; justify-content: center;
+      height: 200px; color: #ccc; text-align: center; gap: 8px;
     }
-    .kw-placeholder p { font-size: 12px; font-weight: 300; letter-spacing: 1px; text-transform: uppercase; }
-
-    /* ---- KW stats ---- */
-    .kw-stats {
-      display: grid;
-      grid-template-columns: repeat(4, 1fr);
-      border-bottom: 1.5px solid #1a1a1a;
-      background: #f7f4ef;
-    }
+    .kw-placeholder p { font-size: 10px; font-weight: 700; letter-spacing: 2px; text-transform: uppercase; }
   </style>
 </head>
 <body>
 
+<!-- ═══ HEADER ═══ -->
 <div class="header">
-  <div>
-    <div class="header-title">MRD</div>
-    <div class="header-sub">Trend Tracker &middot; Footwear Intelligence</div>
-  </div>
-  <div class="header-right">
-    <div class="scrape-label">Last scrape</div>
-    <div class="scrape-time" id="header-scrape-time">—</div>
+  <div class="header-logo">MRD <span>·</span> Trend Tracker</div>
+  <div class="header-meta">
+    <span><span class="live-dot"></span><span class="live">Live</span></span>
+    <span class="time" id="header-time">—</span>
+    <span class="scrape">Footwear Intelligence</span>
   </div>
 </div>
 
-<!-- ═══════════ TAB BAR ═══════════ -->
+<!-- ═══ TAB BAR ═══ -->
 <div class="tab-bar">
   <button class="tab-btn active" onclick="switchTab('rankings')">Rankings</button>
   <button class="tab-btn" onclick="switchTab('keywords')">Keyword analysis</button>
 </div>
 
-<!-- ═══════════ RANKINGS TAB ═══════════ -->
+<!-- ═══════════════════════ RANKINGS TAB ═══════════════════════ -->
 <div id="tab-rankings">
 
   <div class="controls">
-    <div><label>Retailer</label>
+    <div>
       <select id="filter-retailer">
         <option value="">All retailers</option>
         {% for r in retailers %}
@@ -508,7 +470,7 @@
         {% endfor %}
       </select>
     </div>
-    <div><label>Window</label>
+    <div>
       <select id="filter-days">
         <option value="7">7 days</option>
         <option value="30" selected>30 days</option>
@@ -516,7 +478,7 @@
         <option value="90">90 days</option>
       </select>
     </div>
-    <div><label>Show</label>
+    <div>
       <select id="filter-limit">
         <option value="20">Top 20</option>
         <option value="50" selected>Top 50</option>
@@ -524,8 +486,8 @@
         <option value="9999">All</option>
       </select>
     </div>
-    <div><label>Search</label>
-      <input type="text" id="filter-search" placeholder="Filter by name..." style="width:200px;">
+    <div>
+      <input type="text" id="filter-search" placeholder="Search products…" style="width:200px;">
     </div>
     <button class="btn-refresh" onclick="loadAll()">Refresh</button>
   </div>
@@ -538,33 +500,35 @@
     <button class="pill" onclick="setCategory('boys')">Boys</button>
   </div>
 
-  <div class="stats" id="stats-row">
+  <div class="stats">
     <div class="stat-card">
       <div class="label">Products tracked</div>
       <div class="value" id="stat-total">—</div>
+      <div class="sub mute" id="stat-total-sub"></div>
     </div>
     <div class="stat-card">
       <div class="label">New today</div>
       <div class="value" id="stat-new">—</div>
+      <div class="sub up" id="stat-new-sub"></div>
     </div>
     <div class="stat-card">
       <div class="label">Top product</div>
-      <div class="value text-val" id="stat-top">—</div>
-      <div class="sub" id="stat-top-score"></div>
+      <div class="value sm" id="stat-top">—</div>
+      <div class="sub pink" id="stat-top-score"></div>
     </div>
     <div class="stat-card">
       <div class="label">Retailer</div>
-      <div class="value text-val" id="stat-retailer">All</div>
+      <div class="value sm" id="stat-retailer">All</div>
     </div>
   </div>
 
-  <div class="table-wrap" style="padding-top:20px;">
+  <div class="table-wrap">
     <div class="table-container">
       <table>
         <thead>
           <tr id="sort-row">
-            <th style="width:36px;" class="no-sort">#</th>
-            <th style="width:58px;" class="no-sort"></th>
+            <th style="width:36px" class="no-sort">#</th>
+            <th style="width:58px" class="no-sort"></th>
             <th class="sortable" data-col="name">Product<span class="sort-icon"></span></th>
             <th class="sortable" data-col="retailer">Retailer<span class="sort-icon"></span></th>
             <th class="sortable" data-col="category">Category<span class="sort-icon"></span></th>
@@ -583,12 +547,12 @@
             <th><input type="text"   id="col-filter-category"    placeholder="Category…"></th>
             <th><input type="text"   id="col-filter-subcategory" placeholder="Subcategory…"></th>
             <th>
-              <input type="number" id="col-filter-score-min" placeholder="Min" style="width:48%;margin-right:2%;">
-              <input type="number" id="col-filter-score-max" placeholder="Max" style="width:48%;">
+              <input type="number" id="col-filter-score-min" placeholder="Min" style="width:48%;margin-right:2%">
+              <input type="number" id="col-filter-score-max" placeholder="Max" style="width:48%">
             </th>
             <th>
-              <input type="number" id="col-filter-price-min" placeholder="Min £" style="width:48%;margin-right:2%;">
-              <input type="number" id="col-filter-price-max" placeholder="Max £" style="width:48%;">
+              <input type="number" id="col-filter-price-min" placeholder="Min £" style="width:48%;margin-right:2%">
+              <input type="number" id="col-filter-price-max" placeholder="Max £" style="width:48%">
             </th>
             <th><input type="number" id="col-filter-rank-max" placeholder="≤ rank"></th>
             <th><input type="number" id="col-filter-age-min"  placeholder="Min days"></th>
@@ -606,7 +570,7 @@
           </tr>
         </thead>
         <tbody id="product-table-body">
-          <tr><td colspan="12"><div class="empty-state">Loading...</div></td></tr>
+          <tr><td colspan="12"><div class="empty-state">Loading…</div></td></tr>
         </tbody>
       </table>
     </div>
@@ -614,11 +578,11 @@
 
 </div><!-- /tab-rankings -->
 
-<!-- ═══════════ KEYWORDS TAB ═══════════ -->
-<div id="tab-keywords" style="display:none;">
+<!-- ═══════════════════════ KEYWORDS TAB ═══════════════════════ -->
+<div id="tab-keywords" style="display:none">
 
   <div class="controls">
-    <div><label>Retailer</label>
+    <div>
       <select id="kw-filter-retailer" onchange="loadKeywords()">
         <option value="">All retailers</option>
         {% for r in retailers %}
@@ -626,7 +590,7 @@
         {% endfor %}
       </select>
     </div>
-    <div><label>Category</label>
+    <div>
       <select id="kw-filter-category" onchange="loadKeywords()">
         <option value="">All categories</option>
         <option value="women">Women</option>
@@ -635,7 +599,7 @@
         <option value="boys">Boys</option>
       </select>
     </div>
-    <div><label>Compare</label>
+    <div>
       <select id="kw-filter-comparison" onchange="loadKeywords()">
         <option value="week">Week vs week</option>
         <option value="month" selected>Month vs month</option>
@@ -645,7 +609,7 @@
     <button class="btn-refresh" onclick="loadKeywords()">Refresh</button>
   </div>
 
-  <div class="kw-stats" id="kw-stats-row">
+  <div class="stats">
     <div class="stat-card">
       <div class="label">Unique keywords</div>
       <div class="value" id="kw-stat-unique">—</div>
@@ -656,13 +620,13 @@
     </div>
     <div class="stat-card">
       <div class="label">Top keyword</div>
-      <div class="value text-val" id="kw-stat-top">—</div>
-      <div class="sub" id="kw-stat-top-count"></div>
+      <div class="value sm" id="kw-stat-top">—</div>
+      <div class="sub pink" id="kw-stat-top-count"></div>
     </div>
     <div class="stat-card">
       <div class="label">Fastest rising</div>
-      <div class="value text-val rising" id="kw-stat-rising">—</div>
-      <div class="sub" id="kw-stat-rising-delta"></div>
+      <div class="value sm" id="kw-stat-rising" style="color:#00a651">—</div>
+      <div class="sub up" id="kw-stat-rising-delta"></div>
     </div>
   </div>
 
@@ -675,12 +639,12 @@
         <thead>
           <tr>
             <th data-kwcol="keyword" onclick="kwSort(this)">Keyword<span class="sort-icon"></span></th>
-            <th data-kwcol="count" class="kw-sort-desc" onclick="kwSort(this)" style="width:45%;">Frequency<span class="sort-icon"></span></th>
-            <th data-kwcol="delta" onclick="kwSort(this)" style="width:80px;">Trend<span class="sort-icon"></span></th>
+            <th data-kwcol="count" class="kw-sort-desc" onclick="kwSort(this)" style="width:45%">Frequency<span class="sort-icon"></span></th>
+            <th data-kwcol="delta" onclick="kwSort(this)" style="width:80px">Trend<span class="sort-icon"></span></th>
           </tr>
         </thead>
         <tbody id="kw-table-body">
-          <tr><td colspan="3"><div class="empty-state" style="padding:40px 20px;">Loading…</div></td></tr>
+          <tr><td colspan="3"><div class="empty-state" style="padding:40px 20px">Loading…</div></td></tr>
         </tbody>
       </table>
     </div>
@@ -688,10 +652,10 @@
     <div class="kw-products-panel">
       <div class="kw-products-header">
         <div class="kw-products-title" id="kw-panel-title">Product examples</div>
-        <span class="kw-products-count" id="kw-panel-count" style="display:none;"></span>
+        <span class="kw-products-count" id="kw-panel-count" style="display:none"></span>
       </div>
       <div id="kw-products-grid" class="kw-products-grid">
-        <div class="kw-placeholder" style="grid-column:1/-1;">
+        <div class="kw-placeholder" style="grid-column:1/-1">
           <p>Select a keyword</p>
         </div>
       </div>
@@ -700,49 +664,37 @@
 
 </div><!-- /tab-keywords -->
 
-
 <script>
-// ═══════════ TAB SWITCHING ═══════════
+// ═══ TAB SWITCHING ═══
 function switchTab(name) {
   document.getElementById('tab-rankings').style.display = name === 'rankings' ? '' : 'none';
   document.getElementById('tab-keywords').style.display = name === 'keywords' ? '' : 'none';
-  document.querySelectorAll('.tab-btn').forEach(b => {
-    b.classList.toggle('active', b.textContent.trim().toLowerCase().startsWith(name));
-  });
+  document.querySelectorAll('.tab-btn').forEach(b =>
+    b.classList.toggle('active', b.textContent.trim().toLowerCase().startsWith(name)));
   if (name === 'keywords' && allKeywords.length === 0) loadKeywords();
 }
 
-// ═══════════ RANKINGS TAB ═══════════
-let allProducts    = [];
-let maxScore       = 1;
-let activeCategory = '';
-let sortCol        = 'total_score';
-let sortDir        = 'desc';
+// ═══ RANKINGS ═══
+let allProducts = [], maxScore = 1, activeCategory = '';
+let sortCol = 'total_score', sortDir = 'desc';
 
 const TAG_CLASSES = {
-  'New arrival':    'tag-new',
-  'Long runner':    'tag-runner',
-  'Featured':       'tag-featured',
-  'Rising':         'tag-rising',
-  'Restocked':      'tag-restock',
-  'Selling through':'tag-selling',
-  'Review spike':   'tag-review',
-  'Marked down':    'tag-markdown',
-  'Removed':        'tag-removed',
+  'New arrival':'tag-new','Long runner':'tag-runner','Featured':'tag-featured',
+  'Rising':'tag-rising','Restocked':'tag-restock','Selling through':'tag-selling',
+  'Review spike':'tag-review','Marked down':'tag-markdown','Removed':'tag-removed',
 };
 
 function setCategory(cat) {
   activeCategory = cat;
-  document.querySelectorAll('.pill').forEach(p => {
-    p.classList.toggle('active', p.textContent.toLowerCase() === (cat || 'all'));
-  });
+  document.querySelectorAll('.pill').forEach(p =>
+    p.classList.toggle('active', p.textContent.toLowerCase() === (cat || 'all')));
   renderTable();
 }
 
 document.querySelectorAll('th.sortable').forEach(th => {
   th.addEventListener('click', () => {
     const col = th.dataset.col;
-    if (sortCol === col) { sortDir = sortDir === 'asc' ? 'desc' : 'asc'; }
+    if (sortCol === col) sortDir = sortDir === 'asc' ? 'desc' : 'asc';
     else { sortCol = col; sortDir = col === 'total_score' ? 'desc' : 'asc'; }
     document.querySelectorAll('th.sortable').forEach(h => h.classList.remove('sort-asc','sort-desc'));
     th.classList.add(sortDir === 'asc' ? 'sort-asc' : 'sort-desc');
@@ -750,23 +702,21 @@ document.querySelectorAll('th.sortable').forEach(th => {
   });
 });
 
-const COL_FILTER_IDS = [
-  'col-filter-name','col-filter-retailer','col-filter-category','col-filter-subcategory',
-  'col-filter-score-min','col-filter-score-max','col-filter-price-min','col-filter-price-max',
-  'col-filter-rank-max','col-filter-age-min','col-filter-signal'
-];
-COL_FILTER_IDS.forEach(id => document.getElementById(id).addEventListener('input', renderTable));
+['col-filter-name','col-filter-retailer','col-filter-category','col-filter-subcategory',
+ 'col-filter-score-min','col-filter-score-max','col-filter-price-min','col-filter-price-max',
+ 'col-filter-rank-max','col-filter-age-min','col-filter-signal']
+  .forEach(id => document.getElementById(id).addEventListener('input', renderTable));
 
 async function loadStats() {
   const retailer = document.getElementById('filter-retailer').value;
-  const res  = await fetch('/api/stats' + (retailer ? `?retailer=${retailer}` : ''));
-  const data = await res.json();
-  document.getElementById('stat-total').textContent     = data.total_products;
-  document.getElementById('stat-new').textContent       = data.new_today;
-  document.getElementById('stat-top').textContent       = data.top_product;
-  document.getElementById('stat-top-score').textContent = data.top_score ? `${data.top_score.toFixed(0)} pts` : '';
-  document.getElementById('stat-retailer').textContent  = retailer || 'All';
-  document.getElementById('header-scrape-time').textContent =
+  const res = await fetch('/api/stats' + (retailer ? `?retailer=${retailer}` : ''));
+  const d   = await res.json();
+  document.getElementById('stat-total').textContent    = d.total_products;
+  document.getElementById('stat-new').textContent      = d.new_today;
+  document.getElementById('stat-top').textContent      = d.top_product;
+  document.getElementById('stat-top-score').textContent= d.top_score ? `${d.top_score.toFixed(0)} pts` : '';
+  document.getElementById('stat-retailer').textContent = retailer || 'All';
+  document.getElementById('header-time').textContent   =
     new Date().toLocaleTimeString('en-GB', {hour:'2-digit', minute:'2-digit'});
 }
 
@@ -774,7 +724,7 @@ async function loadRankings() {
   const retailer = document.getElementById('filter-retailer').value;
   const days     = document.getElementById('filter-days').value;
   const limit    = document.getElementById('filter-limit').value;
-  const params   = new URLSearchParams({ days, limit });
+  const params   = new URLSearchParams({days, limit});
   if (retailer) params.set('retailer', retailer);
   const res   = await fetch('/api/rankings?' + params);
   allProducts = await res.json();
@@ -783,83 +733,80 @@ async function loadRankings() {
 }
 
 function renderTable() {
-  const globalSearch   = document.getElementById('filter-search').value.toLowerCase();
-  const colName        = document.getElementById('col-filter-name').value.toLowerCase();
-  const colRetailer    = document.getElementById('col-filter-retailer').value.toLowerCase();
-  const colCategory    = document.getElementById('col-filter-category').value.toLowerCase();
-  const colSubcategory = document.getElementById('col-filter-subcategory').value.toLowerCase();
-  const colScoreMin    = parseFloat(document.getElementById('col-filter-score-min').value) || null;
-  const colScoreMax    = parseFloat(document.getElementById('col-filter-score-max').value) || null;
-  const colPriceMin    = parseFloat(document.getElementById('col-filter-price-min').value) || null;
-  const colPriceMax    = parseFloat(document.getElementById('col-filter-price-max').value) || null;
-  const colRankMax     = parseInt(document.getElementById('col-filter-rank-max').value)    || null;
-  const colAgeMin      = parseInt(document.getElementById('col-filter-age-min').value)     || null;
-  const colSignal      = document.getElementById('col-filter-signal').value;
-  const tbody          = document.getElementById('product-table-body');
+  const gs  = document.getElementById('filter-search').value.toLowerCase();
+  const cfn = document.getElementById('col-filter-name').value.toLowerCase();
+  const cfr = document.getElementById('col-filter-retailer').value.toLowerCase();
+  const cfc = document.getElementById('col-filter-category').value.toLowerCase();
+  const cfs = document.getElementById('col-filter-subcategory').value.toLowerCase();
+  const csn = parseFloat(document.getElementById('col-filter-score-min').value) || null;
+  const csx = parseFloat(document.getElementById('col-filter-score-max').value) || null;
+  const cpn = parseFloat(document.getElementById('col-filter-price-min').value) || null;
+  const cpx = parseFloat(document.getElementById('col-filter-price-max').value) || null;
+  const crx = parseInt(document.getElementById('col-filter-rank-max').value)    || null;
+  const can = parseInt(document.getElementById('col-filter-age-min').value)     || null;
+  const csg = document.getElementById('col-filter-signal').value;
+  const tbody = document.getElementById('product-table-body');
 
-  let visible = allProducts.filter(p => {
-    const cat      = (p.category || '').toLowerCase();
-    const name     = (p.name     || '').toLowerCase();
-    const retailer = (p.retailer || '').toLowerCase();
+  let vis = allProducts.filter(p => {
+    const cat = (p.category||'').toLowerCase();
+    const nm  = (p.name||'').toLowerCase();
+    const ret = (p.retailer||'').toLowerCase();
     if (activeCategory && !cat.split('/').includes(activeCategory)) return false;
-    if (globalSearch   && !name.includes(globalSearch) && !cat.includes(globalSearch)) return false;
-    if (colName        && !name.includes(colName))         return false;
-    if (colRetailer    && !retailer.includes(colRetailer)) return false;
-    if (colCategory    && !cat.includes(colCategory))      return false;
-    if (colSubcategory && !(p.subcategory||'').toLowerCase().includes(colSubcategory)) return false;
-    if (colScoreMin !== null && p.total_score < colScoreMin) return false;
-    if (colScoreMax !== null && p.total_score > colScoreMax) return false;
-    if (colPriceMin !== null && (p.latest_price == null || p.latest_price < colPriceMin)) return false;
-    if (colPriceMax !== null && (p.latest_price == null || p.latest_price > colPriceMax)) return false;
-    if (colRankMax  !== null && (p.latest_rank  == null || p.latest_rank  > colRankMax))  return false;
-    if (colAgeMin   !== null && (p.days_tracked == null || p.days_tracked < colAgeMin))   return false;
-    if (colSignal   && !(p.signal_tags || []).includes(colSignal)) return false;
+    if (gs  && !nm.includes(gs)  && !cat.includes(gs))  return false;
+    if (cfn && !nm.includes(cfn))  return false;
+    if (cfr && !ret.includes(cfr)) return false;
+    if (cfc && !cat.includes(cfc)) return false;
+    if (cfs && !(p.subcategory||'').toLowerCase().includes(cfs)) return false;
+    if (csn !== null && p.total_score < csn) return false;
+    if (csx !== null && p.total_score > csx) return false;
+    if (cpn !== null && (p.latest_price == null || p.latest_price < cpn)) return false;
+    if (cpx !== null && (p.latest_price == null || p.latest_price > cpx)) return false;
+    if (crx !== null && (p.latest_rank  == null || p.latest_rank  > crx)) return false;
+    if (can !== null && (p.days_tracked == null || p.days_tracked < can)) return false;
+    if (csg && !(p.signal_tags||[]).includes(csg)) return false;
     return true;
   });
 
-  visible.sort((a, b) => {
+  vis.sort((a,b) => {
     let va = a[sortCol], vb = b[sortCol];
-    if (va == null) va = sortDir === 'asc' ? Infinity  : -Infinity;
-    if (vb == null) vb = sortDir === 'asc' ? Infinity  : -Infinity;
-    if (typeof va === 'string') va = va.toLowerCase();
-    if (typeof vb === 'string') vb = vb.toLowerCase();
-    return sortDir === 'asc' ? (va < vb ? -1 : va > vb ? 1 : 0) : (va > vb ? -1 : va < vb ? 1 : 0);
+    if (va == null) va = sortDir==='asc' ? Infinity  : -Infinity;
+    if (vb == null) vb = sortDir==='asc' ? Infinity  : -Infinity;
+    if (typeof va==='string') { va=va.toLowerCase(); vb=vb.toLowerCase(); }
+    return sortDir==='asc' ? (va<vb?-1:va>vb?1:0) : (va>vb?-1:va<vb?1:0);
   });
 
-  if (!visible.length) {
-    tbody.innerHTML = `<tr><td colspan="12"><div class="empty-state">
+  if (!vis.length) {
+    tbody.innerHTML=`<tr><td colspan="12"><div class="empty-state">
       <strong>No products found.</strong>
       <p>The scraper hasn't run yet, or no data matches your filters.</p>
-      <p style="margin-top:8px;">Run <code>python run.py --scrape</code> to collect data.</p>
+      <p style="margin-top:8px">Run <code>python run.py --scrape</code> to collect data.</p>
     </div></td></tr>`;
     return;
   }
 
-  tbody.innerHTML = visible.map((p, i) => {
-    const price   = p.latest_price  != null ? `£${p.latest_price.toFixed(2)}` : '—';
-    const rank    = p.latest_rank   != null ? `#${p.latest_rank}` : '—';
-    const age     = p.days_tracked  != null ? `${p.days_tracked}d` : '—';
-    const barPct  = Math.min(100, (p.total_score / maxScore) * 100).toFixed(0);
-    const catDisp = (p.category    || '').replace(/-/g,' ') || '—';
-    const subDisp = (p.subcategory || '').replace(/-/g,' ') || '—';
-    const tagsHtml = (p.signal_tags || []).map(t =>
-      `<span class="tag ${TAG_CLASSES[t]||'tag-markdown'}">${t}</span>`).join('');
-    const sparkSvg = buildSparkline(p.score_series || []);
-    const imgHtml  = p.image_url
-      ? `<div class="thumb-wrap" style="position:relative;">
+  tbody.innerHTML = vis.map((p,i) => {
+    const price  = p.latest_price  != null ? `£${p.latest_price.toFixed(2)}` : '—';
+    const rank   = p.latest_rank   != null ? `#${p.latest_rank}` : '—';
+    const age    = p.days_tracked  != null ? `${p.days_tracked}d` : '—';
+    const barPct = Math.min(100,(p.total_score/maxScore)*100).toFixed(0);
+    const catD   = (p.category   ||'').replace(/-/g,' ')||'—';
+    const subD   = (p.subcategory||'').replace(/-/g,' ')||'—';
+    const tags   = (p.signal_tags||[]).map(t=>`<span class="tag ${TAG_CLASSES[t]||'tag-markdown'}">${t}</span>`).join('');
+    const spark  = buildSparkline(p.score_series||[]);
+    const img    = p.image_url
+      ? `<div class="thumb-wrap" style="position:relative">
            <img src="${p.image_url}" alt="${p.name}" loading="lazy"
                 onerror="this.parentElement.innerHTML='<div class=\\'no-img\\'>&#128094;</div>'">
            <div class="preview"><img src="${p.image_url}" alt="${p.name}"></div>
          </div>`
       : `<div class="thumb-wrap"><div class="no-img">&#128094;</div></div>`;
-
     return `<tr>
       <td class="rank-num">${i+1}</td>
-      <td style="padding:8px 6px;">${imgHtml}</td>
+      <td style="padding:8px 6px">${img}</td>
       <td><a class="product-name" href="${p.url}" target="_blank">${p.name}</a></td>
-      <td style="font-size:11px;color:#aaa;font-weight:300;letter-spacing:.5px;">${p.retailer}</td>
-      <td><span class="cat-badge">${catDisp}</span></td>
-      <td><span class="cat-badge">${subDisp}</span></td>
+      <td style="font-size:10px;color:#aaa;font-weight:600;letter-spacing:.5px">${p.retailer}</td>
+      <td><span class="cat-badge">${catD}</span></td>
+      <td><span class="cat-badge">${subD}</span></td>
       <td>
         <div class="score-val">${p.total_score.toFixed(0)}</div>
         <div class="score-bar-wrap"><div class="score-bar" style="width:${barPct}%"></div></div>
@@ -867,24 +814,21 @@ function renderTable() {
       <td class="price">${price}</td>
       <td class="page-rank">${rank}</td>
       <td class="age-val">${age}</td>
-      <td><div class="tags">${tagsHtml}</div></td>
-      <td>${sparkSvg}</td>
+      <td><div class="tags">${tags}</div></td>
+      <td>${spark}</td>
     </tr>`;
   }).join('');
 }
 
 function buildSparkline(series) {
-  if (!series || series.length < 2) return '<svg class="sparkline"></svg>';
-  const vals   = series.map(s => s.score);
-  const maxVal = Math.max(...vals, 1);
-  const w = 60, h = 24;
-  const pts = vals.map((v, i) => {
-    const x = (i / (vals.length - 1)) * w;
-    const y = h - (v / maxVal) * (h - 4) - 2;
+  if (!series||series.length<2) return '<svg class="sparkline"></svg>';
+  const vals=series.map(s=>s.score), maxV=Math.max(...vals,1), w=60, h=24;
+  const pts=vals.map((v,i)=>{
+    const x=(i/(vals.length-1))*w, y=h-(v/maxV)*(h-4)-2;
     return `${x.toFixed(1)},${y.toFixed(1)}`;
   }).join(' ');
   return `<svg class="sparkline" viewBox="0 0 ${w} ${h}">
-    <polyline points="${pts}" fill="none" stroke="#1a1a1a" stroke-width="1.5" stroke-linejoin="round"/>
+    <polyline points="${pts}" fill="none" stroke="#ff0066" stroke-width="1.5" stroke-linejoin="round"/>
   </svg>`;
 }
 
@@ -893,159 +837,117 @@ function loadAll() { loadStats(); loadRankings(); }
   document.getElementById(id).addEventListener('change', loadAll));
 document.getElementById('filter-search').addEventListener('input', renderTable);
 
-
-// ═══════════ KEYWORDS TAB ═══════════
-let allKeywords   = [];
-let kwMaxCount    = 1;
-let kwSortCol     = 'count';
-let kwSortDir     = 'desc';
-let activeKeyword = null;
-
-const BAR_COLOURS = ['#1a1a1a','#555','#888','#aaa','#d42b2b','#333','#777','#999'];
+// ═══ KEYWORDS ═══
+let allKeywords=[], kwMaxCount=1, kwSortCol='count', kwSortDir='desc', activeKeyword=null;
 
 async function loadKeywords() {
   const retailer   = document.getElementById('kw-filter-retailer').value;
   const category   = document.getElementById('kw-filter-category').value;
   const comparison = document.getElementById('kw-filter-comparison').value;
-  const params     = new URLSearchParams({ comparison });
+  const params = new URLSearchParams({comparison});
   if (retailer) params.set('retailer', retailer);
   if (category) params.set('category', category);
-
   document.getElementById('kw-table-body').innerHTML =
-    '<tr><td colspan="3"><div class="empty-state" style="padding:40px 20px;">Loading…</div></td></tr>';
-
+    '<tr><td colspan="3"><div class="empty-state" style="padding:40px 20px">Loading…</div></td></tr>';
   const res  = await fetch('/api/keywords?' + params);
   const data = await res.json();
-
   allKeywords = data.keywords || [];
-  kwMaxCount  = Math.max(...allKeywords.map(k => k.count), 1);
-
-  document.getElementById('kw-stat-unique').textContent   = data.unique_count ?? '—';
+  kwMaxCount  = Math.max(...allKeywords.map(k=>k.count), 1);
+  document.getElementById('kw-stat-unique').textContent   = data.unique_count   ?? '—';
   document.getElementById('kw-stat-products').textContent = data.products_total ?? '—';
-
   if (data.top_keyword) {
     document.getElementById('kw-stat-top').textContent       = data.top_keyword.keyword;
     document.getElementById('kw-stat-top-count').textContent = `${data.top_keyword.count} products`;
-  } else {
-    document.getElementById('kw-stat-top').textContent = '—';
-    document.getElementById('kw-stat-top-count').textContent = '';
-  }
-
+  } else { document.getElementById('kw-stat-top').textContent='—'; }
   if (data.fastest_rising) {
     document.getElementById('kw-stat-rising').textContent       = data.fastest_rising.keyword;
     document.getElementById('kw-stat-rising-delta').textContent = `+${data.fastest_rising.delta}% vs prev period`;
-  } else {
-    document.getElementById('kw-stat-rising').textContent       = '—';
-    document.getElementById('kw-stat-rising-delta').textContent = '';
-  }
-
-  activeKeyword = null;
-  document.getElementById('kw-panel-title').textContent   = 'Product examples';
-  document.getElementById('kw-panel-count').style.display = 'none';
-  document.getElementById('kw-products-grid').innerHTML   =
-    '<div class="kw-placeholder" style="grid-column:1/-1;"><p>Select a keyword</p></div>';
-
+  } else { document.getElementById('kw-stat-rising').textContent='—'; }
+  activeKeyword=null;
+  document.getElementById('kw-panel-title').textContent='Product examples';
+  document.getElementById('kw-panel-count').style.display='none';
+  document.getElementById('kw-products-grid').innerHTML=
+    '<div class="kw-placeholder" style="grid-column:1/-1"><p>Select a keyword</p></div>';
   renderKeywords();
 }
 
 function renderKeywords() {
   const search = document.getElementById('kw-search').value.toLowerCase();
   let data = allKeywords.filter(k => !search || k.keyword.includes(search));
-
-  data = [...data].sort((a, b) => {
-    let va = a[kwSortCol], vb = b[kwSortCol];
-    if (va == null) va = kwSortDir === 'asc' ? Infinity  : -Infinity;
-    if (vb == null) vb = kwSortDir === 'asc' ? Infinity  : -Infinity;
-    if (typeof va === 'string') va = va.toLowerCase();
-    if (typeof vb === 'string') vb = vb.toLowerCase();
-    return kwSortDir === 'asc'
-      ? (va < vb ? -1 : va > vb ? 1 : 0)
-      : (va > vb ? -1 : va < vb ? 1 : 0);
+  data = [...data].sort((a,b) => {
+    let va=a[kwSortCol], vb=b[kwSortCol];
+    if (va==null) va=kwSortDir==='asc'?Infinity:-Infinity;
+    if (vb==null) vb=kwSortDir==='asc'?Infinity:-Infinity;
+    if (typeof va==='string'){va=va.toLowerCase();vb=vb.toLowerCase();}
+    return kwSortDir==='asc'?(va<vb?-1:va>vb?1:0):(va>vb?-1:va<vb?1:0);
   });
-
   const tbody = document.getElementById('kw-table-body');
   if (!data.length) {
-    tbody.innerHTML = '<tr><td colspan="3"><div class="empty-state" style="padding:40px 20px;">No keywords found.</div></td></tr>';
+    tbody.innerHTML='<tr><td colspan="3"><div class="empty-state" style="padding:40px 20px">No keywords found.</div></td></tr>';
     return;
   }
-
-  tbody.innerHTML = data.map((k, i) => {
-    const barPct   = Math.round((k.count / kwMaxCount) * 100);
-    const barColor = BAR_COLOURS[i % BAR_COLOURS.length];
-    const isActive = activeKeyword === k.keyword;
-    let deltaHtml;
-    if (k.delta === null || k.delta === undefined) {
-      deltaHtml = `<span class="kw-delta-new">new</span>`;
-    } else if (k.delta > 0) {
-      deltaHtml = `<span class="kw-delta-up">+${k.delta}%</span>`;
-    } else if (k.delta < 0) {
-      deltaHtml = `<span class="kw-delta-dn">${k.delta}%</span>`;
-    } else {
-      deltaHtml = `<span style="font-size:10px;color:#ccc;">—</span>`;
-    }
-    return `<tr class="${isActive ? 'kw-active' : ''}" onclick="selectKeyword('${k.keyword.replace(/'/g,"\\'")}', ${k.count})">
+  tbody.innerHTML = data.map((k,i) => {
+    const barPct = Math.round((k.count/kwMaxCount)*100);
+    const isAct  = activeKeyword===k.keyword;
+    const dHtml  = k.delta==null ? `<span class="kw-delta-new">new</span>`
+      : k.delta>0 ? `<span class="kw-delta-up">+${k.delta}%</span>`
+      : k.delta<0 ? `<span class="kw-delta-dn">${k.delta}%</span>`
+      : `<span style="font-size:10px;color:#ccc">—</span>`;
+    return `<tr class="${isAct?'kw-active':''}" onclick="selectKeyword('${k.keyword.replace(/'/g,"\\'")}',${k.count})">
       <td><span class="kw-word">${k.keyword}</span></td>
-      <td>
-        <div class="kw-bar-wrap">
-          <div class="kw-bar-bg"><div class="kw-bar-fill" style="width:${barPct}%;background:${isActive ? '#f7f4ef' : barColor};"></div></div>
-          <span class="kw-count">${k.count}</span>
-        </div>
-      </td>
-      <td>${deltaHtml}</td>
+      <td><div class="kw-bar-wrap">
+        <div class="kw-bar-bg"><div class="kw-bar-fill" style="width:${barPct}%"></div></div>
+        <span class="kw-count">${k.count}</span>
+      </div></td>
+      <td>${dHtml}</td>
     </tr>`;
   }).join('');
 }
 
 function kwSort(th) {
-  const col = th.dataset.kwcol;
-  if (kwSortCol === col) { kwSortDir = kwSortDir === 'asc' ? 'desc' : 'asc'; }
-  else { kwSortCol = col; kwSortDir = col === 'keyword' ? 'asc' : 'desc'; }
-  document.querySelectorAll('.kw-table th').forEach(h => h.classList.remove('kw-sort-asc','kw-sort-desc'));
-  th.classList.add(kwSortDir === 'asc' ? 'kw-sort-asc' : 'kw-sort-desc');
+  const col=th.dataset.kwcol;
+  if (kwSortCol===col) kwSortDir=kwSortDir==='asc'?'desc':'asc';
+  else {kwSortCol=col; kwSortDir=col==='keyword'?'asc':'desc';}
+  document.querySelectorAll('.kw-table th').forEach(h=>h.classList.remove('kw-sort-asc','kw-sort-desc'));
+  th.classList.add(kwSortDir==='asc'?'kw-sort-asc':'kw-sort-desc');
   renderKeywords();
 }
 
 async function selectKeyword(keyword, count) {
-  activeKeyword = keyword;
+  activeKeyword=keyword;
   renderKeywords();
-  document.getElementById('kw-panel-title').textContent = `"${keyword}"`;
-  const pill = document.getElementById('kw-panel-count');
-  pill.textContent   = `${count} products`;
-  pill.style.display = 'inline-block';
-  const grid = document.getElementById('kw-products-grid');
-  grid.innerHTML = '<div class="kw-placeholder" style="grid-column:1/-1;"><p>Loading…</p></div>';
-
-  const retailer = document.getElementById('kw-filter-retailer').value;
-  const category = document.getElementById('kw-filter-category').value;
-  const params   = new URLSearchParams({ q: keyword });
-  if (retailer) params.set('retailer', retailer);
-  if (category) params.set('category', category);
-
-  const res      = await fetch('/api/keywords/products?' + params);
-  const products = await res.json();
-
+  document.getElementById('kw-panel-title').textContent=`"${keyword}"`;
+  const pill=document.getElementById('kw-panel-count');
+  pill.textContent=`${count} products`; pill.style.display='inline-block';
+  const grid=document.getElementById('kw-products-grid');
+  grid.innerHTML='<div class="kw-placeholder" style="grid-column:1/-1"><p>Loading…</p></div>';
+  const retailer=document.getElementById('kw-filter-retailer').value;
+  const category=document.getElementById('kw-filter-category').value;
+  const params=new URLSearchParams({q:keyword});
+  if (retailer) params.set('retailer',retailer);
+  if (category) params.set('category',category);
+  const res=await fetch('/api/keywords/products?'+params);
+  const products=await res.json();
   if (!products.length) {
-    grid.innerHTML = '<div class="kw-placeholder" style="grid-column:1/-1;"><p>No images available yet</p></div>';
+    grid.innerHTML='<div class="kw-placeholder" style="grid-column:1/-1"><p>No images available yet</p></div>';
     return;
   }
-
-  grid.innerHTML = products.map(p => {
-    const price  = p.latest_price != null ? `£${p.latest_price.toFixed(2)}` : '';
-    const cat    = (p.subcategory || p.category || '').replace(/-/g,' ');
-    const imgHtml = p.image_url
-      ? `<img src="${p.image_url}" alt="${p.name}" loading="lazy"
-             onerror="this.parentElement.innerHTML='<div class=\\'no-img\\'>&#128094;</div>'">`
-      : `<div class="no-img">&#128094;</div>`;
+  grid.innerHTML=products.map(p=>{
+    const price=(p.latest_price!=null)?`£${p.latest_price.toFixed(2)}`:'';
+    const cat=(p.subcategory||p.category||'').replace(/-/g,' ');
+    const imgH=p.image_url
+      ?`<img src="${p.image_url}" alt="${p.name}" loading="lazy"
+            onerror="this.parentElement.innerHTML='<div class=\\'no-img\\'>&#128094;</div>'">`
+      :`<div class="no-img">&#128094;</div>`;
     return `<a class="kw-product-card" href="${p.url}" target="_blank">
-      <div class="kw-product-thumb">${imgHtml}</div>
+      <div class="kw-product-thumb">${imgH}</div>
       <div class="kw-product-name">${p.name}</div>
-      ${price ? `<div class="kw-product-price">${price}</div>` : ''}
-      ${cat   ? `<div class="kw-product-cat">${cat}</div>`     : ''}
+      ${price?`<div class="kw-product-price">${price}</div>`:''}
+      ${cat?`<div class="kw-product-cat">${cat}</div>`:''}
     </a>`;
   }).join('');
 }
 
-// ── Initial load ──────────────────────────────────────────────────────────────
 loadAll();
 </script>
 </body>
