@@ -16,221 +16,112 @@
 
     /* ---- Product image thumbnail ---- */
     .thumb-wrap {
-      width: 52px;
-      height: 52px;
-      border-radius: 6px;
-      overflow: hidden;
-      background: #f0f0ec;
-      flex-shrink: 0;
-      position: relative;
+      width: 52px; height: 52px;
+      border-radius: 6px; overflow: hidden;
+      background: #f0f0ec; flex-shrink: 0; position: relative;
     }
-    .thumb-wrap img {
-      width: 100%;
-      height: 100%;
-      object-fit: cover;
-      display: block;
-    }
+    .thumb-wrap img { width: 100%; height: 100%; object-fit: cover; display: block; }
     .thumb-wrap .no-img {
-      width: 100%;
-      height: 100%;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      color: #ccc;
-      font-size: 20px;
+      width: 100%; height: 100%;
+      display: flex; align-items: center; justify-content: center;
+      color: #ccc; font-size: 20px;
     }
-
-    /* ---- Image preview popover on hover ---- */
-    .thumb-wrap:hover .preview {
-      display: block;
-    }
+    .thumb-wrap:hover .preview { display: block; }
     .preview {
-      display: none;
-      position: absolute;
-      top: 0;
-      left: 60px;
-      z-index: 100;
-      width: 160px;
-      height: 160px;
-      border-radius: 8px;
-      overflow: hidden;
-      box-shadow: 0 4px 16px rgba(0,0,0,0.18);
-      background: #f0f0ec;
-      pointer-events: none;
+      display: none; position: absolute; top: 0; left: 60px; z-index: 100;
+      width: 160px; height: 160px; border-radius: 8px; overflow: hidden;
+      box-shadow: 0 4px 16px rgba(0,0,0,0.18); background: #f0f0ec; pointer-events: none;
     }
-    .preview img {
-      width: 100%;
-      height: 100%;
-      object-fit: cover;
-    }
+    .preview img { width: 100%; height: 100%; object-fit: cover; }
 
     /* ---- Header ---- */
-    .header {
-      background: #1a1a1a;
-      padding: 18px 28px;
-      display: flex;
-      align-items: center;
-      gap: 16px;
-    }
+    .header { background: #1a1a1a; padding: 18px 28px; display: flex; align-items: center; gap: 16px; }
     .header h1 { color: #fff; font-size: 17px; font-weight: 500; }
     .header .sub { color: #888; font-size: 12px; }
 
+    /* ---- Tab bar ---- */
+    .tab-bar {
+      background: #fff;
+      border-bottom: 1px solid #e8e8e4;
+      padding: 0 28px;
+      display: flex;
+      gap: 0;
+    }
+    .tab-btn {
+      background: none; border: none; border-bottom: 3px solid transparent;
+      padding: 13px 20px 11px; font-size: 13px; font-weight: 500;
+      color: #888; cursor: pointer; transition: color .15s;
+    }
+    .tab-btn:hover { color: #1a1a1a; }
+    .tab-btn.active { color: #1a1a1a; border-bottom-color: #1a1a1a; }
+
     /* ---- Controls bar ---- */
     .controls {
-      background: #fff;
-      padding: 12px 28px;
+      background: #fff; padding: 12px 28px;
       border-bottom: 1px solid #e8e8e4;
-      display: flex;
-      gap: 12px;
-      align-items: center;
-      flex-wrap: wrap;
+      display: flex; gap: 12px; align-items: center; flex-wrap: wrap;
     }
     .controls label { font-size: 12px; color: #888; margin-right: 4px; }
     .controls select, .controls input {
-      border: 1px solid #ddd;
-      border-radius: 6px;
-      padding: 6px 10px;
-      font-size: 13px;
-      background: #fff;
-      color: #1a1a1a;
-      outline: none;
+      border: 1px solid #ddd; border-radius: 6px; padding: 6px 10px;
+      font-size: 13px; background: #fff; color: #1a1a1a; outline: none;
     }
     .controls select:focus, .controls input:focus { border-color: #888; }
     .btn-refresh {
-      margin-left: auto;
-      background: #1a1a1a;
-      color: #fff;
-      border: none;
-      padding: 7px 16px;
-      border-radius: 6px;
-      cursor: pointer;
-      font-size: 13px;
+      margin-left: auto; background: #1a1a1a; color: #fff; border: none;
+      padding: 7px 16px; border-radius: 6px; cursor: pointer; font-size: 13px;
     }
     .btn-refresh:hover { background: #333; }
 
     /* ---- Stats row ---- */
-    .stats {
-      display: flex;
-      gap: 16px;
-      padding: 16px 28px;
-    }
+    .stats { display: flex; gap: 16px; padding: 16px 28px; }
     .stat-card {
-      background: #fff;
-      border-radius: 8px;
-      padding: 14px 20px;
-      min-width: 140px;
-      border: 1px solid #e8e8e4;
+      background: #fff; border-radius: 8px; padding: 14px 20px;
+      min-width: 140px; border: 1px solid #e8e8e4;
     }
     .stat-card .label { font-size: 11px; color: #888; text-transform: uppercase; letter-spacing: .5px; }
     .stat-card .value { font-size: 22px; font-weight: 600; margin-top: 4px; color: #1a1a1a; }
     .stat-card .sub   { font-size: 11px; color: #aaa; margin-top: 2px; }
 
-    /* ---- Table ---- */
-    .table-wrap {
-      padding: 0 28px 28px;
-    }
-    .table-container {
-      background: #fff;
-      border-radius: 8px;
-      border: 1px solid #e8e8e4;
-      overflow: hidden;
-    }
+    /* ---- Rankings table ---- */
+    .table-wrap { padding: 0 28px 28px; }
+    .table-container { background: #fff; border-radius: 8px; border: 1px solid #e8e8e4; overflow: hidden; }
     table { width: 100%; border-collapse: collapse; }
     thead tr { background: #f9f9f7; }
-
-    /* Sort header row */
     th {
-      padding: 10px 14px;
-      text-align: left;
-      font-size: 11px;
-      font-weight: 500;
-      color: #888;
-      text-transform: uppercase;
-      letter-spacing: .5px;
-      border-bottom: 1px solid #e8e8e4;
-      white-space: nowrap;
+      padding: 10px 14px; text-align: left; font-size: 11px; font-weight: 500;
+      color: #888; text-transform: uppercase; letter-spacing: .5px;
+      border-bottom: 1px solid #e8e8e4; white-space: nowrap;
     }
-    th.sortable {
-      cursor: pointer;
-      user-select: none;
-    }
+    th.sortable { cursor: pointer; user-select: none; }
     th.sortable:hover { color: #444; }
     th .sort-icon { margin-left: 4px; opacity: 0.3; }
     th.sort-asc  .sort-icon::after { content: ' ▲'; opacity: 1; color: #1a6699; }
     th.sort-desc .sort-icon::after { content: ' ▼'; opacity: 1; color: #1a6699; }
     th:not(.sort-asc):not(.sort-desc) .sort-icon::after { content: ' ⇅'; }
-
-    /* Filter input row */
-    .filter-row th {
-      padding: 5px 8px;
-      background: #f4f4f2;
-      border-bottom: 2px solid #e0e0dc;
-      cursor: default;
+    .filter-row th { padding: 5px 8px; background: #f4f4f2; border-bottom: 2px solid #e0e0dc; cursor: default; }
+    .filter-row input, .filter-row select {
+      width: 100%; border: 1px solid #ddd; border-radius: 4px; padding: 4px 7px;
+      font-size: 11px; background: #fff; color: #1a1a1a; outline: none;
+      text-transform: none; letter-spacing: 0; font-weight: normal;
     }
-    .filter-row input,
-    .filter-row select {
-      width: 100%;
-      border: 1px solid #ddd;
-      border-radius: 4px;
-      padding: 4px 7px;
-      font-size: 11px;
-      background: #fff;
-      color: #1a1a1a;
-      outline: none;
-      text-transform: none;
-      letter-spacing: 0;
-      font-weight: normal;
-    }
-    .filter-row input:focus,
-    .filter-row select:focus { border-color: #888; }
-
-    td {
-      padding: 11px 14px;
-      border-bottom: 1px solid #f0f0ec;
-      vertical-align: middle;
-    }
+    .filter-row input:focus, .filter-row select:focus { border-color: #888; }
+    td { padding: 11px 14px; border-bottom: 1px solid #f0f0ec; vertical-align: middle; }
     tbody tr:last-child td { border-bottom: none; }
     tbody tr:hover { background: #fafafa; }
 
     .rank-num { color: #bbb; font-size: 12px; width: 32px; }
-    .product-name {
-      font-weight: 500;
-      color: #1a1a1a;
-      text-decoration: none;
-      display: block;
-    }
+    .product-name { font-weight: 500; color: #1a1a1a; text-decoration: none; display: block; }
     .product-name:hover { color: #0066cc; }
-    .product-retailer { font-size: 11px; color: #aaa; margin-top: 2px; }
-
-    .score-val {
-      font-weight: 600;
-      font-size: 15px;
-      color: #1a6699;
-    }
+    .score-val { font-weight: 600; font-size: 15px; color: #1a6699; }
     .score-bar-wrap { height: 4px; background: #f0f0ec; border-radius: 2px; margin-top: 4px; width: 70px; }
     .score-bar { height: 4px; background: #1a6699; border-radius: 2px; }
-
     .price { font-size: 13px; color: #555; }
     .page-rank { font-size: 12px; color: #888; }
     .days { font-size: 12px; color: #aaa; }
-    .cat-badge {
-      display: inline-block;
-      font-size: 11px;
-      padding: 2px 8px;
-      border-radius: 10px;
-      background: #f0f0ec;
-      color: #666;
-      text-transform: capitalize;
-    }
-
-    /* ---- Signal tags ---- */
+    .cat-badge { display: inline-block; font-size: 11px; padding: 2px 8px; border-radius: 10px; background: #f0f0ec; color: #666; text-transform: capitalize; }
     .tags { display: flex; gap: 4px; flex-wrap: wrap; }
-    .tag {
-      font-size: 11px;
-      padding: 2px 7px;
-      border-radius: 10px;
-      white-space: nowrap;
-    }
+    .tag { font-size: 11px; padding: 2px 7px; border-radius: 10px; white-space: nowrap; }
     .tag-new      { background: #e8f5e9; color: #2e7d32; }
     .tag-runner   { background: #e3f2fd; color: #1565c0; }
     .tag-featured { background: #fff3e0; color: #e65100; }
@@ -240,44 +131,118 @@
     .tag-review   { background: #f9fbe7; color: #558b2f; }
     .tag-markdown { background: #fafafa; color: #999; }
     .tag-removed  { background: #ffebee; color: #c62828; }
-
-    /* ---- Sparkline ---- */
     .sparkline { width: 60px; height: 24px; }
 
-    /* ---- Empty / loading state ---- */
-    .empty-state {
-      text-align: center;
-      padding: 60px 20px;
-      color: #aaa;
-    }
-    .empty-state p { margin-top: 8px; font-size: 13px; }
-
-    .loading { opacity: .4; }
-
-    /* ---- Category filter pills ---- */
+    /* ---- Category pills ---- */
     .category-pills {
-      background: #fff;
-      padding: 10px 28px;
+      background: #fff; padding: 10px 28px;
       border-bottom: 1px solid #e8e8e4;
-      display: flex;
-      gap: 8px;
+      display: flex; gap: 8px;
     }
     .pill {
-      background: #f4f4f2;
-      border: 1px solid #e0e0dc;
-      border-radius: 20px;
-      padding: 5px 16px;
-      font-size: 13px;
-      cursor: pointer;
-      color: #555;
-      transition: all .15s;
+      background: #f4f4f2; border: 1px solid #e0e0dc; border-radius: 20px;
+      padding: 5px 16px; font-size: 13px; cursor: pointer; color: #555; transition: all .15s;
     }
     .pill:hover { background: #eaeae6; border-color: #ccc; }
-    .pill.active {
-      background: #1a1a1a;
-      border-color: #1a1a1a;
-      color: #fff;
+    .pill.active { background: #1a1a1a; border-color: #1a1a1a; color: #fff; }
+
+    /* ---- Empty / loading ---- */
+    .empty-state { text-align: center; padding: 60px 20px; color: #aaa; }
+    .empty-state p { margin-top: 8px; font-size: 13px; }
+    .loading { opacity: .4; }
+
+    /* ---- Keywords tab ---- */
+    .kw-layout {
+      display: grid;
+      grid-template-columns: minmax(0, 55%) minmax(0, 45%);
+      gap: 0;
+      background: #fff;
+      border-radius: 8px;
+      border: 1px solid #e8e8e4;
+      overflow: hidden;
+      margin: 0 28px 28px;
     }
+    .kw-list-panel {
+      border-right: 1px solid #e8e8e4;
+      overflow-x: auto;
+    }
+    .kw-list-controls {
+      padding: 10px 14px;
+      border-bottom: 1px solid #e8e8e4;
+      background: #f9f9f7;
+      display: flex;
+      gap: 8px;
+      align-items: center;
+    }
+    .kw-list-controls input {
+      border: 1px solid #ddd; border-radius: 6px; padding: 5px 9px;
+      font-size: 12px; outline: none; flex: 1;
+    }
+    .kw-list-controls input:focus { border-color: #888; }
+    .kw-table { width: 100%; border-collapse: collapse; }
+    .kw-table thead tr { background: #f9f9f7; }
+    .kw-table th {
+      padding: 9px 14px; text-align: left; font-size: 11px; font-weight: 500;
+      color: #888; text-transform: uppercase; letter-spacing: .5px;
+      border-bottom: 1px solid #e8e8e4; white-space: nowrap; cursor: pointer; user-select: none;
+    }
+    .kw-table th:hover { color: #444; }
+    .kw-table th.kw-sort-asc  .sort-icon::after { content: ' ▲'; opacity: 1; color: #1a6699; }
+    .kw-table th.kw-sort-desc .sort-icon::after { content: ' ▼'; opacity: 1; color: #1a6699; }
+    .kw-table th:not(.kw-sort-asc):not(.kw-sort-desc) .sort-icon::after { content: ' ⇅'; }
+    .kw-table td { padding: 9px 14px; border-bottom: 1px solid #f0f0ec; vertical-align: middle; }
+    .kw-table tbody tr:last-child td { border-bottom: none; }
+    .kw-table tbody tr { cursor: pointer; }
+    .kw-table tbody tr:hover { background: #f5f5f3; }
+    .kw-table tbody tr.kw-active { background: #e8f0f8; }
+    .kw-word { font-size: 13px; font-weight: 500; color: #1a1a1a; }
+    .kw-active .kw-word { color: #1a6699; }
+    .kw-bar-wrap { display: flex; align-items: center; gap: 6px; }
+    .kw-bar-bg { flex: 1; height: 6px; background: #f0f0ec; border-radius: 3px; overflow: hidden; min-width: 50px; }
+    .kw-bar-fill { height: 100%; border-radius: 3px; }
+    .kw-count { font-size: 12px; color: #555; min-width: 22px; text-align: right; }
+    .kw-delta-up   { font-size: 11px; color: #2e7d32; font-weight: 500; white-space: nowrap; }
+    .kw-delta-dn   { font-size: 11px; color: #c62828; font-weight: 500; white-space: nowrap; }
+    .kw-delta-new  { font-size: 11px; color: #888; white-space: nowrap; }
+
+    /* ---- Product panel (right side of kw tab) ---- */
+    .kw-products-panel { padding: 16px; }
+    .kw-products-header {
+      display: flex; align-items: center; justify-content: space-between;
+      margin-bottom: 14px;
+    }
+    .kw-products-title { font-size: 12px; font-weight: 500; color: #888; text-transform: uppercase; letter-spacing: .5px; }
+    .kw-products-count {
+      font-size: 11px; padding: 2px 9px; border-radius: 10px;
+      background: #e3f2fd; color: #1565c0; font-weight: 500;
+    }
+    .kw-products-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(90px, 1fr));
+      gap: 12px;
+    }
+    .kw-product-card { display: flex; flex-direction: column; align-items: center; gap: 5px; }
+    .kw-product-thumb {
+      width: 80px; height: 80px; border-radius: 8px; overflow: hidden;
+      background: #f0f0ec; border: 1px solid #e8e8e4; flex-shrink: 0;
+    }
+    .kw-product-thumb img { width: 100%; height: 100%; object-fit: cover; display: block; }
+    .kw-product-thumb .no-img {
+      width: 100%; height: 100%; display: flex; align-items: center;
+      justify-content: center; color: #ccc; font-size: 24px;
+    }
+    .kw-product-name {
+      font-size: 11px; color: #555; text-align: center; line-height: 1.3;
+      max-width: 90px; overflow: hidden; display: -webkit-box;
+      -webkit-line-clamp: 2; -webkit-box-orient: vertical;
+    }
+    .kw-product-price { font-size: 11px; font-weight: 500; color: #1a1a1a; }
+    .kw-product-cat   { font-size: 10px; color: #aaa; text-transform: capitalize; }
+    .kw-placeholder {
+      display: flex; flex-direction: column; align-items: center; justify-content: center;
+      height: 200px; color: #bbb; text-align: center; gap: 8px;
+    }
+    .kw-placeholder p { font-size: 13px; }
   </style>
 </head>
 <body>
@@ -289,339 +254,546 @@
   </div>
 </div>
 
-<div class="controls">
-  <div>
-    <label>Retailer</label>
-    <select id="filter-retailer">
-      <option value="">All retailers</option>
-      {% for r in retailers %}
-      <option value="{{ r.key }}">{{ r.name }}</option>
-      {% endfor %}
-    </select>
-  </div>
-  <div>
-    <label>Window</label>
-    <select id="filter-days">
-      <option value="7">7 days</option>
-      <option value="30" selected>30 days</option>
-      <option value="60">60 days</option>
-      <option value="90">90 days</option>
-    </select>
-  </div>
-  <div>
-    <label>Show</label>
-    <select id="filter-limit">
-      <option value="20">Top 20</option>
-      <option value="50" selected>Top 50</option>
-      <option value="100">Top 100</option>
-      <option value="9999">All</option>
-    </select>
-  </div>
-  <div>
-    <label>Search</label>
-    <input type="text" id="filter-search" placeholder="Filter by name..." style="width:200px;">
-  </div>
-  <button class="btn-refresh" onclick="loadAll()">Refresh</button>
+<!-- ═══════════════════════ TAB BAR ═══════════════════════ -->
+<div class="tab-bar">
+  <button class="tab-btn active" onclick="switchTab('rankings')">Rankings</button>
+  <button class="tab-btn" onclick="switchTab('keywords')">Keyword analysis</button>
 </div>
 
-<div class="category-pills">
-  <button class="pill active" onclick="setCategory('')">All</button>
-  <button class="pill" onclick="setCategory('women')">Women</button>
-  <button class="pill" onclick="setCategory('men')">Men</button>
-  <button class="pill" onclick="setCategory('girls')">Girls</button>
-  <button class="pill" onclick="setCategory('boys')">Boys</button>
-</div>
+<!-- ═══════════════════════ RANKINGS TAB ═══════════════════════ -->
+<div id="tab-rankings">
 
-<div class="stats" id="stats-row">
-  <div class="stat-card"><div class="label">Products tracked</div><div class="value" id="stat-total">—</div></div>
-  <div class="stat-card"><div class="label">New today</div><div class="value" id="stat-new">—</div></div>
-  <div class="stat-card"><div class="label">Top product</div><div class="value" id="stat-top" style="font-size:14px;font-weight:500;margin-top:8px;">—</div><div class="sub" id="stat-top-score"></div></div>
-</div>
-
-<div class="table-wrap">
-  <div class="table-container">
-    <table>
-      <thead>
-        <!-- Sort header row -->
-        <tr id="sort-row">
-          <th style="width:40px;" class="no-sort">#</th>
-          <th style="width:60px;" class="no-sort"></th>
-          <th class="sortable" data-col="name">Product<span class="sort-icon"></span></th>
-          <th class="sortable" data-col="retailer">Retailer<span class="sort-icon"></span></th>
-          <th class="sortable" data-col="category">Category<span class="sort-icon"></span></th>
-          <th class="sortable" data-col="subcategory">Subcategory<span class="sort-icon"></span></th>
-          <th class="sortable sort-desc" data-col="total_score">Score<span class="sort-icon"></span></th>
-          <th class="sortable" data-col="latest_price">Price<span class="sort-icon"></span></th>
-          <th class="sortable" data-col="latest_rank">Page rank<span class="sort-icon"></span></th>
-          <th class="sortable" data-col="days_tracked">Age<span class="sort-icon"></span></th>
-          <th class="no-sort">Signals</th>
-          <th class="no-sort">Trend</th>
-        </tr>
-        <!-- Per-column filter row -->
-        <tr class="filter-row">
-          <th></th>
-          <th></th>
-          <th><input type="text"   id="col-filter-name"     placeholder="Name…"></th>
-          <th><input type="text"   id="col-filter-retailer" placeholder="Retailer…"></th>
-          <th><input type="text"   id="col-filter-category"    placeholder="Category…"></th>
-          <th><input type="text"   id="col-filter-subcategory" placeholder="Subcategory…"></th>
-          <th><input type="number" id="col-filter-score-min" placeholder="Min score" style="width:48%;margin-right:2%;">
-              <input type="number" id="col-filter-score-max" placeholder="Max" style="width:48%;"></th>
-          <th><input type="number" id="col-filter-price-min" placeholder="Min £" style="width:48%;margin-right:2%;">
-              <input type="number" id="col-filter-price-max" placeholder="Max £" style="width:48%;"></th>
-          <th><input type="number" id="col-filter-rank-max"  placeholder="≤ rank"></th>
-          <th><input type="number" id="col-filter-age-min"   placeholder="Min days"></th>
-          <th>
-            <select id="col-filter-signal">
-              <option value="">Any signal</option>
-              <option>New arrival</option>
-              <option>Long runner</option>
-              <option>Featured</option>
-              <option>Rising</option>
-              <option>Restocked</option>
-              <option>Selling through</option>
-              <option>Review spike</option>
-              <option>Marked down</option>
-              <option>Removed</option>
-            </select>
-          </th>
-          <th></th>
-        </tr>
-      </thead>
-      <tbody id="product-table-body">
-        <tr><td colspan="12"><div class="empty-state">Loading...</div></td></tr>
-      </tbody>
-    </table>
+  <div class="controls">
+    <div><label>Retailer</label>
+      <select id="filter-retailer">
+        <option value="">All retailers</option>
+        {% for r in retailers %}
+        <option value="{{ r.key }}">{{ r.name }}</option>
+        {% endfor %}
+      </select>
+    </div>
+    <div><label>Window</label>
+      <select id="filter-days">
+        <option value="7">7 days</option>
+        <option value="30" selected>30 days</option>
+        <option value="60">60 days</option>
+        <option value="90">90 days</option>
+      </select>
+    </div>
+    <div><label>Show</label>
+      <select id="filter-limit">
+        <option value="20">Top 20</option>
+        <option value="50" selected>Top 50</option>
+        <option value="100">Top 100</option>
+        <option value="9999">All</option>
+      </select>
+    </div>
+    <div><label>Search</label>
+      <input type="text" id="filter-search" placeholder="Filter by name..." style="width:200px;">
+    </div>
+    <button class="btn-refresh" onclick="loadAll()">Refresh</button>
   </div>
-</div>
+
+  <div class="category-pills">
+    <button class="pill active" onclick="setCategory('')">All</button>
+    <button class="pill" onclick="setCategory('women')">Women</button>
+    <button class="pill" onclick="setCategory('men')">Men</button>
+    <button class="pill" onclick="setCategory('girls')">Girls</button>
+    <button class="pill" onclick="setCategory('boys')">Boys</button>
+  </div>
+
+  <div class="stats" id="stats-row">
+    <div class="stat-card"><div class="label">Products tracked</div><div class="value" id="stat-total">—</div></div>
+    <div class="stat-card"><div class="label">New today</div><div class="value" id="stat-new">—</div></div>
+    <div class="stat-card"><div class="label">Top product</div><div class="value" id="stat-top" style="font-size:14px;font-weight:500;margin-top:8px;">—</div><div class="sub" id="stat-top-score"></div></div>
+  </div>
+
+  <div class="table-wrap">
+    <div class="table-container">
+      <table>
+        <thead>
+          <tr id="sort-row">
+            <th style="width:40px;" class="no-sort">#</th>
+            <th style="width:60px;" class="no-sort"></th>
+            <th class="sortable" data-col="name">Product<span class="sort-icon"></span></th>
+            <th class="sortable" data-col="retailer">Retailer<span class="sort-icon"></span></th>
+            <th class="sortable" data-col="category">Category<span class="sort-icon"></span></th>
+            <th class="sortable" data-col="subcategory">Subcategory<span class="sort-icon"></span></th>
+            <th class="sortable sort-desc" data-col="total_score">Score<span class="sort-icon"></span></th>
+            <th class="sortable" data-col="latest_price">Price<span class="sort-icon"></span></th>
+            <th class="sortable" data-col="latest_rank">Page rank<span class="sort-icon"></span></th>
+            <th class="sortable" data-col="days_tracked">Age<span class="sort-icon"></span></th>
+            <th class="no-sort">Signals</th>
+            <th class="no-sort">Trend</th>
+          </tr>
+          <tr class="filter-row">
+            <th></th><th></th>
+            <th><input type="text"   id="col-filter-name"        placeholder="Name…"></th>
+            <th><input type="text"   id="col-filter-retailer"    placeholder="Retailer…"></th>
+            <th><input type="text"   id="col-filter-category"    placeholder="Category…"></th>
+            <th><input type="text"   id="col-filter-subcategory" placeholder="Subcategory…"></th>
+            <th>
+              <input type="number" id="col-filter-score-min" placeholder="Min" style="width:48%;margin-right:2%;">
+              <input type="number" id="col-filter-score-max" placeholder="Max" style="width:48%;">
+            </th>
+            <th>
+              <input type="number" id="col-filter-price-min" placeholder="Min £" style="width:48%;margin-right:2%;">
+              <input type="number" id="col-filter-price-max" placeholder="Max £" style="width:48%;">
+            </th>
+            <th><input type="number" id="col-filter-rank-max" placeholder="≤ rank"></th>
+            <th><input type="number" id="col-filter-age-min"  placeholder="Min days"></th>
+            <th>
+              <select id="col-filter-signal">
+                <option value="">Any signal</option>
+                <option>New arrival</option><option>Long runner</option>
+                <option>Featured</option><option>Rising</option>
+                <option>Restocked</option><option>Selling through</option>
+                <option>Review spike</option><option>Marked down</option>
+                <option>Removed</option>
+              </select>
+            </th>
+            <th></th>
+          </tr>
+        </thead>
+        <tbody id="product-table-body">
+          <tr><td colspan="12"><div class="empty-state">Loading...</div></td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+</div><!-- /tab-rankings -->
+
+<!-- ═══════════════════════ KEYWORDS TAB ═══════════════════════ -->
+<div id="tab-keywords" style="display:none;">
+
+  <div class="controls">
+    <div><label>Retailer</label>
+      <select id="kw-filter-retailer" onchange="loadKeywords()">
+        <option value="">All retailers</option>
+        {% for r in retailers %}
+        <option value="{{ r.key }}">{{ r.name }}</option>
+        {% endfor %}
+      </select>
+    </div>
+    <div><label>Category</label>
+      <select id="kw-filter-category" onchange="loadKeywords()">
+        <option value="">All categories</option>
+        <option value="women">Women</option>
+        <option value="men">Men</option>
+        <option value="girls">Girls</option>
+        <option value="boys">Boys</option>
+      </select>
+    </div>
+    <div><label>Compare</label>
+      <select id="kw-filter-comparison" onchange="loadKeywords()">
+        <option value="week">Week vs week</option>
+        <option value="month" selected>Month vs month</option>
+        <option value="quarter">Quarter vs quarter</option>
+      </select>
+    </div>
+    <button class="btn-refresh" onclick="loadKeywords()">Refresh</button>
+  </div>
+
+  <div class="stats" id="kw-stats-row">
+    <div class="stat-card"><div class="label">Unique keywords</div><div class="value" id="kw-stat-unique">—</div></div>
+    <div class="stat-card"><div class="label">Products analysed</div><div class="value" id="kw-stat-products">—</div></div>
+    <div class="stat-card" style="flex:1;min-width:0;">
+      <div class="label">Top keyword</div>
+      <div class="value" id="kw-stat-top" style="font-size:16px;font-weight:600;margin-top:6px;">—</div>
+      <div class="sub" id="kw-stat-top-count"></div>
+    </div>
+    <div class="stat-card" style="flex:1;min-width:0;">
+      <div class="label">Fastest rising</div>
+      <div class="value" id="kw-stat-rising" style="font-size:16px;font-weight:600;margin-top:6px;color:#2e7d32;">—</div>
+      <div class="sub" id="kw-stat-rising-delta"></div>
+    </div>
+  </div>
+
+  <div class="kw-layout">
+    <!-- Left: keyword list -->
+    <div class="kw-list-panel">
+      <div class="kw-list-controls">
+        <input type="text" id="kw-search" placeholder="Search keywords…" oninput="renderKeywords()">
+      </div>
+      <table class="kw-table">
+        <thead>
+          <tr>
+            <th data-kwcol="keyword" onclick="kwSort(this)">Keyword<span class="sort-icon"></span></th>
+            <th data-kwcol="count" class="kw-sort-desc" onclick="kwSort(this)" style="width:45%;">Frequency<span class="sort-icon"></span></th>
+            <th data-kwcol="delta" onclick="kwSort(this)" style="width:80px;">Trend<span class="sort-icon"></span></th>
+          </tr>
+        </thead>
+        <tbody id="kw-table-body">
+          <tr><td colspan="3"><div class="empty-state" style="padding:40px 20px;">Loading…</div></td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <!-- Right: product examples -->
+    <div class="kw-products-panel">
+      <div class="kw-products-header">
+        <div class="kw-products-title" id="kw-panel-title">Product examples</div>
+        <span class="kw-products-count" id="kw-panel-count" style="display:none;"></span>
+      </div>
+      <div id="kw-products-grid" class="kw-products-grid">
+        <div class="kw-placeholder" style="grid-column:1/-1;">
+          <p>Select a keyword to see matching products</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</div><!-- /tab-keywords -->
+
 
 <script>
-  let allProducts    = [];
-  let maxScore       = 1;
-  let activeCategory = '';
-  let sortCol        = 'total_score';
-  let sortDir        = 'desc';   // 'asc' | 'desc'
+// ═══════════════════ TAB SWITCHING ═══════════════════
+function switchTab(name) {
+  document.getElementById('tab-rankings').style.display = name === 'rankings' ? '' : 'none';
+  document.getElementById('tab-keywords').style.display = name === 'keywords' ? '' : 'none';
+  document.querySelectorAll('.tab-btn').forEach(b => {
+    b.classList.toggle('active', b.textContent.trim().toLowerCase().startsWith(name));
+  });
+  if (name === 'keywords' && allKeywords.length === 0) loadKeywords();
+}
 
-  // ── Category pills ──────────────────────────────────────────────────────────
-  function setCategory(cat) {
-    activeCategory = cat;
-    document.querySelectorAll('.pill').forEach(p => {
-      p.classList.toggle('active', p.textContent.toLowerCase() === (cat || 'all'));
-    });
+// ═══════════════════ RANKINGS TAB ═══════════════════
+let allProducts    = [];
+let maxScore       = 1;
+let activeCategory = '';
+let sortCol        = 'total_score';
+let sortDir        = 'desc';
+
+const TAG_CLASSES = {
+  'New arrival':'tag-new','Long runner':'tag-runner','Featured':'tag-featured',
+  'Rising':'tag-rising','Restocked':'tag-restock','Selling through':'tag-selling',
+  'Review spike':'tag-review','Marked down':'tag-markdown','Removed':'tag-removed',
+};
+
+function setCategory(cat) {
+  activeCategory = cat;
+  document.querySelectorAll('.pill').forEach(p => {
+    p.classList.toggle('active', p.textContent.toLowerCase() === (cat || 'all'));
+  });
+  renderTable();
+}
+
+document.querySelectorAll('th.sortable').forEach(th => {
+  th.addEventListener('click', () => {
+    const col = th.dataset.col;
+    if (sortCol === col) { sortDir = sortDir === 'asc' ? 'desc' : 'asc'; }
+    else { sortCol = col; sortDir = col === 'total_score' ? 'desc' : 'asc'; }
+    document.querySelectorAll('th.sortable').forEach(h => h.classList.remove('sort-asc','sort-desc'));
+    th.classList.add(sortDir === 'asc' ? 'sort-asc' : 'sort-desc');
     renderTable();
-  }
+  });
+});
 
-  // ── Sorting ─────────────────────────────────────────────────────────────────
-  document.querySelectorAll('th.sortable').forEach(th => {
-    th.addEventListener('click', () => {
-      const col = th.dataset.col;
-      if (sortCol === col) {
-        sortDir = sortDir === 'asc' ? 'desc' : 'asc';
-      } else {
-        sortCol = col;
-        sortDir = col === 'total_score' ? 'desc' : 'asc';
-      }
-      // Update header classes
-      document.querySelectorAll('th.sortable').forEach(h => {
-        h.classList.remove('sort-asc', 'sort-desc');
-      });
-      th.classList.add(sortDir === 'asc' ? 'sort-asc' : 'sort-desc');
-      renderTable();
-    });
+const COL_FILTER_IDS = [
+  'col-filter-name','col-filter-retailer','col-filter-category','col-filter-subcategory',
+  'col-filter-score-min','col-filter-score-max','col-filter-price-min','col-filter-price-max',
+  'col-filter-rank-max','col-filter-age-min','col-filter-signal'
+];
+COL_FILTER_IDS.forEach(id => document.getElementById(id).addEventListener('input', renderTable));
+
+async function loadStats() {
+  const retailer = document.getElementById('filter-retailer').value;
+  const res  = await fetch('/api/stats' + (retailer ? `?retailer=${retailer}` : ''));
+  const data = await res.json();
+  document.getElementById('stat-total').textContent     = data.total_products;
+  document.getElementById('stat-new').textContent       = data.new_today;
+  document.getElementById('stat-top').textContent       = data.top_product;
+  document.getElementById('stat-top-score').textContent = data.top_score ? `${data.top_score.toFixed(0)} pts` : '';
+}
+
+async function loadRankings() {
+  const retailer = document.getElementById('filter-retailer').value;
+  const days     = document.getElementById('filter-days').value;
+  const limit    = document.getElementById('filter-limit').value;
+  const params   = new URLSearchParams({ days, limit });
+  if (retailer) params.set('retailer', retailer);
+  const res   = await fetch('/api/rankings?' + params);
+  allProducts = await res.json();
+  maxScore    = Math.max(...allProducts.map(p => p.total_score), 1);
+  renderTable();
+}
+
+function renderTable() {
+  const globalSearch   = document.getElementById('filter-search').value.toLowerCase();
+  const colName        = document.getElementById('col-filter-name').value.toLowerCase();
+  const colRetailer    = document.getElementById('col-filter-retailer').value.toLowerCase();
+  const colCategory    = document.getElementById('col-filter-category').value.toLowerCase();
+  const colSubcategory = document.getElementById('col-filter-subcategory').value.toLowerCase();
+  const colScoreMin    = parseFloat(document.getElementById('col-filter-score-min').value) || null;
+  const colScoreMax    = parseFloat(document.getElementById('col-filter-score-max').value) || null;
+  const colPriceMin    = parseFloat(document.getElementById('col-filter-price-min').value) || null;
+  const colPriceMax    = parseFloat(document.getElementById('col-filter-price-max').value) || null;
+  const colRankMax     = parseInt(document.getElementById('col-filter-rank-max').value)    || null;
+  const colAgeMin      = parseInt(document.getElementById('col-filter-age-min').value)     || null;
+  const colSignal      = document.getElementById('col-filter-signal').value;
+  const tbody          = document.getElementById('product-table-body');
+
+  let visible = allProducts.filter(p => {
+    const cat      = (p.category || '').toLowerCase();
+    const name     = (p.name     || '').toLowerCase();
+    const retailer = (p.retailer || '').toLowerCase();
+    if (activeCategory) {
+      if (!cat.split('/').includes(activeCategory)) return false;
+    }
+    if (globalSearch   && !name.includes(globalSearch) && !cat.includes(globalSearch)) return false;
+    if (colName        && !name.includes(colName))         return false;
+    if (colRetailer    && !retailer.includes(colRetailer)) return false;
+    if (colCategory    && !cat.includes(colCategory))      return false;
+    if (colSubcategory && !(p.subcategory||'').toLowerCase().includes(colSubcategory)) return false;
+    if (colScoreMin !== null && p.total_score < colScoreMin) return false;
+    if (colScoreMax !== null && p.total_score > colScoreMax) return false;
+    if (colPriceMin !== null && (p.latest_price == null || p.latest_price < colPriceMin)) return false;
+    if (colPriceMax !== null && (p.latest_price == null || p.latest_price > colPriceMax)) return false;
+    if (colRankMax  !== null && (p.latest_rank  == null || p.latest_rank  > colRankMax))  return false;
+    if (colAgeMin   !== null && (p.days_tracked == null || p.days_tracked < colAgeMin))   return false;
+    if (colSignal   && !(p.signal_tags || []).includes(colSignal)) return false;
+    return true;
   });
 
-  // ── Column filters ───────────────────────────────────────────────────────────
-  const COL_FILTER_IDS = [
-    'col-filter-name', 'col-filter-retailer', 'col-filter-category', 'col-filter-subcategory',
-    'col-filter-score-min', 'col-filter-score-max',
-    'col-filter-price-min', 'col-filter-price-max',
-    'col-filter-rank-max', 'col-filter-age-min', 'col-filter-signal'
-  ];
-  COL_FILTER_IDS.forEach(id =>
-    document.getElementById(id).addEventListener('input', renderTable)
-  );
+  visible.sort((a, b) => {
+    let va = a[sortCol], vb = b[sortCol];
+    if (va == null) va = sortDir === 'asc' ? Infinity  : -Infinity;
+    if (vb == null) vb = sortDir === 'asc' ? Infinity  : -Infinity;
+    if (typeof va === 'string') va = va.toLowerCase();
+    if (typeof vb === 'string') vb = vb.toLowerCase();
+    return sortDir === 'asc' ? (va < vb ? -1 : va > vb ? 1 : 0) : (va > vb ? -1 : va < vb ? 1 : 0);
+  });
 
-  const TAG_CLASSES = {
-    'New arrival':    'tag-new',
-    'Long runner':    'tag-runner',
-    'Featured':       'tag-featured',
-    'Rising':         'tag-rising',
-    'Restocked':      'tag-restock',
-    'Selling through':'tag-selling',
-    'Review spike':   'tag-review',
-    'Marked down':    'tag-markdown',
-    'Removed':        'tag-removed',
-  };
-
-  // ── Stats ────────────────────────────────────────────────────────────────────
-  async function loadStats() {
-    const retailer = document.getElementById('filter-retailer').value;
-    const params   = retailer ? `?retailer=${retailer}` : '';
-    const res      = await fetch('/api/stats' + params);
-    const data     = await res.json();
-    document.getElementById('stat-total').textContent      = data.total_products;
-    document.getElementById('stat-new').textContent        = data.new_today;
-    document.getElementById('stat-top').textContent        = data.top_product;
-    document.getElementById('stat-top-score').textContent  = data.top_score ? `${data.top_score.toFixed(0)} pts` : '';
+  if (!visible.length) {
+    tbody.innerHTML = `<tr><td colspan="12"><div class="empty-state">
+      <strong>No products found.</strong>
+      <p>The scraper hasn't run yet, or no data matches your filters.</p>
+      <p style="margin-top:8px;">Run <code>python run.py --scrape</code> to collect data.</p>
+    </div></td></tr>`;
+    return;
   }
 
-  // ── Rankings ─────────────────────────────────────────────────────────────────
-  async function loadRankings() {
-    const retailer = document.getElementById('filter-retailer').value;
-    const days     = document.getElementById('filter-days').value;
-    const limit    = document.getElementById('filter-limit').value;
+  tbody.innerHTML = visible.map((p, i) => {
+    const price   = p.latest_price  != null ? `£${p.latest_price.toFixed(2)}` : '—';
+    const rank    = p.latest_rank   != null ? `#${p.latest_rank}` : '—';
+    const age     = p.days_tracked  != null ? `${p.days_tracked}d` : '—';
+    const barPct  = Math.min(100, (p.total_score / maxScore) * 100).toFixed(0);
+    const catDisp = (p.category    || '').replace(/-/g,' ') || '—';
+    const subDisp = (p.subcategory || '').replace(/-/g,' ') || '—';
+    const tagsHtml = (p.signal_tags || []).map(t =>
+      `<span class="tag ${TAG_CLASSES[t]||'tag-markdown'}">${t}</span>`).join('');
+    const sparkSvg = buildSparkline(p.score_series || []);
+    const imgHtml  = p.image_url
+      ? `<div class="thumb-wrap" style="position:relative;">
+           <img src="${p.image_url}" alt="${p.name}" loading="lazy"
+                onerror="this.parentElement.innerHTML='<div class=\\'no-img\\'>&#128094;</div>'">
+           <div class="preview"><img src="${p.image_url}" alt="${p.name}"></div>
+         </div>`
+      : `<div class="thumb-wrap"><div class="no-img">&#128094;</div></div>`;
+    return `<tr>
+      <td class="rank-num">${i+1}</td>
+      <td style="padding:8px 6px;">${imgHtml}</td>
+      <td><a class="product-name" href="${p.url}" target="_blank">${p.name}</a></td>
+      <td style="font-size:12px;color:#555;">${p.retailer}</td>
+      <td><span class="cat-badge">${catDisp}</span></td>
+      <td><span class="cat-badge">${subDisp}</span></td>
+      <td>
+        <div class="score-val">${p.total_score.toFixed(0)}</div>
+        <div class="score-bar-wrap"><div class="score-bar" style="width:${barPct}%"></div></div>
+      </td>
+      <td class="price">${price}</td>
+      <td class="page-rank">${rank}</td>
+      <td class="days">${age}</td>
+      <td><div class="tags">${tagsHtml}</div></td>
+      <td>${sparkSvg}</td>
+    </tr>`;
+  }).join('');
+}
 
-    const params = new URLSearchParams({ days, limit });
-    if (retailer) params.set('retailer', retailer);
+function buildSparkline(series) {
+  if (!series || series.length < 2) return '<svg class="sparkline"></svg>';
+  const vals   = series.map(s => s.score);
+  const maxVal = Math.max(...vals, 1);
+  const w = 60, h = 24;
+  const pts = vals.map((v, i) => {
+    const x = (i / (vals.length - 1)) * w;
+    const y = h - (v / maxVal) * (h - 4) - 2;
+    return `${x.toFixed(1)},${y.toFixed(1)}`;
+  }).join(' ');
+  return `<svg class="sparkline" viewBox="0 0 ${w} ${h}">
+    <polyline points="${pts}" fill="none" stroke="#1a6699" stroke-width="1.5" stroke-linejoin="round"/>
+  </svg>`;
+}
 
-    const res   = await fetch('/api/rankings?' + params);
-    allProducts = await res.json();
-    maxScore    = Math.max(...allProducts.map(p => p.total_score), 1);
-    renderTable();
+function loadAll() { loadStats(); loadRankings(); }
+['filter-retailer','filter-days','filter-limit'].forEach(id =>
+  document.getElementById(id).addEventListener('change', loadAll));
+document.getElementById('filter-search').addEventListener('input', renderTable);
+
+
+// ═══════════════════ KEYWORDS TAB ═══════════════════
+let allKeywords    = [];
+let kwMaxCount     = 1;
+let kwSortCol      = 'count';
+let kwSortDir      = 'desc';
+let activeKeyword  = null;
+
+const BAR_COLOURS = [
+  '#185FA5','#1D9E75','#BA7517','#993556','#534AB7',
+  '#3B6D11','#D85A30','#0F6E56','#854F0B','#3C3489',
+];
+
+async function loadKeywords() {
+  const retailer   = document.getElementById('kw-filter-retailer').value;
+  const category   = document.getElementById('kw-filter-category').value;
+  const comparison = document.getElementById('kw-filter-comparison').value;
+  const params     = new URLSearchParams({ comparison });
+  if (retailer) params.set('retailer', retailer);
+  if (category) params.set('category', category);
+
+  document.getElementById('kw-table-body').innerHTML =
+    '<tr><td colspan="3"><div class="empty-state" style="padding:40px 20px;">Loading…</div></td></tr>';
+
+  const res  = await fetch('/api/keywords?' + params);
+  const data = await res.json();
+
+  allKeywords = data.keywords || [];
+  kwMaxCount  = Math.max(...allKeywords.map(k => k.count), 1);
+
+  // Stats cards
+  document.getElementById('kw-stat-unique').textContent   = data.unique_count ?? '—';
+  document.getElementById('kw-stat-products').textContent = data.products_total ?? '—';
+
+  if (data.top_keyword) {
+    document.getElementById('kw-stat-top').textContent       = data.top_keyword.keyword;
+    document.getElementById('kw-stat-top-count').textContent = `${data.top_keyword.count} products`;
+  } else {
+    document.getElementById('kw-stat-top').textContent       = '—';
+    document.getElementById('kw-stat-top-count').textContent = '';
   }
 
-  // ── Render ───────────────────────────────────────────────────────────────────
-  function renderTable() {
-    const globalSearch = document.getElementById('filter-search').value.toLowerCase();
+  if (data.fastest_rising) {
+    document.getElementById('kw-stat-rising').textContent       = data.fastest_rising.keyword;
+    document.getElementById('kw-stat-rising-delta').textContent = `+${data.fastest_rising.delta}% vs prev period`;
+  } else {
+    document.getElementById('kw-stat-rising').textContent       = '—';
+    document.getElementById('kw-stat-rising-delta').textContent = '';
+  }
 
-    // Read column filters
-    const colName      = document.getElementById('col-filter-name').value.toLowerCase();
-    const colRetailer  = document.getElementById('col-filter-retailer').value.toLowerCase();
-    const colCategory    = document.getElementById('col-filter-category').value.toLowerCase();
-    const colSubcategory = document.getElementById('col-filter-subcategory').value.toLowerCase();
-    const colScoreMin  = parseFloat(document.getElementById('col-filter-score-min').value) || null;
-    const colScoreMax  = parseFloat(document.getElementById('col-filter-score-max').value) || null;
-    const colPriceMin  = parseFloat(document.getElementById('col-filter-price-min').value) || null;
-    const colPriceMax  = parseFloat(document.getElementById('col-filter-price-max').value) || null;
-    const colRankMax   = parseInt(document.getElementById('col-filter-rank-max').value)   || null;
-    const colAgeMin    = parseInt(document.getElementById('col-filter-age-min').value)    || null;
-    const colSignal    = document.getElementById('col-filter-signal').value;
+  activeKeyword = null;
+  document.getElementById('kw-panel-title').textContent   = 'Product examples';
+  document.getElementById('kw-panel-count').style.display = 'none';
+  document.getElementById('kw-products-grid').innerHTML   =
+    '<div class="kw-placeholder" style="grid-column:1/-1;"><p>Select a keyword to see matching products</p></div>';
 
-    const tbody = document.getElementById('product-table-body');
+  renderKeywords();
+}
 
-    let visible = allProducts.filter(p => {
-      const cat      = (p.category || '').toLowerCase();
-      const name     = (p.name     || '').toLowerCase();
-      const retailer = (p.retailer || '').toLowerCase();
+function renderKeywords() {
+  const search = document.getElementById('kw-search').value.toLowerCase();
+  let data = allKeywords.filter(k => !search || k.keyword.includes(search));
 
-      // Category pills
-      if (activeCategory) {
-        const segments = cat.split('/');
-        if (!segments.includes(activeCategory)) return false;
-      }
-      // Global search
-      if (globalSearch && !name.includes(globalSearch) && !cat.includes(globalSearch)) return false;
+  data = [...data].sort((a, b) => {
+    let va = a[kwSortCol], vb = b[kwSortCol];
+    if (va == null) va = kwSortDir === 'asc' ? Infinity  : -Infinity;
+    if (vb == null) vb = kwSortDir === 'asc' ? Infinity  : -Infinity;
+    if (typeof va === 'string') va = va.toLowerCase();
+    if (typeof vb === 'string') vb = vb.toLowerCase();
+    return kwSortDir === 'asc'
+      ? (va < vb ? -1 : va > vb ? 1 : 0)
+      : (va > vb ? -1 : va < vb ? 1 : 0);
+  });
 
-      // Column filters
-      if (colName     && !name.includes(colName))         return false;
-      if (colRetailer && !retailer.includes(colRetailer)) return false;
-      if (colCategory    && !cat.includes(colCategory))                                          return false;
-      if (colSubcategory && !(p.subcategory || '').toLowerCase().includes(colSubcategory))      return false;
-      if (colScoreMin !== null && p.total_score < colScoreMin) return false;
-      if (colScoreMax !== null && p.total_score > colScoreMax) return false;
-      if (colPriceMin !== null && (p.latest_price == null || p.latest_price < colPriceMin)) return false;
-      if (colPriceMax !== null && (p.latest_price == null || p.latest_price > colPriceMax)) return false;
-      if (colRankMax  !== null && (p.latest_rank  == null || p.latest_rank  > colRankMax))  return false;
-      if (colAgeMin   !== null && (p.days_tracked == null || p.days_tracked < colAgeMin))   return false;
-      if (colSignal   && !(p.signal_tags || []).includes(colSignal)) return false;
+  const tbody = document.getElementById('kw-table-body');
 
-      return true;
-    });
+  if (!data.length) {
+    tbody.innerHTML = '<tr><td colspan="3"><div class="empty-state" style="padding:40px 20px;">No keywords found.</div></td></tr>';
+    return;
+  }
 
-    // Sort
-    visible.sort((a, b) => {
-      let va = a[sortCol], vb = b[sortCol];
-      if (va == null) va = sortDir === 'asc' ? Infinity : -Infinity;
-      if (vb == null) vb = sortDir === 'asc' ? Infinity : -Infinity;
-      if (typeof va === 'string') va = va.toLowerCase();
-      if (typeof vb === 'string') vb = vb.toLowerCase();
-      if (va < vb) return sortDir === 'asc' ? -1 :  1;
-      if (va > vb) return sortDir === 'asc' ?  1 : -1;
-      return 0;
-    });
+  tbody.innerHTML = data.map((k, i) => {
+    const barPct   = Math.round((k.count / kwMaxCount) * 100);
+    const barColor = BAR_COLOURS[i % BAR_COLOURS.length];
+    const isActive = activeKeyword === k.keyword;
 
-    if (!visible.length) {
-      tbody.innerHTML = `<tr><td colspan="12"><div class="empty-state">
-        <strong>No products found.</strong>
-        <p>The scraper hasn't run yet, or no data matches your filters.</p>
-        <p style="margin-top:8px;">Run <code>python run.py --scrape</code> to collect data.</p>
-      </div></td></tr>`;
-      return;
+    let deltaHtml;
+    if (k.delta === null || k.delta === undefined) {
+      deltaHtml = `<span class="kw-delta-new">new</span>`;
+    } else if (k.delta > 0) {
+      deltaHtml = `<span class="kw-delta-up">+${k.delta}%</span>`;
+    } else if (k.delta < 0) {
+      deltaHtml = `<span class="kw-delta-dn">${k.delta}%</span>`;
+    } else {
+      deltaHtml = `<span style="font-size:11px;color:#bbb;">—</span>`;
     }
 
-    tbody.innerHTML = visible.map((p, i) => {
-      const price    = p.latest_price  != null ? `£${p.latest_price.toFixed(2)}` : '—';
-      const rank     = p.latest_rank   != null ? `#${p.latest_rank}` : '—';
-      const age      = p.days_tracked  != null ? `${p.days_tracked}d` : '—';
-      const barPct   = Math.min(100, (p.total_score / maxScore) * 100).toFixed(0);
-      const catRaw   = (p.category    || '').replace(/-/g, ' ');
-      const catDisp  = catRaw || '—';
-      const subDisp  = (p.subcategory || '').replace(/-/g, ' ') || '—';
+    return `<tr class="${isActive ? 'kw-active' : ''}" onclick="selectKeyword('${k.keyword.replace(/'/g,"\\'")}', ${k.count})">
+      <td><span class="kw-word">${k.keyword}</span></td>
+      <td>
+        <div class="kw-bar-wrap">
+          <div class="kw-bar-bg"><div class="kw-bar-fill" style="width:${barPct}%;background:${barColor};"></div></div>
+          <span class="kw-count">${k.count}</span>
+        </div>
+      </td>
+      <td>${deltaHtml}</td>
+    </tr>`;
+  }).join('');
+}
 
-      const tagsHtml = (p.signal_tags || []).map(t =>
-        `<span class="tag ${TAG_CLASSES[t] || 'tag-markdown'}">${t}</span>`
-      ).join('');
+function kwSort(th) {
+  const col = th.dataset.kwcol;
+  if (kwSortCol === col) { kwSortDir = kwSortDir === 'asc' ? 'desc' : 'asc'; }
+  else { kwSortCol = col; kwSortDir = col === 'keyword' ? 'asc' : 'desc'; }
+  document.querySelectorAll('.kw-table th').forEach(h => h.classList.remove('kw-sort-asc','kw-sort-desc'));
+  th.classList.add(kwSortDir === 'asc' ? 'kw-sort-asc' : 'kw-sort-desc');
+  renderKeywords();
+}
 
-      const sparkSvg = buildSparkline(p.score_series || []);
+async function selectKeyword(keyword, count) {
+  activeKeyword = keyword;
+  renderKeywords();
 
-      const imgHtml = p.image_url
-        ? `<div class="thumb-wrap" style="position:relative;">
-             <img src="${p.image_url}" alt="${p.name}" loading="lazy"
-                  onerror="this.parentElement.innerHTML='<div class=\\'no-img\\'>&#128094;</div>'">
-             <div class="preview"><img src="${p.image_url}" alt="${p.name}"></div>
-           </div>`
-        : `<div class="thumb-wrap"><div class="no-img">&#128094;</div></div>`;
+  document.getElementById('kw-panel-title').textContent   = `"${keyword}"`;
+  const pill = document.getElementById('kw-panel-count');
+  pill.textContent    = `${count} products`;
+  pill.style.display  = 'inline-block';
 
-      return `<tr>
-        <td class="rank-num">${i + 1}</td>
-        <td style="padding:8px 6px;">${imgHtml}</td>
-        <td>
-          <a class="product-name" href="${p.url}" target="_blank">${p.name}</a>
-        </td>
-        <td style="font-size:12px;color:#555;">${p.retailer}</td>
-        <td><span class="cat-badge">${catDisp}</span></td>
-        <td><span class="cat-badge">${subDisp}</span></td>
-        <td>
-          <div class="score-val">${p.total_score.toFixed(0)}</div>
-          <div class="score-bar-wrap"><div class="score-bar" style="width:${barPct}%"></div></div>
-        </td>
-        <td class="price">${price}</td>
-        <td class="page-rank">${rank}</td>
-        <td class="days">${age}</td>
-        <td><div class="tags">${tagsHtml}</div></td>
-        <td>${sparkSvg}</td>
-      </tr>`;
-    }).join('');
+  const grid = document.getElementById('kw-products-grid');
+  grid.innerHTML = '<div class="kw-placeholder" style="grid-column:1/-1;"><p>Loading products…</p></div>';
+
+  const retailer  = document.getElementById('kw-filter-retailer').value;
+  const category  = document.getElementById('kw-filter-category').value;
+  const params    = new URLSearchParams({ q: keyword });
+  if (retailer) params.set('retailer', retailer);
+  if (category) params.set('category', category);
+
+  const res      = await fetch('/api/keywords/products?' + params);
+  const products = await res.json();
+
+  if (!products.length) {
+    grid.innerHTML = '<div class="kw-placeholder" style="grid-column:1/-1;"><p>No product images available yet.</p></div>';
+    return;
   }
 
-  function buildSparkline(series) {
-    if (!series || series.length < 2) return '<svg class="sparkline"></svg>';
-    const vals   = series.map(s => s.score);
-    const maxVal = Math.max(...vals, 1);
-    const w = 60, h = 24;
-    const pts = vals.map((v, i) => {
-      const x = (i / (vals.length - 1)) * w;
-      const y = h - (v / maxVal) * (h - 4) - 2;
-      return `${x.toFixed(1)},${y.toFixed(1)}`;
-    }).join(' ');
-    return `<svg class="sparkline" viewBox="0 0 ${w} ${h}">
-      <polyline points="${pts}" fill="none" stroke="#1a6699" stroke-width="1.5" stroke-linejoin="round"/>
-    </svg>`;
-  }
+  grid.innerHTML = products.map(p => {
+    const price   = p.latest_price != null ? `£${p.latest_price.toFixed(2)}` : '';
+    const cat     = (p.subcategory || p.category || '').replace(/-/g,' ');
+    const imgHtml = p.image_url
+      ? `<img src="${p.image_url}" alt="${p.name}" loading="lazy"
+             onerror="this.parentElement.innerHTML='<div class=\\'no-img\\'>&#128094;</div>'">`
+      : `<div class="no-img">&#128094;</div>`;
+    return `<a class="kw-product-card" href="${p.url}" target="_blank" style="text-decoration:none;">
+      <div class="kw-product-thumb">${imgHtml}</div>
+      <div class="kw-product-name">${p.name}</div>
+      ${price ? `<div class="kw-product-price">${price}</div>` : ''}
+      ${cat   ? `<div class="kw-product-cat">${cat}</div>`     : ''}
+    </a>`;
+  }).join('');
+}
 
-  function loadAll() {
-    loadStats();
-    loadRankings();
-  }
-
-  // Top-bar event listeners
-  ['filter-retailer','filter-days','filter-limit'].forEach(id =>
-    document.getElementById(id).addEventListener('change', loadAll)
-  );
-  document.getElementById('filter-search').addEventListener('input', renderTable);
-
-  // Initial load
-  loadAll();
+// ── Initial load ──────────────────────────────────────────────────────────────
+loadAll();
 </script>
 </body>
 </html>
