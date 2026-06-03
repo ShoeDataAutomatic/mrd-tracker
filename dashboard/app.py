@@ -140,7 +140,7 @@ def api_keywords():
     prev_total   = 0
 
     for p in products:
-        if category and (p.get('category') or '').lower() != category:
+        if category and not (p.get('category') or '').lower().startswith(category):
             continue
         name      = (p.get('name') or '').strip()
         last_seen = p.get('last_seen') or ''
