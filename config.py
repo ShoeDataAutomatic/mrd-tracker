@@ -21,33 +21,31 @@ RETAILERS = {
         'base_url': 'https://www.primark.com',
         'region':   'en-gb',
         'categories': [
-            # Women's subcategories
-            '/en-gb/c/women/shoes/flats',
+            # Women's subcategories (verified against primark.com/en-gb/c/women/shoes nav)
             '/en-gb/c/women/shoes/heels',
             '/en-gb/c/women/shoes/sandals',
-            '/en-gb/c/women/shoes/boots',
             '/en-gb/c/women/shoes/trainers',
-            '/en-gb/c/women/shoes/mules',
-            '/en-gb/c/women/shoes/wedges',
+            '/en-gb/c/women/shoes/flats',
+            '/en-gb/c/women/shoes/boots',
+            '/en-gb/c/women/shoes/flip-flops-and-sliders',
+            '/en-gb/c/women/shoes/loafers',
+            '/en-gb/c/women/shoes/slippers',
+            '/en-gb/c/women/shoes/clogs',
             '/en-gb/c/women/shoes/sliders',
-            # Men's subcategories
+            # Men's subcategories (verified against primark.com/en-gb/c/men/shoes nav)
             '/en-gb/c/men/shoes/trainers',
-            '/en-gb/c/men/shoes/boots',
-            '/en-gb/c/men/shoes/sandals',
-            '/en-gb/c/men/shoes/sliders',
-            '/en-gb/c/men/shoes/formal-shoes',
-            '/en-gb/c/men/shoes/loafers',
-            # Girls
-            '/en-gb/c/kids/girls/girls-shoes/sandals',
-            '/en-gb/c/kids/girls/girls-shoes/boots',
+            '/en-gb/c/men/shoes/loafers-and-brogues',
+            '/en-gb/c/men/shoes/sandals-and-sliders',
+            '/en-gb/c/men/shoes/slippers',
+            # Girls' subcategories (verified against primark.com/en-gb/c/kids/girls/girls-shoes nav)
             '/en-gb/c/kids/girls/girls-shoes/trainers',
-            '/en-gb/c/kids/girls/girls-shoes/school-shoes',
             '/en-gb/c/kids/girls/girls-shoes/flats',
-            # Boys
+            '/en-gb/c/kids/girls/girls-shoes/sandals-and-flipflops',
+            # Boys' subcategories (verified against primark.com/en-gb/c/kids/boys/boys-shoes nav)
             '/en-gb/c/kids/boys/boys-shoes/trainers',
-            '/en-gb/c/kids/boys/boys-shoes/boots',
-            '/en-gb/c/kids/boys/boys-shoes/sandals',
-            '/en-gb/c/kids/boys/boys-shoes/school-shoes',
+            '/en-gb/c/kids/boys/boys-shoes/shoes',
+            '/en-gb/c/kids/boys/boys-shoes/sandals-and-flip-flops',
+            '/en-gb/c/kids/boys/boys-shoes/slippers',
         ],
         'enabled': True,
 
