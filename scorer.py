@@ -73,7 +73,7 @@ def _score_product(product):
     # ------------------------------------------------------------------
     # 1. New arrival
     # ------------------------------------------------------------------
-    if first_seen and (today - first_seen).days <= 1:
+    if first_seen and (today - first_seen).days <= 7:
         signals['new_arrival'] = SCORING['new_arrival']
         score += SCORING['new_arrival']
 
