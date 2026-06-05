@@ -274,6 +274,7 @@
 <div class="tab-bar">
   <button class="tab-btn active" onclick="switchTab('rankings')">Rankings</button>
   <button class="tab-btn" onclick="switchTab('keywords')">Keyword analysis</button>
+  <button class="tab-btn" onclick="switchTab('markdown')">Markdown analysis</button>
 </div>
 
 <!-- ═══════════════════════ RANKINGS TAB ═══════════════════════ -->
@@ -482,6 +483,120 @@
 
 </div><!-- /tab-keywords -->
 
+<!-- ═══════════════════════ MARKDOWN ANALYSIS TAB ═══════════════════════ -->
+<div id="tab-markdown" style="display:none">
+
+  <div class="controls">
+    <div>
+      <select id="md-filter-retailer" onchange="loadMarkdown()">
+        <option value="">All retailers</option>
+        {% for r in retailers %}
+        <option value="{{ r.key }}">{{ r.name }}</option>
+        {% endfor %}
+      </select>
+    </div>
+    <div>
+      <select id="md-filter-category" onchange="loadMarkdown()">
+        <option value="">All categories</option>
+        <option value="women">Women</option>
+        <option value="men">Men</option>
+        <option value="girls">Girls</option>
+        <option value="boys">Boys</option>
+      </select>
+    </div>
+    <div>
+      <select id="md-filter-reason" onchange="renderMarkdown()">
+        <option value="">All reasons</option>
+        <option value="poor_seller">Poor seller</option>
+        <option value="end_of_season">End of season</option>
+        <option value="size_clearance">Size clearance</option>
+      </select>
+    </div>
+    <div>
+      <select id="md-filter-depth" onchange="renderMarkdown()">
+        <option value="">Any markdown depth</option>
+        <option value="10">10%+ off</option>
+        <option value="25">25%+ off</option>
+        <option value="40">40%+ off</option>
+      </select>
+    </div>
+    <button class="btn-refresh" onclick="loadMarkdown()">Refresh</button>
+  </div>
+
+  <div class="stats" id="md-stats">
+    <div class="stat-card">
+      <div class="label">Marked down now</div>
+      <div class="value" id="md-stat-total">—</div>
+    </div>
+    <div class="stat-card">
+      <div class="label">Poor seller</div>
+      <div class="value" id="md-stat-poor" style="color:#ff0066">—</div>
+      <div class="sub pink" id="md-stat-poor-pct"></div>
+    </div>
+    <div class="stat-card">
+      <div class="label">End of season</div>
+      <div class="value" id="md-stat-season" style="color:#f59e0b">—</div>
+      <div class="sub" style="color:#f59e0b" id="md-stat-season-pct"></div>
+    </div>
+    <div class="stat-card">
+      <div class="label">Size clearance</div>
+      <div class="value" id="md-stat-clear" style="color:#00a651">—</div>
+      <div class="sub up" id="md-stat-clear-pct"></div>
+    </div>
+  </div>
+
+  <!-- Reason summary cards -->
+  <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:12px;padding:16px 28px 0">
+    <div style="background:#fff;border:1px solid #e5e5e5;border-radius:4px;padding:16px 18px">
+      <div style="font-size:9px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:#ff0066;margin-bottom:6px">Poor seller</div>
+      <div style="font-size:12px;color:#555;font-weight:500;line-height:1.6">Low scores throughout, never featured, no rank improvement. Markdown used to force clearance of stock that failed to connect with customers.</div>
+      <div style="height:3px;background:#f0f0f0;border-radius:2px;margin-top:12px"><div id="md-bar-poor" style="height:3px;background:#ff0066;border-radius:2px;width:0%;transition:width .4s"></div></div>
+    </div>
+    <div style="background:#fff;border:1px solid #e5e5e5;border-radius:4px;padding:16px 18px">
+      <div style="font-size:9px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:#f59e0b;margin-bottom:6px">End of season</div>
+      <div style="font-size:12px;color:#555;font-weight:500;line-height:1.6">Seasonal styles aged 60+ days marked down as the new season arrives. Expected clearance pattern, not a product failure signal.</div>
+      <div style="height:3px;background:#f0f0f0;border-radius:2px;margin-top:12px"><div id="md-bar-season" style="height:3px;background:#f59e0b;border-radius:2px;width:0%;transition:width .4s"></div></div>
+    </div>
+    <div style="background:#fff;border:1px solid #e5e5e5;border-radius:4px;padding:16px 18px">
+      <div style="font-size:9px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:#00a651;margin-bottom:6px">Size clearance</div>
+      <div style="font-size:12px;color:#555;font-weight:500;line-height:1.6">Previously high-scoring, featured styles being cleared with final sizes remaining. Strong consumer demand confirmed — worth referencing in design decisions.</div>
+      <div style="height:3px;background:#f0f0f0;border-radius:2px;margin-top:12px"><div id="md-bar-clear" style="height:3px;background:#00a651;border-radius:2px;width:0%;transition:width .4s"></div></div>
+    </div>
+  </div>
+
+  <!-- Insights banner -->
+  <div id="md-insights" style="display:none;margin:14px 28px 0;background:#fff8f0;border:1px solid #fed7aa;border-radius:4px;padding:12px 16px">
+    <div style="font-size:9px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:#d97706;margin-bottom:8px">Key insights</div>
+    <div id="md-insights-list" style="display:flex;gap:8px;flex-wrap:wrap"></div>
+  </div>
+
+  <!-- Product table -->
+  <div class="table-wrap" style="padding-top:14px">
+    <div class="table-container">
+      <table>
+        <thead>
+          <tr class="sort-row">
+            <th class="no-sort" style="width:50px"></th>
+            <th class="sortable" data-mdcol="name">Product<span class="sort-icon"></span></th>
+            <th class="sortable" data-mdcol="reason">Reason<span class="sort-icon"></span></th>
+            <th class="sortable" data-mdcol="was_price">Was<span class="sort-icon"></span></th>
+            <th class="sortable" data-mdcol="latest_price">Now<span class="sort-icon"></span></th>
+            <th class="sortable sort-desc" data-mdcol="markdown_depth_pct">Markdown<span class="sort-icon"></span></th>
+            <th class="sortable" data-mdcol="age">Age<span class="sort-icon"></span></th>
+            <th class="sortable" data-mdcol="peak_score">Peak score<span class="sort-icon"></span></th>
+            <th class="no-sort">Score history</th>
+            <th class="sortable" data-mdcol="confidence">Confidence<span class="sort-icon"></span></th>
+          </tr>
+        </thead>
+        <tbody id="md-table-body">
+          <tr><td colspan="10"><div class="empty-state">Loading…</div></td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+</div><!-- /tab-markdown -->
+
 <script>
 // ── Capitalise first letter of each word ──────────────────────────────────────
 const cap = s => s ? s.replace(/(?:^|\s|-)\S/g, c => c.toUpperCase()) : s;
@@ -664,9 +779,11 @@ document.addEventListener('click', e => {
 function switchTab(name) {
   document.getElementById('tab-rankings').style.display = name === 'rankings' ? '' : 'none';
   document.getElementById('tab-keywords').style.display = name === 'keywords' ? '' : 'none';
+  document.getElementById('tab-markdown').style.display = name === 'markdown' ? '' : 'none';
   document.querySelectorAll('.tab-btn').forEach(b =>
     b.classList.toggle('active', b.textContent.trim().toLowerCase().startsWith(name)));
   if (name === 'keywords' && allKeywords.length === 0) loadKeywords();
+  if (name === 'markdown' && allMarkdown.length === 0) loadMarkdown();
 }
 
 
@@ -1000,6 +1117,173 @@ async function selectKeyword(keyword, count) {
       ${price?`<div class="kw-product-price">${price}</div>`:''}
       ${cat?`<div class="kw-product-cat">${cat}</div>`:''}
     </a>`;
+  }).join('');
+}
+
+// ═══════════════════════════════════════════════════
+// MARKDOWN ANALYSIS TAB
+// ═══════════════════════════════════════════════════
+let allMarkdown = [], mdSortCol = 'markdown_depth_pct', mdSortDir = 'desc';
+
+const REASON_LABELS = {
+  poor_seller:   'Poor seller',
+  end_of_season: 'End of season',
+  size_clearance:'Size clearance',
+};
+const REASON_COLOURS = {
+  poor_seller:   '#ff0066',
+  end_of_season: '#f59e0b',
+  size_clearance:'#00a651',
+};
+const REASON_BG = {
+  poor_seller:   '#fff0f3',
+  end_of_season: '#fffbeb',
+  size_clearance:'#f0fdf4',
+};
+const REASON_BORDER = {
+  poor_seller:   '#ffd0d9',
+  end_of_season: '#fde68a',
+  size_clearance:'#bbf7d0',
+};
+const CONF_COLOURS = { high:'#00a651', medium:'#f59e0b', low:'#aaa' };
+
+document.querySelectorAll('th[data-mdcol]').forEach(th => {
+  th.addEventListener('click', () => {
+    const col = th.dataset.mdcol;
+    if (mdSortCol === col) mdSortDir = mdSortDir === 'asc' ? 'desc' : 'asc';
+    else { mdSortCol = col; mdSortDir = col === 'name' ? 'asc' : 'desc'; }
+    document.querySelectorAll('th[data-mdcol]').forEach(h => h.classList.remove('sort-asc','sort-desc'));
+    th.classList.add(mdSortDir === 'asc' ? 'sort-asc' : 'sort-desc');
+    renderMarkdown();
+  });
+});
+
+async function loadMarkdown() {
+  const retailer = document.getElementById('md-filter-retailer').value;
+  const category = document.getElementById('md-filter-category').value;
+  const params   = new URLSearchParams();
+  if (retailer) params.set('retailer', retailer);
+  if (category) params.set('category', category);
+  document.getElementById('md-table-body').innerHTML =
+    `<tr><td colspan="10"><div class="empty-state">Loading…</div></td></tr>`;
+
+  const res  = await fetch('/api/markdown?' + params);
+  const data = await res.json();
+  allMarkdown = data.products || [];
+
+  const s = data.summary || {};
+  const t = s.total || 0;
+  document.getElementById('md-stat-total').textContent   = t;
+  document.getElementById('md-stat-poor').textContent    = s.poor_seller   || 0;
+  document.getElementById('md-stat-season').textContent  = s.end_of_season || 0;
+  document.getElementById('md-stat-clear').textContent   = s.size_clearance|| 0;
+  document.getElementById('md-stat-poor-pct').textContent   = t ? `${Math.round((s.poor_seller||0)/t*100)}% of markdowns`    : '';
+  document.getElementById('md-stat-season-pct').textContent = t ? `${Math.round((s.end_of_season||0)/t*100)}% of markdowns`  : '';
+  document.getElementById('md-stat-clear-pct').textContent  = t ? `${Math.round((s.size_clearance||0)/t*100)}% of markdowns` : '';
+
+  // Update reason card bars
+  if (t > 0) {
+    document.getElementById('md-bar-poor').style.width   = `${Math.round((s.poor_seller||0)/t*100)}%`;
+    document.getElementById('md-bar-season').style.width = `${Math.round((s.end_of_season||0)/t*100)}%`;
+    document.getElementById('md-bar-clear').style.width  = `${Math.round((s.size_clearance||0)/t*100)}%`;
+  }
+
+  // Insights
+  const insights = data.insights || [];
+  const insightBox  = document.getElementById('md-insights');
+  const insightList = document.getElementById('md-insights-list');
+  if (insights.length) {
+    insightBox.style.display = '';
+    insightList.innerHTML = insights.map(i =>
+      `<span style="font-size:10px;font-weight:600;color:#92400e;background:#fff;border:1px solid #fed7aa;border-radius:12px;padding:3px 10px">${i}</span>`
+    ).join('');
+  } else {
+    insightBox.style.display = 'none';
+  }
+
+  renderMarkdown();
+}
+
+function renderMarkdown() {
+  const reason    = document.getElementById('md-filter-reason').value;
+  const minDepth  = parseInt(document.getElementById('md-filter-depth').value) || 0;
+  const tbody     = document.getElementById('md-table-body');
+
+  let vis = allMarkdown.filter(p => {
+    if (reason   && p.reason !== reason)                             return false;
+    if (minDepth && (p.markdown_depth_pct || 0) < minDepth)        return false;
+    return true;
+  });
+
+  vis = [...vis].sort((a,b) => {
+    let va = a[mdSortCol], vb = b[mdSortCol];
+    const confOrder = {high:3, medium:2, low:1};
+    if (mdSortCol === 'confidence') { va = confOrder[va]||0; vb = confOrder[vb]||0; }
+    if (mdSortCol === 'reason')     { va = (va||'').toLowerCase(); vb = (vb||'').toLowerCase(); }
+    if (va == null) va = mdSortDir === 'asc' ? Infinity  : -Infinity;
+    if (vb == null) vb = mdSortDir === 'asc' ? Infinity  : -Infinity;
+    return mdSortDir === 'asc' ? (va<vb?-1:va>vb?1:0) : (va>vb?-1:va<vb?1:0);
+  });
+
+  if (!vis.length) {
+    tbody.innerHTML = `<tr><td colspan="10"><div class="empty-state">
+      <strong>No marked-down products found.</strong>
+      <p>Either no products are currently marked down, or the scorer hasn't run yet.</p>
+    </div></td></tr>`;
+    return;
+  }
+
+  tbody.innerHTML = vis.map(p => {
+    const img = p.image_url
+      ? `<div class="thumb-wrap" style="position:relative">
+           <img src="${p.image_url}" alt="${p.name}" loading="lazy"
+                onerror="this.parentElement.innerHTML='<div class=\\'no-img\\'>&#128094;</div>'">
+           <div class="preview"><img src="${p.image_url}" alt="${p.name}"></div>
+         </div>`
+      : `<div class="thumb-wrap"><div class="no-img">&#128094;</div></div>`;
+
+    const colour = REASON_COLOURS[p.reason] || '#888';
+    const bg     = REASON_BG[p.reason]      || '#f5f5f5';
+    const border = REASON_BORDER[p.reason]  || '#e0e0e0';
+    const label  = REASON_LABELS[p.reason]  || p.reason;
+
+    const depthBadge = p.markdown_depth_pct
+      ? `<span style="font-size:9px;font-weight:700;color:#ff0066;background:#fff0f3;border-radius:10px;padding:2px 7px;margin-left:4px">${p.markdown_depth_pct}% off</span>`
+      : '';
+
+    const confColour = CONF_COLOURS[p.confidence] || '#aaa';
+    const confDots   = ['high','medium','low'].map((l,i) => {
+      const levels = {high:3, medium:2, low:1};
+      const fill   = levels[p.confidence] > i ? confColour : '#e0e0e0';
+      return `<span style="width:8px;height:8px;border-radius:50%;background:${fill};display:inline-block;margin-right:2px"></span>`;
+    }).join('');
+
+    const spark = buildSparkline(p.score_series || []);
+
+    const sub  = cap((p.subcategory || p.category || '').replace(/-/g,' '));
+    const mdDay = p.markdown_day != null ? `Day ${p.markdown_day}` : '—';
+
+    return `<tr>
+      <td style="padding:8px 6px">${img}</td>
+      <td>
+        <a class="product-name" href="${p.url}" target="_blank">${cap(p.name)}</a>
+        <div style="font-size:9px;color:#aaa;font-weight:600;letter-spacing:.5px;text-transform:uppercase;margin-top:2px">${cap(p.retailer||'')} · ${sub}</div>
+      </td>
+      <td>
+        <span style="display:inline-block;font-size:9px;font-weight:700;letter-spacing:1px;text-transform:uppercase;padding:3px 9px;border-radius:24px;background:${bg};color:${colour};border:1px solid ${border};white-space:nowrap">${label}</span>
+      </td>
+      <td style="font-size:12px;font-weight:500;color:#aaa;text-decoration:line-through">
+        ${p.was_price != null ? `£${p.was_price.toFixed(2)}` : '—'}
+      </td>
+      <td style="font-size:12px;font-weight:700;color:#ff0066">
+        ${p.latest_price != null ? `£${p.latest_price.toFixed(2)}` : '—'}${depthBadge}
+      </td>
+      <td style="font-size:11px;color:#555;font-weight:600">${mdDay}</td>
+      <td style="font-size:10px;color:#aaa;font-weight:500">${p.age}d</td>
+      <td style="font-size:14px;font-weight:700;color:#000">${p.peak_score}</td>
+      <td>${spark}</td>
+      <td style="white-space:nowrap">${confDots}<span style="font-size:10px;font-weight:600;color:${confColour};margin-left:4px;text-transform:capitalize">${p.confidence}</span></td>
+    </tr>`;
   }).join('');
 }
 
