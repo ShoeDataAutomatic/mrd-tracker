@@ -610,6 +610,17 @@
 // ── Capitalise first letter of each word ──────────────────────────────────────
 const cap = s => s ? s.replace(/(?:^|\s|-)\S/g, c => c.toUpperCase()) : s;
 
+// ── Subcategory normalisation (display-only, DB unchanged) ───────────────────
+const SUB_NORM_MAP = {
+  'sandals and flipflops':  'Sandals, sliders and flip-flops',
+  'sandals and flip flops': 'Sandals, sliders and flip-flops',
+  'sandals and sliders':    'Sandals, sliders and flip-flops',
+};
+function normSub(s) {
+  if (!s) return s;
+  return SUB_NORM_MAP[s.toLowerCase()] || cap(s);
+}
+
 // ═══════════════════════════════════════════════════
 // MULTI-SELECT COMPONENT
 // ═══════════════════════════════════════════════════
@@ -850,7 +861,7 @@ async function loadRankings() {
 
   // Populate multi-selects from loaded data
   const retailers     = [...new Set(allProducts.map(p => p.retailer).filter(Boolean))].sort();
-  const subcategories = [...new Set(allProducts.map(p => p.subcategory).filter(Boolean))].sort();
+  const subcategories = [...new Set(allProducts.map(p => normSub(p.subcategory)).filter(Boolean))].sort();
   initMultiSelects(retailers, subcategories);
 
   // Populate price dropdown dynamically
@@ -895,7 +906,7 @@ function renderTable() {
     // Multi-selects — empty array = no filter
     if (selRetailer.length    && !selRetailer.map(v=>v.toLowerCase()).includes(ret)) return false;
     if (selCategory.length    && !selCategory.some(v => cat.split('/').includes(v.toLowerCase()))) return false;
-    if (selSubcategory.length && !selSubcategory.map(v=>v.toLowerCase()).includes(sub)) return false;
+    if (selSubcategory.length && !selSubcategory.map(v=>v.toLowerCase()).includes(normSub(sub).toLowerCase())) return false;
     if (selSignal.length      && !selSignal.some(s => (p.signal_tags||[]).includes(s))) return false;
 
     // Score filter
@@ -943,7 +954,7 @@ function renderTable() {
     const age    = p.days_tracked  != null ? `${p.days_tracked}d` : '—';
     const barPct = Math.min(100,(p.total_score/maxScore)*100).toFixed(0);
     const catD   = (p.category   ||'').replace(/-/g,' ')||'—';
-    const subD   = (p.subcategory||'').replace(/-/g,' ')||'—';
+    const subD   = normSub((p.subcategory||'').replace(/-/g,' '))||'—';
     const tags   = (p.signal_tags||[]).map(t=>`<span class="tag ${TAG_CLASSES[t]||'tag-markdown'}">${t}</span>`).join('');
     const spark  = buildSparkline(p.score_series||[]);
     const img    = p.image_url
@@ -1115,7 +1126,7 @@ async function selectKeyword(keyword, count) {
   }
   grid.innerHTML=products.map(p=>{
     const price=(p.latest_price!=null)?`£${p.latest_price.toFixed(2)}`:'';
-    const cat=(p.subcategory||p.category||'').replace(/-/g,' ');
+    const cat=normSub((p.subcategory||p.category||'').replace(/-/g,' '));
     const imgH=p.image_url
       ?`<img src="${p.image_url}" alt="${p.name}" loading="lazy"
             onerror="this.parentElement.innerHTML='<div class=\\'no-img\\'>&#128094;</div>'">`
@@ -1269,7 +1280,7 @@ function renderMarkdown() {
 
     const spark = buildSparkline(p.score_series || []);
 
-    const sub  = cap((p.subcategory || p.category || '').replace(/-/g,' '));
+    const sub  = normSub((p.subcategory || p.category || '').replace(/-/g,' '));
     const mdDay = p.markdown_day != null ? `Day ${p.markdown_day}` : '—';
 
     return `<tr>
