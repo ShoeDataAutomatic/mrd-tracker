@@ -1,4 +1,3 @@
-
 # MRD Trend Tracker
 
 Automated footwear trend intelligence. Monitors retailer websites daily,
