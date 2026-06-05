@@ -348,20 +348,43 @@
             <th id="th-category"></th>
             <!-- Subcategory: multi-select -->
             <th id="th-subcategory"></th>
-            <!-- Score: number range -->
+            <!-- Score: preset dropdown -->
             <th>
-              <input class="f-text" type="number" id="col-filter-score-min" placeholder="Min" style="width:48%;margin-right:2%">
-              <input class="f-text" type="number" id="col-filter-score-max" placeholder="Max" style="width:48%">
+              <select class="f-text" id="col-filter-score" onchange="renderTable()">
+                <option value="">Any score</option>
+                <option value="lt250">Less than 250</option>
+                <option value="gt250">Greater than 250</option>
+                <option value="gt500">Greater than 500</option>
+                <option value="gt750">Greater than 750</option>
+                <option value="gt1000">Greater than 1,000</option>
+              </select>
             </th>
-            <!-- Price: number range -->
+            <!-- Price: dynamic dropdown -->
             <th>
-              <input class="f-text" type="number" id="col-filter-price-min" placeholder="Min £" style="width:48%;margin-right:2%">
-              <input class="f-text" type="number" id="col-filter-price-max" placeholder="Max £" style="width:48%">
+              <select class="f-text" id="col-filter-price" onchange="renderTable()">
+                <option value="">Any price</option>
+              </select>
             </th>
-            <!-- Rank -->
-            <th><input class="f-text" type="number" id="col-filter-rank-max" placeholder="≤ rank"></th>
-            <!-- Age -->
-            <th><input class="f-text" type="number" id="col-filter-age-min" placeholder="Min days"></th>
+            <!-- Rank: preset dropdown -->
+            <th>
+              <select class="f-text" id="col-filter-rank" onchange="renderTable()">
+                <option value="">Any rank</option>
+                <option value="25">Top 25</option>
+                <option value="50">Top 50</option>
+                <option value="100">Top 100</option>
+                <option value="200">Top 200</option>
+              </select>
+            </th>
+            <!-- Age: preset dropdown -->
+            <th>
+              <select class="f-text" id="col-filter-age" onchange="renderTable()">
+                <option value="">Any age</option>
+                <option value="14">Less than 14 days</option>
+                <option value="28">Less than 28 days</option>
+                <option value="90">Less than 90 days</option>
+                <option value="180">Less than 180 days</option>
+              </select>
+            </th>
             <!-- Signal: multi-select -->
             <th id="th-signal"></th>
             <th></th>
@@ -677,12 +700,7 @@ document.querySelectorAll('th.sortable').forEach(th => {
   });
 });
 
-['col-filter-name','col-filter-score-min','col-filter-score-max',
- 'col-filter-price-min','col-filter-price-max','col-filter-rank-max','col-filter-age-min']
-  .forEach(id => {
-    const el = document.getElementById(id);
-    if (el) el.addEventListener('input', renderTable);
-  });
+document.getElementById('col-filter-name').addEventListener('input', renderTable);
 
 async function loadStats() {
   const res = await fetch('/api/stats');
@@ -704,23 +722,31 @@ async function loadRankings() {
   allProducts = await res.json();
   maxScore    = Math.max(...allProducts.map(p => p.total_score), 1);
 
-  // Derive unique values to populate dynamic multi-selects
+  // Populate multi-selects from loaded data
   const retailers     = [...new Set(allProducts.map(p => p.retailer).filter(Boolean))].sort();
   const subcategories = [...new Set(allProducts.map(p => p.subcategory).filter(Boolean))].sort();
   initMultiSelects(retailers, subcategories);
+
+  // Populate price dropdown dynamically
+  const prices = [...new Set(allProducts.map(p => p.latest_price).filter(v => v != null))]
+    .sort((a, b) => a - b);
+  const priceSelect = document.getElementById('col-filter-price');
+  const prevPrice   = priceSelect ? priceSelect.value : '';
+  if (priceSelect) {
+    priceSelect.innerHTML = `<option value="">Any price</option>` +
+      prices.map(p => `<option value="${p.toFixed(2)}"${prevPrice === p.toFixed(2) ? ' selected' : ''}>£${p.toFixed(2)}</option>`).join('');
+  }
 
   renderTable();
 }
 
 function renderTable() {
   const colName  = (document.getElementById('col-filter-name').value || '').toLowerCase();
-  const csn      = parseFloat(document.getElementById('col-filter-score-min').value) || null;
-  const csx      = parseFloat(document.getElementById('col-filter-score-max').value) || null;
-  const cpn      = parseFloat(document.getElementById('col-filter-price-min').value) || null;
-  const cpx      = parseFloat(document.getElementById('col-filter-price-max').value) || null;
-  const crx      = parseInt(document.getElementById('col-filter-rank-max').value)    || null;
-  const can      = parseInt(document.getElementById('col-filter-age-min').value)     || null;
-  const tbody    = document.getElementById('product-table-body');
+  const scoreFilter = document.getElementById('col-filter-score').value;
+  const priceFilter = document.getElementById('col-filter-price').value;
+  const rankFilter  = document.getElementById('col-filter-rank').value;
+  const ageFilter   = document.getElementById('col-filter-age').value;
+  const tbody       = document.getElementById('product-table-body');
 
   // Multi-select values
   const selRetailer    = msSelections.retailer;
@@ -746,13 +772,18 @@ function renderTable() {
     if (selSubcategory.length && !selSubcategory.map(v=>v.toLowerCase()).includes(sub)) return false;
     if (selSignal.length      && !selSignal.some(s => (p.signal_tags||[]).includes(s))) return false;
 
-    // Numeric filters
-    if (csn !== null && p.total_score < csn)  return false;
-    if (csx !== null && p.total_score > csx)  return false;
-    if (cpn !== null && (p.latest_price == null || p.latest_price < cpn)) return false;
-    if (cpx !== null && (p.latest_price == null || p.latest_price > cpx)) return false;
-    if (crx !== null && (p.latest_rank  == null || p.latest_rank  > crx)) return false;
-    if (can !== null && (p.days_tracked == null || p.days_tracked < can)) return false;
+    // Score filter
+    if (scoreFilter === 'lt250'  && p.total_score >= 250)  return false;
+    if (scoreFilter === 'gt250'  && p.total_score <= 250)  return false;
+    if (scoreFilter === 'gt500'  && p.total_score <= 500)  return false;
+    if (scoreFilter === 'gt750'  && p.total_score <= 750)  return false;
+    if (scoreFilter === 'gt1000' && p.total_score <= 1000) return false;
+    // Price filter (exact match on scraped price)
+    if (priceFilter && (p.latest_price == null || p.latest_price.toFixed(2) !== priceFilter)) return false;
+    // Rank filter (Top N = rank <= N)
+    if (rankFilter && (p.latest_rank == null || p.latest_rank > parseInt(rankFilter))) return false;
+    // Age filter (less than N days)
+    if (ageFilter  && (p.days_tracked == null || p.days_tracked >= parseInt(ageFilter))) return false;
 
     return true;
   });
@@ -828,12 +859,10 @@ function updateClearButton() {
   const hasFilters =
     Object.values(msSelections).some(a => a.length > 0) ||
     document.getElementById('col-filter-name').value ||
-    document.getElementById('col-filter-score-min').value ||
-    document.getElementById('col-filter-score-max').value ||
-    document.getElementById('col-filter-price-min').value ||
-    document.getElementById('col-filter-price-max').value ||
-    document.getElementById('col-filter-rank-max').value ||
-    document.getElementById('col-filter-age-min').value;
+    document.getElementById('col-filter-score').value ||
+    document.getElementById('col-filter-price').value ||
+    document.getElementById('col-filter-rank').value ||
+    document.getElementById('col-filter-age').value;
   const btn = document.getElementById('btn-clear-filters');
   if (btn) btn.style.display = hasFilters ? 'inline-block' : 'none';
 }
@@ -845,9 +874,8 @@ function clearAllFilters() {
     _msOptions.retailer    || [],
     _msOptions.subcategory || []
   );
-  // Reset text / number inputs
-  ['col-filter-name','col-filter-score-min','col-filter-score-max',
-   'col-filter-price-min','col-filter-price-max','col-filter-rank-max','col-filter-age-min']
+  // Reset text / select inputs
+  ['col-filter-name','col-filter-score','col-filter-price','col-filter-rank','col-filter-age']
     .forEach(id => { const el = document.getElementById(id); if (el) el.value = ''; });
   renderTable();
 }
