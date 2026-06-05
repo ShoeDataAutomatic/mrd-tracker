@@ -32,15 +32,24 @@
     .header-meta .time   { color: #fff; }
 
     /* ── Tab bar ── */
-    .tab-bar { background: #fff; border-bottom: 1px solid #e5e5e5; padding: 0 28px; display: flex; }
-    .tab-btn {
-      background: none; border: none; border-bottom: 3px solid transparent;
-      padding: 14px 22px 12px 0; margin-right: 24px;
-      font-size: 10px; font-weight: 700; letter-spacing: 2px; text-transform: uppercase;
-      font-family: 'Montserrat', sans-serif; color: #aaa; cursor: pointer;
+    .tab-bar {
+      background: #111;
+      border-bottom: 1px solid #1f1f1f;
+      padding: 10px 28px;
+      display: flex;
+      gap: 8px;
     }
-    .tab-btn.active { color: #000; border-bottom-color: #ff0066; }
-    .tab-btn:hover  { color: #000; }
+    .tab-btn {
+      background: transparent;
+      border: 1.5px solid #555;
+      border-radius: 24px;
+      padding: 8px 20px;
+      font-size: 10px; font-weight: 700; letter-spacing: 1.5px; text-transform: uppercase;
+      font-family: 'Montserrat', sans-serif;
+      color: #fff; cursor: pointer; white-space: nowrap;
+    }
+    .tab-btn.active { background: #fff; border-color: #ff0066; color: #000; }
+    .tab-btn:hover:not(.active) { border-color: #aaa; }
 
     /* ── Controls bar ── */
     .controls {
@@ -272,9 +281,9 @@
 
 <!-- ═══ TAB BAR ═══ -->
 <div class="tab-bar">
-  <button class="tab-btn active" onclick="switchTab('rankings')">Rankings</button>
-  <button class="tab-btn" onclick="switchTab('keywords')">Keyword analysis</button>
-  <button class="tab-btn" onclick="switchTab('markdown')">Markdown analysis</button>
+  <button class="tab-btn active" data-tab="rankings" onclick="switchTab('rankings')">Rankings</button>
+  <button class="tab-btn" data-tab="keywords" onclick="switchTab('keywords')">Keyword analysis</button>
+  <button class="tab-btn" data-tab="markdown" onclick="switchTab('markdown')">Markdown analysis</button>
 </div>
 
 <!-- ═══════════════════════ RANKINGS TAB ═══════════════════════ -->
@@ -781,7 +790,7 @@ function switchTab(name) {
   document.getElementById('tab-keywords').style.display = name === 'keywords' ? '' : 'none';
   document.getElementById('tab-markdown').style.display = name === 'markdown' ? '' : 'none';
   document.querySelectorAll('.tab-btn').forEach(b =>
-    b.classList.toggle('active', b.textContent.trim().toLowerCase().startsWith(name)));
+    b.classList.toggle('active', b.dataset.tab === name));
   if (name === 'keywords' && allKeywords.length === 0) loadKeywords();
   if (name === 'markdown' && allMarkdown.length === 0) loadMarkdown();
 }
