@@ -229,7 +229,7 @@
     .kw-table tbody tr { cursor: pointer; }
     .kw-table tbody tr:hover { background: #fafafa; }
     .kw-table tbody tr.kw-active { background: #000; }
-    .kw-word { font-size: 12px; font-weight: 600; color: #000; }
+    .kw-word { font-size: 12px; font-weight: 600; color: #000; text-transform: capitalize; }
     .kw-active .kw-word { color: #fff; }
     .kw-bar-wrap { display: flex; align-items: center; gap: 6px; }
     .kw-bar-bg   { flex: 1; height: 4px; background: #f0f0f0; border-radius: 2px; min-width: 50px; }
@@ -251,9 +251,9 @@
     .kw-product-thumb   { width: 160px; height: 160px; border-radius: 2px; overflow: hidden; background: #f5f5f5; border: 1px solid #eee; }
     .kw-product-thumb img { width: 100%; height: 100%; object-fit: cover; display: block; }
     .kw-product-thumb .no-img { width: 100%; height: 100%; display: flex; align-items: center; justify-content: center; color: #ccc; font-size: 32px; }
-    .kw-product-name  { font-size: 11px; font-weight: 600; color: #333; text-align: center; line-height: 1.3; max-width: 160px; overflow: hidden; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; }
+    .kw-product-name  { font-size: 11px; font-weight: 600; color: #333; text-align: center; line-height: 1.3; max-width: 160px; overflow: hidden; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; text-transform: capitalize; }
     .kw-product-price { font-size: 12px; font-weight: 700; color: #000; }
-    .kw-product-cat   { font-size: 9px; font-weight: 600; letter-spacing: 1px; text-transform: uppercase; color: #bbb; }
+    .kw-product-cat   { font-size: 9px; font-weight: 600; letter-spacing: 1px; text-transform: capitalize; color: #bbb; }
     .kw-placeholder   { display: flex; flex-direction: column; align-items: center; justify-content: center; height: 200px; color: #ccc; text-align: center; gap: 8px; }
     .kw-placeholder p { font-size: 10px; font-weight: 700; letter-spacing: 2px; text-transform: uppercase; }
   </style>
@@ -478,6 +478,9 @@
 </div><!-- /tab-keywords -->
 
 <script>
+// ── Capitalise first letter of each word ──────────────────────────────────────
+const cap = s => s ? s.replace(/(?:^|\s|-)\S/g, c => c.toUpperCase()) : s;
+
 // ═══════════════════════════════════════════════════
 // MULTI-SELECT COMPONENT
 // ═══════════════════════════════════════════════════
@@ -705,9 +708,9 @@ async function loadStats() {
   const d   = await res.json();
   document.getElementById('stat-total').textContent     = d.total_products;
   document.getElementById('stat-new').textContent       = d.new_today;
-  document.getElementById('stat-top').textContent       = d.top_product;
+  document.getElementById('stat-top').textContent       = cap(d.top_product);
   document.getElementById('stat-top-score').textContent = d.top_score ? `${d.top_score.toFixed(0)} pts` : '';
-  document.getElementById('stat-retailer').textContent  = document.getElementById('filter-retailer').value || 'All';
+  document.getElementById('stat-retailer').textContent  = cap(document.getElementById('filter-retailer').value) || 'All';
   document.getElementById('header-time').textContent    =
     new Date().toLocaleTimeString('en-GB', {hour:'2-digit',minute:'2-digit'});
 }
@@ -817,7 +820,7 @@ function renderTable() {
       <td class="rank-num">${i+1}</td>
       <td style="padding:8px 6px">${img}</td>
       <td><a class="product-name" href="${p.url}" target="_blank">${p.name}</a></td>
-      <td style="font-size:10px;color:#aaa;font-weight:600;letter-spacing:.5px">${p.retailer}</td>
+      <td style="font-size:10px;color:#aaa;font-weight:600;letter-spacing:.5px;text-transform:capitalize">${p.retailer}</td>
       <td><span class="cat-badge">${catD}</span></td>
       <td><span class="cat-badge">${subD}</span></td>
       <td>
@@ -875,11 +878,11 @@ async function loadKeywords() {
   document.getElementById('kw-stat-unique').textContent   = data.unique_count   ?? '—';
   document.getElementById('kw-stat-products').textContent = data.products_total ?? '—';
   if (data.top_keyword) {
-    document.getElementById('kw-stat-top').textContent       = data.top_keyword.keyword;
+    document.getElementById('kw-stat-top').textContent       = cap(data.top_keyword.keyword);
     document.getElementById('kw-stat-top-count').textContent = `${data.top_keyword.count} products`;
   } else { document.getElementById('kw-stat-top').textContent='—'; }
   if (data.fastest_rising) {
-    document.getElementById('kw-stat-rising').textContent       = data.fastest_rising.keyword;
+    document.getElementById('kw-stat-rising').textContent       = cap(data.fastest_rising.keyword);
     document.getElementById('kw-stat-rising-delta').textContent = `+${data.fastest_rising.delta}% vs prev period`;
   } else { document.getElementById('kw-stat-rising').textContent='—'; }
   activeKeyword=null;
@@ -935,7 +938,7 @@ function kwSort(th) {
 async function selectKeyword(keyword, count) {
   activeKeyword=keyword;
   renderKeywords();
-  document.getElementById('kw-panel-title').textContent=`"${keyword}"`;
+  document.getElementById('kw-panel-title').textContent=`"${cap(keyword)}"`;
   const pill=document.getElementById('kw-panel-count');
   pill.textContent=`${count} products`; pill.style.display='inline-block';
   const grid=document.getElementById('kw-products-grid');

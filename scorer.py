@@ -80,8 +80,10 @@ def _score_product(product):
     # 2. Long runner
     #    Primark cycles their online catalog quickly, so a product that
     #    has been present for 30+ days is likely a sustained performer.
+    #    Not awarded if the product has since been removed.
     # ------------------------------------------------------------------
-    if first_seen and (today - first_seen).days >= 30:
+    is_removed = last_seen and (today - last_seen).days >= 1
+    if first_seen and (today - first_seen).days >= 30 and not is_removed:
         signals['long_runner'] = SCORING['long_runner']
         score += SCORING['long_runner']
 
@@ -95,7 +97,7 @@ def _score_product(product):
     # ------------------------------------------------------------------
     # 4. Product removed (last_seen is not today)
     # ------------------------------------------------------------------
-    if last_seen and (today - last_seen).days >= 1:
+    if is_removed:
         signals['product_removed'] = SCORING['product_removed']
         score += SCORING['product_removed']
 
