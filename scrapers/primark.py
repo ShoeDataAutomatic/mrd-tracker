@@ -190,12 +190,36 @@ class PrimarkScraper(BaseScraper):
     # -----------------------------------------------------------------------
 
     def _extract_docs(self, data):
+        # Primary path — works for broad category pages (women/shoes, men/shoes, etc.)
         d     = (data.get('data')                 or {})
         nav   = (d.get('categoryNavItem')         or {})
         props = (nav.get('props')                 or {})
         pd    = (props.get('productsData')        or {})
         resp  = (pd.get('response')               or {})
-        return resp.get('docs') or [], resp.get('numFound')
+        docs  = resp.get('docs')
+        num   = resp.get('numFound')
+        if docs:
+            return docs, num
+
+        # Fallback — recursively search the response tree for a docs list.
+        # Handles subcategory pages where Primark uses a different JSON structure.
+        docs, num = self._find_docs_recursive(data)
+        if docs:
+            self.log(f'Used recursive extraction — found {len(docs)} docs')
+        return docs or [], num
+
+    def _find_docs_recursive(self, obj, depth=0):
+        """Walk the JSON tree looking for a non-empty docs list."""
+        if depth > 10 or not isinstance(obj, dict):
+            return None, None
+        if 'docs' in obj and isinstance(obj.get('docs'), list) and obj['docs']:
+            return obj['docs'], obj.get('numFound')
+        for v in obj.values():
+            if isinstance(v, dict):
+                result = self._find_docs_recursive(v, depth + 1)
+                if result[0]:
+                    return result
+        return None, None
 
     def _parse_product(self, item, category_path, rank, category_label=None, subcategory=None):
         pid = str(item.get('pid', '')).strip()
@@ -268,7 +292,7 @@ class PrimarkScraper(BaseScraper):
 
     def discover(self):
         """Test the multi-batch loader. Run with: python run.py --discover primark"""
-        slug = 'women/shoes'
+        slug = 'women/shoes/heels'
         url  = f'https://www.primark.com/en-gb/c/{slug}'
 
         print('\n=== Primark discovery mode (multi-batch) ===\n')
