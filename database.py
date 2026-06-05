@@ -320,13 +320,14 @@ def get_top_products(limit=50, days=30, retailer=None):
             sn.rank          AS latest_rank,
             sn.review_count  AS latest_reviews,
             sn.is_featured   AS latest_featured,
-            sn.timestamp     AS latest_snapshot_time
+            sn.timestamp     AS latest_snapshot_time,
+            sn.raw_data      AS latest_raw_data
         FROM products p
         LEFT JOIN scores s
             ON s.product_id = p.id
             AND s.scored_date >= date('now', ?)
         LEFT JOIN (
-            SELECT product_id, price, rank, review_count, is_featured, timestamp,
+            SELECT product_id, price, rank, review_count, is_featured, timestamp, raw_data,
                    ROW_NUMBER() OVER (PARTITION BY product_id ORDER BY timestamp DESC) AS rn
             FROM snapshots
         ) sn ON sn.product_id = p.id AND sn.rn = 1

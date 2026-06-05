@@ -7,6 +7,7 @@ Called after each scrape run. For each product:
   3. Calculate today's score and write it to the scores table
 """
 
+import json
 import logging
 from datetime import datetime, date, timedelta
 
@@ -144,10 +145,23 @@ def _score_product(product):
                 score += SCORING['review_velocity']
 
         # 9. Price markdown
+        # Detect via snapshot price comparison OR via the scraper's raw_data flag
+        # (catches products that arrived already marked down)
         prev_price = previous.get('price')
         curr_price = latest.get('price')
-        if prev_price and curr_price and curr_price < prev_price:
-            signals['price_markdown'] = SCORING['price_markdown']
+        try:
+            raw = json.loads(latest.get('raw_data') or '{}')
+        except Exception:
+            raw = {}
+        is_markdown_flag = raw.get('is_markdown', False)
+        was_price        = raw.get('was_price')
+
+        price_dropped = prev_price and curr_price and curr_price < prev_price
+        if price_dropped or is_markdown_flag:
+            signals['price_markdown'] = {
+                'score':     SCORING['price_markdown'],
+                'was_price': was_price or (prev_price if price_dropped else None),
+            }
             score += SCORING['price_markdown']
 
     return round(score, 2), signals
@@ -172,6 +186,16 @@ def get_rankings(limit=50, days=None, retailer=None):
 
         row['days_tracked']  = (today - first_seen).days if first_seen else 0
         row['score_history'] = db.get_score_history(pid, days=days)
+
+        # Extract was_price from the latest snapshot's raw_data blob
+        try:
+            raw = json.loads(row.get('latest_raw_data') or '{}')
+            row['was_price']   = raw.get('was_price')
+            row['is_markdown'] = raw.get('is_markdown', False)
+        except Exception:
+            row['was_price']   = None
+            row['is_markdown'] = False
+        row.pop('latest_raw_data', None)  # Keep response lean
 
         # Build a human-readable signal summary for the most recent score
         history = row['score_history']

@@ -808,7 +808,11 @@ function renderTable() {
 
   updateClearButton();
   tbody.innerHTML = vis.map((p,i) => {
-    const price  = p.latest_price  != null ? `£${p.latest_price.toFixed(2)}` : '—';
+    const currPrice = p.latest_price != null ? `£${p.latest_price.toFixed(2)}` : '—';
+    const wasPrice  = p.was_price   != null ? `£${p.was_price.toFixed(2)}`    : null;
+    const price     = wasPrice
+      ? `<span style="text-decoration:line-through;color:#ccc;font-size:10px;font-weight:500">${wasPrice}</span> <span style="color:#ff0066;font-weight:700">${currPrice}</span>`
+      : currPrice;
     const rank   = p.latest_rank   != null ? `#${p.latest_rank}` : '—';
     const age    = p.days_tracked  != null ? `${p.days_tracked}d` : '—';
     const barPct = Math.min(100,(p.total_score/maxScore)*100).toFixed(0);
@@ -834,7 +838,7 @@ function renderTable() {
         <div class="score-val">${p.total_score.toFixed(0)}</div>
         <div class="score-bar-wrap"><div class="score-bar" style="width:${barPct}%"></div></div>
       </td>
-      <td class="price">${price}</td>
+      <td class="price" style="white-space:nowrap">${price}</td>
       <td class="page-rank">${rank}</td>
       <td class="age-val">${age}</td>
       <td><div class="tags">${tags}</div></td>
