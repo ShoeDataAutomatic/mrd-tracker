@@ -23,155 +23,61 @@
       align-items: center;
       justify-content: space-between;
     }
-    .header-logo {
-      font-size: 18px;
-      font-weight: 700;
-      letter-spacing: 3px;
-      text-transform: uppercase;
-      color: #fff;
-    }
+    .header-logo { font-size: 18px; font-weight: 700; letter-spacing: 3px; text-transform: uppercase; color: #fff; }
     .header-logo span { color: #ff0066; }
-    .header-meta {
-      display: flex;
-      align-items: center;
-      gap: 20px;
-      font-size: 10px;
-      letter-spacing: 1.5px;
-      text-transform: uppercase;
-      font-weight: 600;
-    }
-    .header-meta .live-dot {
-      width: 6px; height: 6px;
-      background: #ff0066;
-      border-radius: 50%;
-      display: inline-block;
-      margin-right: 6px;
-    }
-    .header-meta .live { color: #ff0066; }
+    .header-meta { display: flex; align-items: center; gap: 20px; font-size: 10px; letter-spacing: 1.5px; text-transform: uppercase; font-weight: 600; }
+    .header-meta .live-dot { width: 6px; height: 6px; background: #ff0066; border-radius: 50%; display: inline-block; margin-right: 6px; }
+    .header-meta .live   { color: #ff0066; }
     .header-meta .scrape { color: #666; }
-    .header-meta .time { color: #fff; }
+    .header-meta .time   { color: #fff; }
 
     /* ── Tab bar ── */
-    .tab-bar {
-      background: #fff;
-      border-bottom: 1px solid #e5e5e5;
-      padding: 0 28px;
-      display: flex;
-    }
+    .tab-bar { background: #fff; border-bottom: 1px solid #e5e5e5; padding: 0 28px; display: flex; }
     .tab-btn {
-      background: none; border: none;
-      border-bottom: 3px solid transparent;
-      padding: 14px 22px 12px 0;
-      margin-right: 24px;
-      font-size: 10px; font-weight: 700;
-      letter-spacing: 2px; text-transform: uppercase;
-      font-family: 'Montserrat', sans-serif;
-      color: #aaa; cursor: pointer;
+      background: none; border: none; border-bottom: 3px solid transparent;
+      padding: 14px 22px 12px 0; margin-right: 24px;
+      font-size: 10px; font-weight: 700; letter-spacing: 2px; text-transform: uppercase;
+      font-family: 'Montserrat', sans-serif; color: #aaa; cursor: pointer;
     }
     .tab-btn.active { color: #000; border-bottom-color: #ff0066; }
     .tab-btn:hover  { color: #000; }
 
     /* ── Controls bar ── */
     .controls {
-      background: #fff;
-      border-bottom: 1px solid #e5e5e5;
-      padding: 12px 28px;
-      display: flex;
-      gap: 8px;
-      align-items: center;
-      flex-wrap: wrap;
+      background: #fff; border-bottom: 1px solid #e5e5e5;
+      padding: 12px 28px; display: flex; gap: 8px; align-items: center; flex-wrap: wrap;
     }
-    .controls select,
-    .controls input[type="text"] {
-      border: 1.5px solid #e0e0e0;
-      border-radius: 24px;
-      padding: 7px 16px;
-      font-size: 11px;
-      font-family: 'Montserrat', sans-serif;
-      font-weight: 500;
-      color: #222;
-      outline: none;
-      background: #fff;
-      letter-spacing: .3px;
-      appearance: none;
-      -webkit-appearance: none;
+    .controls select, .controls input[type="text"] {
+      border: 1.5px solid #e0e0e0; border-radius: 24px; padding: 7px 16px;
+      font-size: 11px; font-family: 'Montserrat', sans-serif; font-weight: 500;
+      color: #222; outline: none; background: #fff; appearance: none; -webkit-appearance: none;
     }
-    .controls select:focus,
-    .controls input[type="text"]:focus { border-color: #000; }
+    .controls select:focus, .controls input[type="text"]:focus { border-color: #000; }
     .btn-refresh {
-      margin-left: auto;
-      background: #ff0066;
-      color: #fff;
-      border: none;
-      border-radius: 24px;
-      padding: 8px 22px;
-      font-size: 10px;
-      font-weight: 700;
-      letter-spacing: 2px;
-      text-transform: uppercase;
-      font-family: 'Montserrat', sans-serif;
-      cursor: pointer;
+      margin-left: auto; background: #ff0066; color: #fff; border: none;
+      border-radius: 24px; padding: 8px 22px; font-size: 10px; font-weight: 700;
+      letter-spacing: 2px; text-transform: uppercase; font-family: 'Montserrat', sans-serif; cursor: pointer;
     }
     .btn-refresh:hover { background: #cc0052; }
 
     /* ── Category pills ── */
-    .category-pills {
-      background: #fff;
-      border-bottom: 1px solid #e5e5e5;
-      padding: 10px 28px;
-      display: flex;
-      gap: 6px;
-    }
+    .category-pills { background: #fff; border-bottom: 1px solid #e5e5e5; padding: 10px 28px; display: flex; gap: 6px; }
     .pill {
-      background: #fff;
-      border: 1.5px solid #e0e0e0;
-      border-radius: 24px;
-      padding: 5px 16px;
-      font-size: 10px;
-      font-weight: 700;
-      font-family: 'Montserrat', sans-serif;
-      letter-spacing: 1.5px;
-      text-transform: uppercase;
-      cursor: pointer;
-      color: #999;
+      background: #fff; border: 1.5px solid #e0e0e0; border-radius: 24px;
+      padding: 5px 16px; font-size: 10px; font-weight: 700;
+      font-family: 'Montserrat', sans-serif; letter-spacing: 1.5px; text-transform: uppercase;
+      cursor: pointer; color: #999;
     }
     .pill:hover  { border-color: #000; color: #000; }
     .pill.active { background: #000; border-color: #000; color: #fff; }
 
     /* ── Stats row ── */
-    .stats {
-      display: grid;
-      grid-template-columns: repeat(4, 1fr);
-      background: #fff;
-      border-bottom: 1px solid #e5e5e5;
-    }
-    .stat-card {
-      padding: 20px 24px;
-      border-right: 1px solid #f0f0f0;
-    }
+    .stats { display: grid; grid-template-columns: repeat(4,1fr); background: #fff; border-bottom: 1px solid #e5e5e5; }
+    .stat-card { padding: 20px 24px; border-right: 1px solid #f0f0f0; }
     .stat-card:last-child { border-right: none; }
-    .stat-card .label {
-      font-size: 9px;
-      font-weight: 700;
-      letter-spacing: 2px;
-      text-transform: uppercase;
-      color: #bbb;
-      margin-bottom: 10px;
-    }
-    .stat-card .value {
-      font-size: 36px;
-      font-weight: 700;
-      color: #000;
-      letter-spacing: -1px;
-      line-height: 1;
-    }
-    .stat-card .value.sm {
-      font-size: 16px;
-      font-weight: 700;
-      letter-spacing: 0;
-      margin-top: 5px;
-      line-height: 1.3;
-    }
+    .stat-card .label { font-size: 9px; font-weight: 700; letter-spacing: 2px; text-transform: uppercase; color: #bbb; margin-bottom: 10px; }
+    .stat-card .value { font-size: 36px; font-weight: 700; color: #000; letter-spacing: -1px; line-height: 1; }
+    .stat-card .value.sm { font-size: 16px; font-weight: 700; letter-spacing: 0; margin-top: 5px; line-height: 1.3; }
     .stat-card .sub { font-size: 10px; font-weight: 600; margin-top: 6px; }
     .stat-card .sub.up   { color: #00a651; }
     .stat-card .sub.pink { color: #ff0066; }
@@ -179,26 +85,13 @@
 
     /* ── Table ── */
     .table-wrap { padding: 20px 28px 28px; }
-    .table-container {
-      background: #fff;
-      border: 1px solid #e5e5e5;
-      border-radius: 4px;
-      overflow: hidden;
-    }
+    .table-container { background: #fff; border: 1px solid #e5e5e5; border-radius: 4px; overflow: visible; }
     table { width: 100%; border-collapse: collapse; }
-
-    thead tr { background: #000; }
+    thead tr.sort-row { background: #000; }
     th {
-      padding: 11px 14px;
-      text-align: left;
-      font-size: 9px;
-      font-weight: 700;
-      font-family: 'Montserrat', sans-serif;
-      color: #fff;
-      text-transform: uppercase;
-      letter-spacing: 2px;
-      white-space: nowrap;
-      border: none;
+      padding: 11px 14px; text-align: left; font-size: 9px; font-weight: 700;
+      font-family: 'Montserrat', sans-serif; color: #fff; text-transform: uppercase;
+      letter-spacing: 2px; white-space: nowrap; border: none;
     }
     th.sortable { cursor: pointer; user-select: none; }
     th.sortable:hover { background: #222; }
@@ -207,97 +100,105 @@
     th.sort-desc .sort-icon::after { content: ' ▼'; opacity: 1; color: #ff0066; }
     th:not(.sort-asc):not(.sort-desc) .sort-icon::after { content: ' ⇅'; }
 
-    /* Filter row */
+    /* ── Filter row ── */
+    .filter-row { background: #f5f5f5; }
     .filter-row th {
-      background: #f5f5f5;
-      padding: 5px 8px;
-      border-bottom: 2px solid #e0e0e0;
-      cursor: default;
+      background: #f5f5f5; padding: 5px 6px; border-bottom: 2px solid #e0e0e0;
+      cursor: default; font-size: inherit; color: inherit; text-transform: none;
+      letter-spacing: 0; font-weight: normal; vertical-align: top;
     }
-    .filter-row input,
-    .filter-row select {
-      width: 100%;
-      border: 1.5px solid #e0e0e0;
-      border-radius: 24px;
-      padding: 4px 10px;
-      font-size: 10px;
-      font-family: 'Montserrat', sans-serif;
-      font-weight: 500;
-      background: #fff;
-      color: #222;
-      outline: none;
-      letter-spacing: 0;
-      text-transform: none;
+    .f-text {
+      width: 100%; border: 1.5px solid #e0e0e0; border-radius: 24px;
+      padding: 4px 10px; font-size: 10px; font-family: 'Montserrat', sans-serif;
+      font-weight: 500; background: #fff; color: #222; outline: none;
     }
-    .filter-row input:focus,
-    .filter-row select:focus { border-color: #000; }
+    .f-text:focus { border-color: #000; }
 
-    td {
-      padding: 12px 14px;
-      border-bottom: 1px solid #f5f5f5;
-      vertical-align: middle;
+    /* ── Multi-select dropdown ── */
+    .ms-wrap { position: relative; }
+    .ms-trigger {
+      display: flex; align-items: center; justify-content: space-between; gap: 4px;
+      width: 100%; border: 1.5px solid #e0e0e0; border-radius: 24px;
+      padding: 4px 8px 4px 10px; font-size: 10px; font-weight: 600;
+      font-family: 'Montserrat', sans-serif; background: #fff;
+      color: #444; cursor: pointer; user-select: none; white-space: nowrap;
     }
+    .ms-trigger:hover { border-color: #000; }
+    .ms-trigger.active { border-color: #ff0066; background: #fff5f8; }
+    .ms-trigger.active .ms-label { color: #ff0066; }
+    .ms-arrow { font-size: 8px; color: #aaa; flex-shrink: 0; transition: transform .15s; }
+    .ms-trigger.open .ms-arrow { transform: rotate(180deg); }
+    .ms-badge { background: #ff0066; color: #fff; border-radius: 10px; padding: 1px 5px; font-size: 9px; font-weight: 700; margin-left: 2px; }
+    .ms-tags { display: flex; flex-wrap: wrap; gap: 3px; margin-top: 3px; }
+    .ms-tag {
+      display: inline-flex; align-items: center; gap: 3px;
+      background: #000; color: #fff; border-radius: 12px;
+      padding: 2px 7px; font-size: 9px; font-weight: 700; letter-spacing: .5px;
+    }
+    .ms-tag .ms-remove { cursor: pointer; opacity: .6; font-size: 11px; line-height: 1; }
+    .ms-tag .ms-remove:hover { opacity: 1; }
+    .ms-dropdown {
+      display: none; position: absolute; top: calc(100% + 4px); left: 0;
+      min-width: 170px; max-width: 240px;
+      background: #fff; border: 1.5px solid #000; border-radius: 4px;
+      z-index: 300; overflow: hidden; box-shadow: 2px 2px 0 rgba(0,0,0,.08);
+    }
+    .ms-dropdown.open { display: block; }
+    .ms-dd-search { padding: 6px 8px; border-bottom: 1px solid #f0f0f0; }
+    .ms-dd-search input {
+      width: 100%; border: 1px solid #e0e0e0; border-radius: 12px;
+      padding: 3px 8px; font-size: 10px; font-family: 'Montserrat', sans-serif; outline: none;
+    }
+    .ms-dd-list { max-height: 180px; overflow-y: auto; }
+    .ms-item {
+      display: flex; align-items: center; gap: 7px;
+      padding: 7px 10px; cursor: pointer; font-size: 11px; font-weight: 500;
+      font-family: 'Montserrat', sans-serif; color: #222;
+    }
+    .ms-item:hover { background: #f5f5f5; }
+    .ms-item.checked { background: #fff5f8; }
+    .ms-item.checked .ms-cb { background: #ff0066; border-color: #ff0066; color: #fff; }
+    .ms-cb {
+      width: 14px; height: 14px; border: 1.5px solid #ddd; border-radius: 3px;
+      flex-shrink: 0; display: flex; align-items: center; justify-content: center;
+      font-size: 9px; font-weight: 700;
+    }
+    .ms-footer {
+      padding: 6px 10px; border-top: 1px solid #f0f0f0;
+      display: flex; gap: 6px; justify-content: flex-end;
+    }
+    .ms-btn {
+      font-size: 9px; font-weight: 700; letter-spacing: 1px; text-transform: uppercase;
+      border: none; cursor: pointer; padding: 4px 12px; border-radius: 12px;
+      font-family: 'Montserrat', sans-serif;
+    }
+    .ms-btn.clear { background: #f5f5f5; color: #888; }
+    .ms-btn.clear:hover { background: #e8e8e8; }
+    .ms-btn.apply { background: #ff0066; color: #fff; }
+    .ms-btn.apply:hover { background: #cc0052; }
+
+    /* ── Table body ── */
+    td { padding: 12px 14px; border-bottom: 1px solid #f5f5f5; vertical-align: middle; }
     tbody tr:last-child td { border-bottom: none; }
     tbody tr:hover { background: #fafafa; }
-
     .rank-num { font-size: 11px; font-weight: 700; color: #ddd; }
-    .thumb-wrap {
-      width: 46px; height: 46px;
-      border-radius: 2px;
-      overflow: hidden;
-      background: #f5f5f5;
-      border: 1px solid #eee;
-      position: relative;
-    }
+    .thumb-wrap { width: 46px; height: 46px; border-radius: 2px; overflow: hidden; background: #f5f5f5; border: 1px solid #eee; position: relative; }
     .thumb-wrap img { width: 100%; height: 100%; object-fit: cover; display: block; }
-    .thumb-wrap .no-img {
-      width: 100%; height: 100%;
-      display: flex; align-items: center; justify-content: center;
-      color: #ccc; font-size: 18px;
-    }
+    .thumb-wrap .no-img { width: 100%; height: 100%; display: flex; align-items: center; justify-content: center; color: #ccc; font-size: 18px; }
     .thumb-wrap:hover .preview { display: block; }
-    .preview {
-      display: none; position: absolute; top: 0; left: 54px; z-index: 100;
-      width: 160px; height: 160px;
-      border-radius: 4px; overflow: hidden;
-      box-shadow: 0 4px 16px rgba(0,0,0,.15);
-      border: 1px solid #eee;
-      background: #f5f5f5; pointer-events: none;
-    }
+    .preview { display: none; position: absolute; top: 0; left: 54px; z-index: 100; width: 160px; height: 160px; border-radius: 4px; overflow: hidden; box-shadow: 0 4px 16px rgba(0,0,0,.15); border: 1px solid #eee; background: #f5f5f5; pointer-events: none; }
     .preview img { width: 100%; height: 100%; object-fit: cover; }
-
-    .product-name {
-      font-size: 12px; font-weight: 600;
-      color: #000; text-decoration: none; display: block;
-    }
+    .product-name { font-size: 12px; font-weight: 600; color: #000; text-decoration: none; display: block; }
     .product-name:hover { color: #ff0066; }
-
     .score-val { font-size: 18px; font-weight: 700; color: #000; letter-spacing: -.5px; }
     .score-bar-wrap { height: 3px; background: #f0f0f0; border-radius: 2px; margin-top: 5px; width: 60px; }
     .score-bar      { height: 3px; background: #ff0066; border-radius: 2px; }
-
-    .price    { font-size: 12px; font-weight: 600; color: #222; }
-    .page-rank{ font-size: 11px; color: #aaa; font-weight: 500; }
-    .age-val  { font-size: 10px; color: #ccc; font-weight: 500; }
-
-    .cat-badge {
-      display: inline-block;
-      font-size: 9px; font-weight: 700;
-      letter-spacing: 1px; text-transform: uppercase;
-      padding: 3px 10px;
-      border-radius: 12px;
-      background: #f5f5f5; color: #666;
-    }
-
-    /* Signal tags */
+    .price     { font-size: 12px; font-weight: 600; color: #222; }
+    .page-rank { font-size: 11px; color: #aaa; font-weight: 500; }
+    .age-val   { font-size: 10px; color: #ccc; font-weight: 500; }
+    .cat-badge { display: inline-block; font-size: 9px; font-weight: 700; letter-spacing: 1px; text-transform: uppercase; padding: 3px 10px; border-radius: 12px; background: #f5f5f5; color: #666; }
     .tags { display: flex; gap: 4px; flex-wrap: wrap; }
-    .tag {
-      font-size: 9px; font-weight: 700;
-      letter-spacing: 1px; text-transform: uppercase;
-      padding: 3px 9px;
-      border-radius: 24px;
-      white-space: nowrap;
-    }
+    .tag { font-size: 9px; font-weight: 700; letter-spacing: 1px; text-transform: uppercase; padding: 3px 9px; border-radius: 24px; white-space: nowrap; }
     .tag-new      { background: #000; color: #fff; }
     .tag-runner   { border: 1.5px solid #000; color: #000; }
     .tag-featured { background: #ff0066; color: #fff; }
@@ -307,61 +208,19 @@
     .tag-review   { border: 1.5px solid #888; color: #888; }
     .tag-markdown { border: 1.5px solid #ddd; color: #bbb; }
     .tag-removed  { background: #ff0066; color: #fff; }
-
     .sparkline { width: 60px; height: 24px; }
-
-    /* Empty/loading */
-    .empty-state {
-      text-align: center; padding: 60px 20px; color: #bbb;
-    }
+    .empty-state { text-align: center; padding: 60px 20px; color: #bbb; }
     .empty-state p { margin-top: 8px; font-size: 12px; font-weight: 500; }
 
     /* ── Keywords tab ── */
-    .kw-layout {
-      display: grid;
-      grid-template-columns: minmax(0, 55%) minmax(0, 45%);
-      background: #fff;
-      border: 1px solid #e5e5e5;
-      border-radius: 4px;
-      overflow: hidden;
-      margin: 0 28px 28px;
-    }
-    .kw-list-panel {
-      border-right: 1px solid #e5e5e5;
-      overflow-y: auto;
-      max-height: calc(100vh - 260px);
-    }
-    .kw-list-controls {
-      padding: 10px 14px;
-      border-bottom: 1px solid #e5e5e5;
-      background: #f5f5f5;
-    }
-    .kw-list-controls input {
-      width: 100%;
-      border: 1.5px solid #e0e0e0;
-      border-radius: 24px;
-      padding: 6px 14px;
-      font-size: 11px;
-      font-family: 'Montserrat', sans-serif;
-      font-weight: 500;
-      outline: none;
-      background: #fff;
-    }
+    .kw-layout { display: grid; grid-template-columns: minmax(0,55%) minmax(0,45%); background: #fff; border: 1px solid #e5e5e5; border-radius: 4px; overflow: hidden; margin: 0 28px 28px; }
+    .kw-list-panel { border-right: 1px solid #e5e5e5; overflow-y: auto; max-height: calc(100vh - 260px); }
+    .kw-list-controls { padding: 10px 14px; border-bottom: 1px solid #e5e5e5; background: #f5f5f5; }
+    .kw-list-controls input { width: 100%; border: 1.5px solid #e0e0e0; border-radius: 24px; padding: 6px 14px; font-size: 11px; font-family: 'Montserrat', sans-serif; font-weight: 500; outline: none; background: #fff; }
     .kw-list-controls input:focus { border-color: #000; }
-
     .kw-table { width: 100%; border-collapse: collapse; }
     .kw-table thead tr { background: #000; }
-    .kw-table th {
-      padding: 10px 14px;
-      text-align: left;
-      font-size: 9px; font-weight: 700;
-      font-family: 'Montserrat', sans-serif;
-      color: #fff;
-      text-transform: uppercase;
-      letter-spacing: 2px;
-      cursor: pointer; user-select: none;
-      border: none;
-    }
+    .kw-table th { padding: 10px 14px; text-align: left; font-size: 9px; font-weight: 700; font-family: 'Montserrat', sans-serif; color: #fff; text-transform: uppercase; letter-spacing: 2px; cursor: pointer; user-select: none; border: none; }
     .kw-table th:hover { background: #222; }
     .kw-table th.kw-sort-asc  .sort-icon::after { content: ' ▲'; opacity: 1; color: #ff0066; }
     .kw-table th.kw-sort-desc .sort-icon::after { content: ' ▼'; opacity: 1; color: #ff0066; }
@@ -376,7 +235,6 @@
     .kw-bar-bg   { flex: 1; height: 4px; background: #f0f0f0; border-radius: 2px; min-width: 50px; }
     .kw-bar-fill { height: 100%; border-radius: 2px; background: #ff0066; }
     .kw-active .kw-bar-bg { background: #333; }
-    .kw-active .kw-bar-fill { background: #ff0066; }
     .kw-count    { font-size: 11px; color: #aaa; min-width: 22px; text-align: right; font-weight: 600; }
     .kw-active .kw-count { color: #666; }
     .kw-delta-up  { font-size: 10px; color: #00a651; font-weight: 700; white-space: nowrap; }
@@ -384,59 +242,19 @@
     .kw-delta-new { font-size: 10px; color: #bbb; font-weight: 500; }
     .kw-active .kw-delta-up { color: #4ecf7f; }
     .kw-active .kw-delta-dn { color: #ff6699; }
-
-    /* Keyword product panel */
-    .kw-products-panel {
-      padding: 16px;
-      overflow-y: auto;
-      max-height: calc(100vh - 260px);
-    }
-    .kw-products-header {
-      display: flex; align-items: center; justify-content: space-between;
-      margin-bottom: 14px; padding-bottom: 10px;
-      border-bottom: 1px solid #f0f0f0;
-      position: sticky; top: 0; background: #fff; z-index: 1;
-    }
-    .kw-products-title {
-      font-size: 9px; font-weight: 700;
-      letter-spacing: 2px; text-transform: uppercase; color: #bbb;
-    }
-    .kw-products-count {
-      font-size: 9px; font-weight: 700;
-      letter-spacing: 1px; text-transform: uppercase;
-      padding: 3px 12px; border-radius: 24px;
-      background: #ff0066; color: #fff;
-    }
-    .kw-products-grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
-      gap: 16px;
-    }
-    .kw-product-card { display: flex; flex-direction: column; align-items: center; gap: 6px; text-decoration: none; }
-    .kw-product-thumb {
-      width: 160px; height: 160px;
-      border-radius: 2px; overflow: hidden;
-      background: #f5f5f5; border: 1px solid #eee;
-    }
+    .kw-products-panel { padding: 16px; overflow-y: auto; max-height: calc(100vh - 260px); }
+    .kw-products-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 14px; padding-bottom: 10px; border-bottom: 1px solid #f0f0f0; position: sticky; top: 0; background: #fff; z-index: 1; }
+    .kw-products-title  { font-size: 9px; font-weight: 700; letter-spacing: 2px; text-transform: uppercase; color: #bbb; }
+    .kw-products-count  { font-size: 9px; font-weight: 700; letter-spacing: 1px; text-transform: uppercase; padding: 3px 12px; border-radius: 24px; background: #ff0066; color: #fff; }
+    .kw-products-grid   { display: grid; grid-template-columns: repeat(auto-fill,minmax(160px,1fr)); gap: 16px; }
+    .kw-product-card    { display: flex; flex-direction: column; align-items: center; gap: 6px; text-decoration: none; }
+    .kw-product-thumb   { width: 160px; height: 160px; border-radius: 2px; overflow: hidden; background: #f5f5f5; border: 1px solid #eee; }
     .kw-product-thumb img { width: 100%; height: 100%; object-fit: cover; display: block; }
-    .kw-product-thumb .no-img {
-      width: 100%; height: 100%;
-      display: flex; align-items: center; justify-content: center;
-      color: #ccc; font-size: 32px;
-    }
-    .kw-product-name {
-      font-size: 11px; font-weight: 600; color: #333;
-      text-align: center; line-height: 1.3;
-      max-width: 160px; overflow: hidden;
-      display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical;
-    }
+    .kw-product-thumb .no-img { width: 100%; height: 100%; display: flex; align-items: center; justify-content: center; color: #ccc; font-size: 32px; }
+    .kw-product-name  { font-size: 11px; font-weight: 600; color: #333; text-align: center; line-height: 1.3; max-width: 160px; overflow: hidden; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; }
     .kw-product-price { font-size: 12px; font-weight: 700; color: #000; }
     .kw-product-cat   { font-size: 9px; font-weight: 600; letter-spacing: 1px; text-transform: uppercase; color: #bbb; }
-    .kw-placeholder {
-      display: flex; flex-direction: column;
-      align-items: center; justify-content: center;
-      height: 200px; color: #ccc; text-align: center; gap: 8px;
-    }
+    .kw-placeholder   { display: flex; flex-direction: column; align-items: center; justify-content: center; height: 200px; color: #ccc; text-align: center; gap: 8px; }
     .kw-placeholder p { font-size: 10px; font-weight: 700; letter-spacing: 2px; text-transform: uppercase; }
   </style>
 </head>
@@ -504,12 +322,10 @@
     <div class="stat-card">
       <div class="label">Products tracked</div>
       <div class="value" id="stat-total">—</div>
-      <div class="sub mute" id="stat-total-sub"></div>
     </div>
     <div class="stat-card">
       <div class="label">New today</div>
       <div class="value" id="stat-new">—</div>
-      <div class="sub up" id="stat-new-sub"></div>
     </div>
     <div class="stat-card">
       <div class="label">Top product</div>
@@ -526,7 +342,7 @@
     <div class="table-container">
       <table>
         <thead>
-          <tr id="sort-row">
+          <tr class="sort-row">
             <th style="width:36px" class="no-sort">#</th>
             <th style="width:58px" class="no-sort"></th>
             <th class="sortable" data-col="name">Product<span class="sort-icon"></span></th>
@@ -542,30 +358,30 @@
           </tr>
           <tr class="filter-row">
             <th></th><th></th>
-            <th><input type="text"   id="col-filter-name"        placeholder="Name…"></th>
-            <th><input type="text"   id="col-filter-retailer"    placeholder="Retailer…"></th>
-            <th><input type="text"   id="col-filter-category"    placeholder="Category…"></th>
-            <th><input type="text"   id="col-filter-subcategory" placeholder="Subcategory…"></th>
+            <!-- Product: text -->
+            <th><input class="f-text" type="text" id="col-filter-name" placeholder="Name…"></th>
+            <!-- Retailer: multi-select -->
+            <th id="th-retailer"></th>
+            <!-- Category: multi-select -->
+            <th id="th-category"></th>
+            <!-- Subcategory: multi-select -->
+            <th id="th-subcategory"></th>
+            <!-- Score: number range -->
             <th>
-              <input type="number" id="col-filter-score-min" placeholder="Min" style="width:48%;margin-right:2%">
-              <input type="number" id="col-filter-score-max" placeholder="Max" style="width:48%">
+              <input class="f-text" type="number" id="col-filter-score-min" placeholder="Min" style="width:48%;margin-right:2%">
+              <input class="f-text" type="number" id="col-filter-score-max" placeholder="Max" style="width:48%">
             </th>
+            <!-- Price: number range -->
             <th>
-              <input type="number" id="col-filter-price-min" placeholder="Min £" style="width:48%;margin-right:2%">
-              <input type="number" id="col-filter-price-max" placeholder="Max £" style="width:48%">
+              <input class="f-text" type="number" id="col-filter-price-min" placeholder="Min £" style="width:48%;margin-right:2%">
+              <input class="f-text" type="number" id="col-filter-price-max" placeholder="Max £" style="width:48%">
             </th>
-            <th><input type="number" id="col-filter-rank-max" placeholder="≤ rank"></th>
-            <th><input type="number" id="col-filter-age-min"  placeholder="Min days"></th>
-            <th>
-              <select id="col-filter-signal">
-                <option value="">Any signal</option>
-                <option>New arrival</option><option>Long runner</option>
-                <option>Featured</option><option>Rising</option>
-                <option>Restocked</option><option>Selling through</option>
-                <option>Review spike</option><option>Marked down</option>
-                <option>Removed</option>
-              </select>
-            </th>
+            <!-- Rank -->
+            <th><input class="f-text" type="number" id="col-filter-rank-max" placeholder="≤ rank"></th>
+            <!-- Age -->
+            <th><input class="f-text" type="number" id="col-filter-age-min" placeholder="Min days"></th>
+            <!-- Signal: multi-select -->
+            <th id="th-signal"></th>
             <th></th>
           </tr>
         </thead>
@@ -648,16 +464,13 @@
         </tbody>
       </table>
     </div>
-
     <div class="kw-products-panel">
       <div class="kw-products-header">
         <div class="kw-products-title" id="kw-panel-title">Product examples</div>
         <span class="kw-products-count" id="kw-panel-count" style="display:none"></span>
       </div>
       <div id="kw-products-grid" class="kw-products-grid">
-        <div class="kw-placeholder" style="grid-column:1/-1">
-          <p>Select a keyword</p>
-        </div>
+        <div class="kw-placeholder" style="grid-column:1/-1"><p>Select a keyword</p></div>
       </div>
     </div>
   </div>
@@ -665,7 +478,181 @@
 </div><!-- /tab-keywords -->
 
 <script>
-// ═══ TAB SWITCHING ═══
+// ═══════════════════════════════════════════════════
+// MULTI-SELECT COMPONENT
+// ═══════════════════════════════════════════════════
+
+// selections[key] = [] means "all" (no filter); otherwise array of selected values
+const msSelections = { retailer: [], category: [], subcategory: [], signal: [] };
+
+const SIGNAL_OPTIONS = [
+  'New arrival','Long runner','Featured','Rising',
+  'Restocked','Selling through','Review spike','Marked down','Removed'
+];
+const CATEGORY_OPTIONS = ['women','men','girls','boys'];
+
+function buildMultiSelect(key, containerId, options, searchable = false) {
+  const container = document.getElementById(containerId);
+  if (!container) return;
+  const sel = msSelections[key];
+
+  const labelText = sel.length === 0
+    ? 'All'
+    : `${sel.length} selected`;
+  const badgeHtml = sel.length > 0 ? `<span class="ms-badge">${sel.length}</span>` : '';
+  const tagsHtml  = sel.length > 0
+    ? `<div class="ms-tags" id="ms-tags-${key}">${sel.map(v =>
+        `<span class="ms-tag">${v} <span class="ms-remove" onclick="msRemove('${key}','${v.replace(/'/g,"\\'")}',event)">×</span></span>`
+      ).join('')}</div>`
+    : '';
+
+  const searchHtml = searchable
+    ? `<div class="ms-dd-search"><input placeholder="Search…" oninput="msFilter('${key}',this.value)"></div>`
+    : '';
+
+  const itemsHtml = options.map(opt => {
+    const checked = sel.includes(opt) ? 'checked' : '';
+    const tick    = sel.includes(opt) ? '✓' : '';
+    return `<div class="ms-item ${checked}" data-val="${opt}" onclick="msToggleItem('${key}','${opt.replace(/'/g,"\\'")}',this)">
+      <div class="ms-cb">${tick}</div>${opt}
+    </div>`;
+  }).join('');
+
+  container.innerHTML = `
+    <div class="ms-wrap" id="ms-wrap-${key}">
+      <div class="ms-trigger ${sel.length>0?'active':''}" id="ms-trig-${key}" onclick="msOpen('${key}')">
+        <span class="ms-label">${labelText}${badgeHtml}</span>
+        <span class="ms-arrow">▼</span>
+      </div>
+      ${tagsHtml}
+      <div class="ms-dropdown" id="ms-dd-${key}">
+        ${searchHtml}
+        <div class="ms-dd-list" id="ms-list-${key}">${itemsHtml}</div>
+        <div class="ms-footer">
+          <button class="ms-btn clear" onclick="msClear('${key}')">Clear</button>
+          <button class="ms-btn apply" onclick="msClose('${key}')">Apply</button>
+        </div>
+      </div>
+    </div>`;
+}
+
+function msOpen(key) {
+  // Close all other dropdowns first
+  Object.keys(msSelections).forEach(k => {
+    if (k !== key) {
+      const dd = document.getElementById(`ms-dd-${k}`);
+      const tr = document.getElementById(`ms-trig-${k}`);
+      if (dd) { dd.classList.remove('open'); }
+      if (tr) { tr.classList.remove('open'); }
+    }
+  });
+  const dd = document.getElementById(`ms-dd-${key}`);
+  const tr = document.getElementById(`ms-trig-${key}`);
+  if (!dd || !tr) return;
+  const isOpen = dd.classList.contains('open');
+  dd.classList.toggle('open', !isOpen);
+  tr.classList.toggle('open', !isOpen);
+}
+
+function msClose(key) {
+  const dd = document.getElementById(`ms-dd-${key}`);
+  const tr = document.getElementById(`ms-trig-${key}`);
+  if (dd) dd.classList.remove('open');
+  if (tr) tr.classList.remove('open');
+  renderTable();
+}
+
+function msToggleItem(key, val, el) {
+  const idx = msSelections[key].indexOf(val);
+  if (idx === -1) { msSelections[key].push(val); el.classList.add('checked'); el.querySelector('.ms-cb').textContent = '✓'; }
+  else            { msSelections[key].splice(idx,1); el.classList.remove('checked'); el.querySelector('.ms-cb').textContent = ''; }
+  msUpdateTrigger(key);
+}
+
+function msRemove(key, val, e) {
+  e.stopPropagation();
+  const idx = msSelections[key].indexOf(val);
+  if (idx !== -1) msSelections[key].splice(idx, 1);
+  const optionKey = msOptionsForKey(key);
+  buildMultiSelect(key, `th-${key}`, optionKey, key === 'subcategory');
+  renderTable();
+}
+
+function msClear(key) {
+  msSelections[key] = [];
+  const opts = msOptionsForKey(key);
+  buildMultiSelect(key, `th-${key}`, opts, key === 'subcategory');
+  renderTable();
+}
+
+function msUpdateTrigger(key) {
+  const sel   = msSelections[key];
+  const trig  = document.getElementById(`ms-trig-${key}`);
+  const label = trig ? trig.querySelector('.ms-label') : null;
+  if (!label) return;
+  label.innerHTML = sel.length === 0
+    ? 'All'
+    : `${sel.length} selected <span class="ms-badge">${sel.length}</span>`;
+  if (trig) trig.classList.toggle('active', sel.length > 0);
+
+  // Update tags
+  const wrap = document.getElementById(`ms-wrap-${key}`);
+  let tags   = wrap ? wrap.querySelector('.ms-tags') : null;
+  if (sel.length === 0) {
+    if (tags) tags.remove();
+  } else {
+    if (!tags) {
+      tags = document.createElement('div');
+      tags.className = `ms-tags`;
+      tags.id = `ms-tags-${key}`;
+      trig.after(tags);
+    }
+    tags.innerHTML = sel.map(v =>
+      `<span class="ms-tag">${v} <span class="ms-remove" onclick="msRemove('${key}','${v.replace(/'/g,"\\'")}',event)">×</span></span>`
+    ).join('');
+  }
+}
+
+function msFilter(key, query) {
+  const q    = query.toLowerCase();
+  const list = document.getElementById(`ms-list-${key}`);
+  if (!list) return;
+  list.querySelectorAll('.ms-item').forEach(item => {
+    item.style.display = item.dataset.val.toLowerCase().includes(q) ? '' : 'none';
+  });
+}
+
+// Keep track of options per key so msClear can rebuild correctly
+const _msOptions = {};
+function msOptionsForKey(key) { return _msOptions[key] || []; }
+
+function initMultiSelects(retailers, subcategories) {
+  _msOptions.retailer    = retailers;
+  _msOptions.category    = CATEGORY_OPTIONS;
+  _msOptions.subcategory = subcategories;
+  _msOptions.signal      = SIGNAL_OPTIONS;
+  buildMultiSelect('retailer',    'th-retailer',    retailers,        false);
+  buildMultiSelect('category',    'th-category',    CATEGORY_OPTIONS, false);
+  buildMultiSelect('subcategory', 'th-subcategory', subcategories,    true);
+  buildMultiSelect('signal',      'th-signal',      SIGNAL_OPTIONS,   false);
+}
+
+// Close dropdowns when clicking outside
+document.addEventListener('click', e => {
+  if (!e.target.closest('.ms-wrap')) {
+    Object.keys(msSelections).forEach(k => {
+      const dd = document.getElementById(`ms-dd-${k}`);
+      const tr = document.getElementById(`ms-trig-${k}`);
+      if (dd) dd.classList.remove('open');
+      if (tr) tr.classList.remove('open');
+    });
+  }
+});
+
+
+// ═══════════════════════════════════════════════════
+// TAB SWITCHING
+// ═══════════════════════════════════════════════════
 function switchTab(name) {
   document.getElementById('tab-rankings').style.display = name === 'rankings' ? '' : 'none';
   document.getElementById('tab-keywords').style.display = name === 'keywords' ? '' : 'none';
@@ -674,7 +661,10 @@ function switchTab(name) {
   if (name === 'keywords' && allKeywords.length === 0) loadKeywords();
 }
 
-// ═══ RANKINGS ═══
+
+// ═══════════════════════════════════════════════════
+// RANKINGS TAB
+// ═══════════════════════════════════════════════════
 let allProducts = [], maxScore = 1, activeCategory = '';
 let sortCol = 'total_score', sortDir = 'desc';
 
@@ -702,22 +692,24 @@ document.querySelectorAll('th.sortable').forEach(th => {
   });
 });
 
-['col-filter-name','col-filter-retailer','col-filter-category','col-filter-subcategory',
- 'col-filter-score-min','col-filter-score-max','col-filter-price-min','col-filter-price-max',
- 'col-filter-rank-max','col-filter-age-min','col-filter-signal']
-  .forEach(id => document.getElementById(id).addEventListener('input', renderTable));
+['col-filter-name','col-filter-score-min','col-filter-score-max',
+ 'col-filter-price-min','col-filter-price-max','col-filter-rank-max','col-filter-age-min']
+  .forEach(id => {
+    const el = document.getElementById(id);
+    if (el) el.addEventListener('input', renderTable);
+  });
 
 async function loadStats() {
   const retailer = document.getElementById('filter-retailer').value;
   const res = await fetch('/api/stats' + (retailer ? `?retailer=${retailer}` : ''));
   const d   = await res.json();
-  document.getElementById('stat-total').textContent    = d.total_products;
-  document.getElementById('stat-new').textContent      = d.new_today;
-  document.getElementById('stat-top').textContent      = d.top_product;
-  document.getElementById('stat-top-score').textContent= d.top_score ? `${d.top_score.toFixed(0)} pts` : '';
-  document.getElementById('stat-retailer').textContent = retailer || 'All';
-  document.getElementById('header-time').textContent   =
-    new Date().toLocaleTimeString('en-GB', {hour:'2-digit', minute:'2-digit'});
+  document.getElementById('stat-total').textContent     = d.total_products;
+  document.getElementById('stat-new').textContent       = d.new_today;
+  document.getElementById('stat-top').textContent       = d.top_product;
+  document.getElementById('stat-top-score').textContent = d.top_score ? `${d.top_score.toFixed(0)} pts` : '';
+  document.getElementById('stat-retailer').textContent  = document.getElementById('filter-retailer').value || 'All';
+  document.getElementById('header-time').textContent    =
+    new Date().toLocaleTimeString('en-GB', {hour:'2-digit',minute:'2-digit'});
 }
 
 async function loadRankings() {
@@ -726,44 +718,65 @@ async function loadRankings() {
   const limit    = document.getElementById('filter-limit').value;
   const params   = new URLSearchParams({days, limit});
   if (retailer) params.set('retailer', retailer);
+
   const res   = await fetch('/api/rankings?' + params);
   allProducts = await res.json();
   maxScore    = Math.max(...allProducts.map(p => p.total_score), 1);
+
+  // Derive unique values to populate dynamic multi-selects
+  const retailers     = [...new Set(allProducts.map(p => p.retailer).filter(Boolean))].sort();
+  const subcategories = [...new Set(allProducts.map(p => p.subcategory).filter(Boolean))].sort();
+  initMultiSelects(retailers, subcategories);
+
   renderTable();
 }
 
 function renderTable() {
-  const gs  = document.getElementById('filter-search').value.toLowerCase();
-  const cfn = document.getElementById('col-filter-name').value.toLowerCase();
-  const cfr = document.getElementById('col-filter-retailer').value.toLowerCase();
-  const cfc = document.getElementById('col-filter-category').value.toLowerCase();
-  const cfs = document.getElementById('col-filter-subcategory').value.toLowerCase();
-  const csn = parseFloat(document.getElementById('col-filter-score-min').value) || null;
-  const csx = parseFloat(document.getElementById('col-filter-score-max').value) || null;
-  const cpn = parseFloat(document.getElementById('col-filter-price-min').value) || null;
-  const cpx = parseFloat(document.getElementById('col-filter-price-max').value) || null;
-  const crx = parseInt(document.getElementById('col-filter-rank-max').value)    || null;
-  const can = parseInt(document.getElementById('col-filter-age-min').value)     || null;
-  const csg = document.getElementById('col-filter-signal').value;
-  const tbody = document.getElementById('product-table-body');
+  const gs       = (document.getElementById('filter-search').value || '').toLowerCase();
+  const colName  = (document.getElementById('col-filter-name').value || '').toLowerCase();
+  const csn      = parseFloat(document.getElementById('col-filter-score-min').value) || null;
+  const csx      = parseFloat(document.getElementById('col-filter-score-max').value) || null;
+  const cpn      = parseFloat(document.getElementById('col-filter-price-min').value) || null;
+  const cpx      = parseFloat(document.getElementById('col-filter-price-max').value) || null;
+  const crx      = parseInt(document.getElementById('col-filter-rank-max').value)    || null;
+  const can      = parseInt(document.getElementById('col-filter-age-min').value)     || null;
+  const tbody    = document.getElementById('product-table-body');
+
+  // Multi-select values
+  const selRetailer    = msSelections.retailer;
+  const selCategory    = msSelections.category;
+  const selSubcategory = msSelections.subcategory;
+  const selSignal      = msSelections.signal;
 
   let vis = allProducts.filter(p => {
-    const cat = (p.category||'').toLowerCase();
-    const nm  = (p.name||'').toLowerCase();
-    const ret = (p.retailer||'').toLowerCase();
+    const cat = (p.category    || '').toLowerCase();
+    const sub = (p.subcategory || '').toLowerCase();
+    const nm  = (p.name        || '').toLowerCase();
+    const ret = (p.retailer    || '').toLowerCase();
+
+    // Category pills (top-bar quick filter)
     if (activeCategory && !cat.split('/').includes(activeCategory)) return false;
-    if (gs  && !nm.includes(gs)  && !cat.includes(gs))  return false;
-    if (cfn && !nm.includes(cfn))  return false;
-    if (cfr && !ret.includes(cfr)) return false;
-    if (cfc && !cat.includes(cfc)) return false;
-    if (cfs && !(p.subcategory||'').toLowerCase().includes(cfs)) return false;
-    if (csn !== null && p.total_score < csn) return false;
-    if (csx !== null && p.total_score > csx) return false;
+
+    // Global search
+    if (gs && !nm.includes(gs) && !cat.includes(gs)) return false;
+
+    // Text filter: product name
+    if (colName && !nm.includes(colName)) return false;
+
+    // Multi-selects — empty array = no filter
+    if (selRetailer.length    && !selRetailer.map(v=>v.toLowerCase()).includes(ret)) return false;
+    if (selCategory.length    && !selCategory.some(v => cat.split('/').includes(v.toLowerCase()))) return false;
+    if (selSubcategory.length && !selSubcategory.map(v=>v.toLowerCase()).includes(sub)) return false;
+    if (selSignal.length      && !selSignal.some(s => (p.signal_tags||[]).includes(s))) return false;
+
+    // Numeric filters
+    if (csn !== null && p.total_score < csn)  return false;
+    if (csx !== null && p.total_score > csx)  return false;
     if (cpn !== null && (p.latest_price == null || p.latest_price < cpn)) return false;
     if (cpx !== null && (p.latest_price == null || p.latest_price > cpx)) return false;
     if (crx !== null && (p.latest_rank  == null || p.latest_rank  > crx)) return false;
     if (can !== null && (p.days_tracked == null || p.days_tracked < can)) return false;
-    if (csg && !(p.signal_tags||[]).includes(csg)) return false;
+
     return true;
   });
 
@@ -837,7 +850,13 @@ function loadAll() { loadStats(); loadRankings(); }
   document.getElementById(id).addEventListener('change', loadAll));
 document.getElementById('filter-search').addEventListener('input', renderTable);
 
-// ═══ KEYWORDS ═══
+// Initialise with empty options — populated after data loads
+initMultiSelects([], [], [], []);
+
+
+// ═══════════════════════════════════════════════════
+// KEYWORDS TAB
+// ═══════════════════════════════════════════════════
 let allKeywords=[], kwMaxCount=1, kwSortCol='count', kwSortDir='desc', activeKeyword=null;
 
 async function loadKeywords() {
