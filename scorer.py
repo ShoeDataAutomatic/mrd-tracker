@@ -202,6 +202,13 @@ def get_rankings(limit=50, days=None, retailer=None):
         if history:
             latest_signals = history[-1].get('signals', {})
             row['signal_tags'] = _signals_to_tags(latest_signals)
+            # Fallback: if was_price not in raw_data, check the signals dict
+            # (covers markdowns detected by price comparison across snapshots)
+            if not row.get('was_price'):
+                md_sig = latest_signals.get('price_markdown', {})
+                if isinstance(md_sig, dict) and md_sig.get('was_price'):
+                    row['was_price']   = md_sig['was_price']
+                    row['is_markdown'] = True
         else:
             row['signal_tags'] = []
 

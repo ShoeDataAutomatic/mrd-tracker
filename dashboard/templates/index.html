@@ -941,7 +941,9 @@ function renderTable() {
     const wasPrice  = p.was_price   != null ? `£${p.was_price.toFixed(2)}`    : null;
     const price     = wasPrice
       ? `<span style="text-decoration:line-through;color:#ccc;font-size:10px;font-weight:500">${wasPrice}</span> <span style="color:#ff0066;font-weight:700">${currPrice}</span>`
-      : currPrice;
+      : p.is_markdown
+        ? `<span style="color:#ff0066;font-weight:700">${currPrice}</span>`
+        : currPrice;
     const rank   = p.latest_rank   != null ? `#${p.latest_rank}` : '—';
     const age    = p.days_tracked  != null ? `${p.days_tracked}d` : '—';
     const barPct = Math.min(100,(p.total_score/maxScore)*100).toFixed(0);
