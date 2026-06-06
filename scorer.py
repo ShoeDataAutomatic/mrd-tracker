@@ -83,7 +83,7 @@ def _score_product(product):
     #    has been present for 30+ days is likely a sustained performer.
     #    Not awarded if the product has since been removed.
     # ------------------------------------------------------------------
-    is_removed = last_seen and (today - last_seen).days >= 1
+    is_removed = last_seen and (today - last_seen).days >= 3
     if first_seen and (today - first_seen).days >= 30 and not is_removed:
         signals['long_runner'] = SCORING['long_runner']
         score += SCORING['long_runner']
