@@ -223,138 +223,120 @@ def _signals_to_tags(signals):
     return tags
 
 
-def get_markdown_analysis(retailer=None):
+def get_removed_analysis(retailer=None):
     """
-    Return all currently marked-down products with a classification of WHY
-    they are marked down: poor_seller, end_of_season, or size_clearance.
+    Return all removed products with a classification of WHY they were removed:
+    poor_seller, end_of_season, or completed_run (sold through successfully).
     """
     today    = date.today()
     products = db.get_all_products(retailer=retailer)
     results  = []
 
     SEASONAL_SUBCATS = {
-        'boots', 'sandals', 'flip flops and sliders', 'sandals and sliders',
-        'sandals and flipflops', 'sandals and flip flops', 'slippers', 'clogs',
+        'boots', 'sandals', 'sliders', 'flip flops and sliders',
+        'sandals and sliders', 'sandals and flipflops', 'sandals and flip flops',
+        'flip-flops-and-sliders', 'sandals-and-sliders', 'sandals-and-flipflops',
+        'sandals-and-flip-flops', 'slippers', 'clogs',
     }
 
     for product in products:
-        pid      = product['id']
-        history  = db.get_score_history(pid, days=180)
+        pid     = product['id']
+        history = db.get_score_history(pid, days=180)
         if not history:
             continue
 
-        # Only process products with an active price_markdown signal
+        # Only process products with an active product_removed signal
         latest_signals = history[-1].get('signals', {})
-        if 'price_markdown' not in latest_signals:
+        if 'product_removed' not in latest_signals:
             continue
 
-        latest_snap = db.get_latest_snapshot(pid)
-        if not latest_snap:
-            continue
+        scores     = [h['score'] for h in history]
+        peak       = max(scores) if scores else 0
+        avg        = sum(scores) / len(scores) if scores else 0
 
-        try:
-            raw       = json.loads(latest_snap.get('raw_data') or '{}')
-            was_price = raw.get('was_price')
-        except Exception:
-            was_price = None
-
-        curr_price = latest_snap.get('price')
-        if not was_price or not curr_price or was_price <= curr_price:
-            continue
-
-        markdown_depth_pct = round((1 - curr_price / was_price) * 100)
-
-        # Score series analysis
-        scores    = [h['score'] for h in history]
-        peak      = max(scores) if scores else 0
-        avg       = sum(scores) / len(scores) if scores else 0
-
-        # Day within product life when markdown first appeared
-        first_seen    = _parse_date(product.get('first_seen', ''))
-        markdown_day  = None
-        for h in history:
-            if 'price_markdown' in h.get('signals', {}):
-                md_date = _parse_date(h['scored_date'])
-                if md_date and first_seen:
-                    markdown_day = (md_date - first_seen).days
-                break
+        first_seen = _parse_date(product.get('first_seen', ''))
+        last_seen  = _parse_date(product.get('last_seen', ''))
+        age        = (today - first_seen).days if first_seen else 0
+        days_active = (last_seen - first_seen).days if first_seen and last_seen else age
 
         # Collect all historical signal tags
         all_tags = set()
         for h in history:
             all_tags.update(_signals_to_tags(h.get('signals', {})))
 
-        was_featured    = 'Featured'     in all_tags
-        was_rising      = 'Rising'       in all_tags
-        was_long_runner = 'Long runner'  in all_tags
-        age             = (today - first_seen).days if first_seen else 0
-        sub             = (product.get('subcategory') or '').lower()
+        was_featured    = 'Featured'    in all_tags
+        was_rising      = 'Rising'      in all_tags
+        was_long_runner = 'Long runner' in all_tags
+        sub             = (product.get('subcategory') or '').lower().replace('-', ' ')
 
         # ── Classification scoring ──────────────────────────────────────
-        poor_score    = 0
-        season_score  = 0
-        clear_score   = 0
+        poor_score      = 0
+        season_score    = 0
+        completed_score = 0
 
-        # Poor seller
-        if avg < 15:                     poor_score += 4
-        elif avg < 30:                   poor_score += 2
-        if peak < 20:                    poor_score += 3
-        elif peak < 40:                  poor_score += 1
-        if not was_featured:             poor_score += 2
-        if not was_rising:               poor_score += 1
-        if markdown_depth_pct > 30:      poor_score += 1
+        # Poor seller — low engagement, short life, never featured
+        if avg < 15:             poor_score += 4
+        elif avg < 30:           poor_score += 2
+        if peak < 20:            poor_score += 3
+        elif peak < 40:          poor_score += 1
+        if not was_featured:     poor_score += 2
+        if not was_rising:       poor_score += 1
+        if days_active < 30:     poor_score += 2
 
-        # End of season
-        if age > 120:                    season_score += 3
-        elif age > 90:                   season_score += 2
-        elif age > 60:                   season_score += 1
-        if sub in SEASONAL_SUBCATS:      season_score += 3
-        if peak > 25:                    season_score += 1   # was selling reasonably
+        # End of season — seasonal subcategory, older product
+        if age > 120:            season_score += 3
+        elif age > 90:           season_score += 2
+        elif age > 60:           season_score += 1
+        if sub in SEASONAL_SUBCATS: season_score += 3
+        if peak > 25:            season_score += 1
 
-        # Size clearance
-        if peak > 60:                    clear_score += 4
-        elif peak > 40:                  clear_score += 3
-        elif peak > 20:                  clear_score += 1
-        if was_featured:                 clear_score += 2
-        if was_rising:                   clear_score += 2
-        if was_long_runner:              clear_score += 1
+        # Completed run — strong engagement, featured/rising, ran its course
+        if peak > 60:            completed_score += 4
+        elif peak > 40:          completed_score += 3
+        elif peak > 20:          completed_score += 1
+        if was_featured:         completed_score += 2
+        if was_rising:           completed_score += 2
+        if was_long_runner:      completed_score += 2
+        if days_active >= 30:    completed_score += 1
 
         scores_map = {
             'poor_seller':   poor_score,
             'end_of_season': season_score,
-            'size_clearance': clear_score,
+            'completed_run': completed_score,
         }
-        reason        = max(scores_map, key=scores_map.get)
-        sorted_vals   = sorted(scores_map.values(), reverse=True)
-        gap           = sorted_vals[0] - sorted_vals[1]
-        confidence    = 'high' if gap >= 3 else 'medium' if gap >= 1 else 'low'
+        reason      = max(scores_map, key=scores_map.get)
+        sorted_vals = sorted(scores_map.values(), reverse=True)
+        gap         = sorted_vals[0] - sorted_vals[1]
+        confidence  = 'high' if gap >= 3 else 'medium' if gap >= 1 else 'low'
 
         results.append({
-            'id':                 pid,
-            'name':               product.get('name'),
-            'retailer':           product.get('retailer'),
-            'category':           product.get('category'),
-            'subcategory':        product.get('subcategory'),
-            'url':                product.get('url'),
-            'image_url':          product.get('image_url'),
-            'latest_price':       curr_price,
-            'was_price':          was_price,
-            'markdown_depth_pct': markdown_depth_pct,
-            'markdown_day':       markdown_day,
-            'age':                age,
-            'reason':             reason,
-            'confidence':         confidence,
-            'peak_score':         round(peak),
-            'avg_score':          round(avg, 1),
-            'score_series':       [{'date': h['scored_date'], 'score': h['score']} for h in history[-14:]],
-            'was_featured':       was_featured,
-            'was_rising':         was_rising,
-            'was_long_runner':    was_long_runner,
-            'signal_history':     sorted(all_tags),
+            'id':            pid,
+            'name':          product.get('name'),
+            'retailer':      product.get('retailer'),
+            'category':      product.get('category'),
+            'subcategory':   product.get('subcategory'),
+            'url':           product.get('url'),
+            'image_url':     product.get('image_url'),
+            'age':           age,
+            'days_active':   days_active,
+            'reason':        reason,
+            'confidence':    confidence,
+            'peak_score':    round(peak),
+            'avg_score':     round(avg, 1),
+            'score_series':  [{'date': h['scored_date'], 'score': h['score']} for h in history[-14:]],
+            'was_featured':  was_featured,
+            'was_rising':    was_rising,
+            'was_long_runner': was_long_runner,
+            'signal_history': sorted(all_tags),
         })
 
-    results.sort(key=lambda x: x['markdown_depth_pct'], reverse=True)
+    results.sort(key=lambda x: x['peak_score'], reverse=True)
     return results
+
+
+# Keep old name as alias so nothing else breaks
+def get_markdown_analysis(retailer=None):
+    return get_removed_analysis(retailer=retailer)
 
 
 def _parse_date(date_str):

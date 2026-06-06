@@ -200,33 +200,32 @@ def api_markdown():
     retailer = request.args.get('retailer') or None
     category = (request.args.get('category') or '').lower() or None
 
-    products = scorer.get_markdown_analysis(retailer=retailer)
+    products = scorer.get_removed_analysis(retailer=retailer)
 
     if category:
         products = [p for p in products if (p.get('category') or '').lower().startswith(category)]
 
-    total   = len(products)
-    poor    = sum(1 for p in products if p['reason'] == 'poor_seller')
-    season  = sum(1 for p in products if p['reason'] == 'end_of_season')
-    clear   = sum(1 for p in products if p['reason'] == 'size_clearance')
+    total     = len(products)
+    poor      = sum(1 for p in products if p['reason'] == 'poor_seller')
+    season    = sum(1 for p in products if p['reason'] == 'end_of_season')
+    completed = sum(1 for p in products if p['reason'] == 'completed_run')
 
     # Plain-English insights
     insights = []
     if poor > 0:
-        insights.append(f"{poor} poor seller{'s' if poor != 1 else ''} identified — worth reviewing these design decisions")
+        insights.append(f"{poor} poor seller{'s' if poor != 1 else ''} removed — worth reviewing these design decisions")
+    if completed > 0:
+        insights.append(f"{completed} style{'s' if completed != 1 else ''} completed a strong run — consider reordering or similar designs")
     sub_counts = Counter(p.get('subcategory') for p in products if p.get('subcategory'))
     if sub_counts:
         top_sub, top_n = sub_counts.most_common(1)[0]
-        insights.append(f"{top_sub.title()} is the most marked-down subcategory ({top_n} products)")
-    high_clear = [p for p in products if p['reason'] == 'size_clearance' and p['peak_score'] > 50]
-    if high_clear:
-        insights.append(f"{len(high_clear)} high-scoring style{'s' if len(high_clear) != 1 else ''} on clearance — strong consumer demand confirmed before markdown")
-    deep_cuts = [p for p in products if (p.get('markdown_depth_pct') or 0) >= 40]
-    if deep_cuts:
-        insights.append(f"{len(deep_cuts)} product{'s' if len(deep_cuts) != 1 else ''} marked down 40%+ — aggressive clearance underway")
+        insights.append(f"{top_sub.title()} has the most removals ({top_n} products)")
+    high_completed = [p for p in products if p['reason'] == 'completed_run' and p['peak_score'] > 50]
+    if high_completed:
+        insights.append(f"{len(high_completed)} high-scoring style{'s' if len(high_completed) != 1 else ''} removed after strong performance — confirmed strong consumer demand")
 
     return jsonify({
-        'summary':  {'total': total, 'poor_seller': poor, 'end_of_season': season, 'size_clearance': clear},
+        'summary':  {'total': total, 'poor_seller': poor, 'end_of_season': season, 'completed_run': completed},
         'insights': insights,
         'products': products,
     })

@@ -283,7 +283,7 @@
 <div class="tab-bar">
   <button class="tab-btn active" data-tab="rankings" onclick="switchTab('rankings')">Rankings</button>
   <button class="tab-btn" data-tab="keywords" onclick="switchTab('keywords')">Keyword analysis</button>
-  <button class="tab-btn" data-tab="markdown" onclick="switchTab('markdown')">Markdown analysis</button>
+  <button class="tab-btn" data-tab="markdown" onclick="switchTab('markdown')">Removed products</button>
 </div>
 
 <!-- ═══════════════════════ RANKINGS TAB ═══════════════════════ -->
@@ -492,7 +492,7 @@
 
 </div><!-- /tab-keywords -->
 
-<!-- ═══════════════════════ MARKDOWN ANALYSIS TAB ═══════════════════════ -->
+<!-- ═══════════════════════ REMOVED PRODUCTS TAB ═══════════════════════ -->
 <div id="tab-markdown" style="display:none">
 
   <div class="controls">
@@ -518,15 +518,7 @@
         <option value="">All reasons</option>
         <option value="poor_seller">Poor seller</option>
         <option value="end_of_season">End of season</option>
-        <option value="size_clearance">Size clearance</option>
-      </select>
-    </div>
-    <div>
-      <select id="md-filter-depth" onchange="renderMarkdown()">
-        <option value="">Any markdown depth</option>
-        <option value="10">10%+ off</option>
-        <option value="25">25%+ off</option>
-        <option value="40">40%+ off</option>
+        <option value="completed_run">Completed run</option>
       </select>
     </div>
     <button class="btn-refresh" onclick="loadMarkdown()">Refresh</button>
@@ -534,7 +526,7 @@
 
   <div class="stats" id="md-stats">
     <div class="stat-card">
-      <div class="label">Marked down now</div>
+      <div class="label">Total removed</div>
       <div class="value" id="md-stat-total">—</div>
     </div>
     <div class="stat-card">
@@ -548,7 +540,7 @@
       <div class="sub" style="color:#f59e0b" id="md-stat-season-pct"></div>
     </div>
     <div class="stat-card">
-      <div class="label">Size clearance</div>
+      <div class="label">Completed run</div>
       <div class="value" id="md-stat-clear" style="color:#00a651">—</div>
       <div class="sub up" id="md-stat-clear-pct"></div>
     </div>
@@ -558,17 +550,17 @@
   <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:12px;padding:16px 28px 0">
     <div style="background:#fff;border:1px solid #e5e5e5;border-radius:4px;padding:16px 18px">
       <div style="font-size:9px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:#ff0066;margin-bottom:6px">Poor seller</div>
-      <div style="font-size:12px;color:#555;font-weight:500;line-height:1.6">Low scores throughout, never featured, no rank improvement. Markdown used to force clearance of stock that failed to connect with customers.</div>
+      <div style="font-size:12px;color:#555;font-weight:500;line-height:1.6">Low scores throughout life, never featured, no rank improvement. Removed because it failed to connect with customers.</div>
       <div style="height:3px;background:#f0f0f0;border-radius:2px;margin-top:12px"><div id="md-bar-poor" style="height:3px;background:#ff0066;border-radius:2px;width:0%;transition:width .4s"></div></div>
     </div>
     <div style="background:#fff;border:1px solid #e5e5e5;border-radius:4px;padding:16px 18px">
       <div style="font-size:9px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:#f59e0b;margin-bottom:6px">End of season</div>
-      <div style="font-size:12px;color:#555;font-weight:500;line-height:1.6">Seasonal styles aged 60+ days marked down as the new season arrives. Expected clearance pattern, not a product failure signal.</div>
+      <div style="font-size:12px;color:#555;font-weight:500;line-height:1.6">Seasonal style removed as the range turns over. Expected pattern — not a product failure signal.</div>
       <div style="height:3px;background:#f0f0f0;border-radius:2px;margin-top:12px"><div id="md-bar-season" style="height:3px;background:#f59e0b;border-radius:2px;width:0%;transition:width .4s"></div></div>
     </div>
     <div style="background:#fff;border:1px solid #e5e5e5;border-radius:4px;padding:16px 18px">
-      <div style="font-size:9px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:#00a651;margin-bottom:6px">Size clearance</div>
-      <div style="font-size:12px;color:#555;font-weight:500;line-height:1.6">Previously high-scoring, featured styles being cleared with final sizes remaining. Strong consumer demand confirmed — worth referencing in design decisions.</div>
+      <div style="font-size:9px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:#00a651;margin-bottom:6px">Completed run</div>
+      <div style="font-size:12px;color:#555;font-weight:500;line-height:1.6">High-scoring, featured style that ran its course. Strong consumer demand confirmed — worth referencing in future design decisions.</div>
       <div style="height:3px;background:#f0f0f0;border-radius:2px;margin-top:12px"><div id="md-bar-clear" style="height:3px;background:#00a651;border-radius:2px;width:0%;transition:width .4s"></div></div>
     </div>
   </div>
@@ -588,17 +580,15 @@
             <th class="no-sort" style="width:50px"></th>
             <th class="sortable" data-mdcol="name">Product<span class="sort-icon"></span></th>
             <th class="sortable" data-mdcol="reason">Reason<span class="sort-icon"></span></th>
-            <th class="sortable" data-mdcol="was_price">Was<span class="sort-icon"></span></th>
-            <th class="sortable" data-mdcol="latest_price">Now<span class="sort-icon"></span></th>
-            <th class="sortable sort-desc" data-mdcol="markdown_depth_pct">Markdown<span class="sort-icon"></span></th>
-            <th class="sortable" data-mdcol="age">Age<span class="sort-icon"></span></th>
-            <th class="sortable" data-mdcol="peak_score">Peak score<span class="sort-icon"></span></th>
+            <th class="sortable" data-mdcol="days_active">Days active<span class="sort-icon"></span></th>
+            <th class="sortable sort-desc" data-mdcol="peak_score">Peak score<span class="sort-icon"></span></th>
+            <th class="sortable" data-mdcol="avg_score">Avg score<span class="sort-icon"></span></th>
             <th class="no-sort">Score history</th>
             <th class="sortable" data-mdcol="confidence">Confidence<span class="sort-icon"></span></th>
           </tr>
         </thead>
         <tbody id="md-table-body">
-          <tr><td colspan="10"><div class="empty-state">Loading…</div></td></tr>
+          <tr><td colspan="8"><div class="empty-state">Loading…</div></td></tr>
         </tbody>
       </table>
     </div>
@@ -1145,27 +1135,27 @@ async function selectKeyword(keyword, count) {
 // ═══════════════════════════════════════════════════
 // MARKDOWN ANALYSIS TAB
 // ═══════════════════════════════════════════════════
-let allMarkdown = [], mdSortCol = 'markdown_depth_pct', mdSortDir = 'desc';
+let allMarkdown = [], mdSortCol = 'peak_score', mdSortDir = 'desc';
 
 const REASON_LABELS = {
   poor_seller:   'Poor seller',
   end_of_season: 'End of season',
-  size_clearance:'Size clearance',
+  completed_run: 'Completed run',
 };
 const REASON_COLOURS = {
   poor_seller:   '#ff0066',
   end_of_season: '#f59e0b',
-  size_clearance:'#00a651',
+  completed_run: '#00a651',
 };
 const REASON_BG = {
   poor_seller:   '#fff0f3',
   end_of_season: '#fffbeb',
-  size_clearance:'#f0fdf4',
+  completed_run: '#f0fdf4',
 };
 const REASON_BORDER = {
   poor_seller:   '#ffd0d9',
   end_of_season: '#fde68a',
-  size_clearance:'#bbf7d0',
+  completed_run: '#bbf7d0',
 };
 const CONF_COLOURS = { high:'#00a651', medium:'#f59e0b', low:'#aaa' };
 
@@ -1187,7 +1177,7 @@ async function loadMarkdown() {
   if (retailer) params.set('retailer', retailer);
   if (category) params.set('category', category);
   document.getElementById('md-table-body').innerHTML =
-    `<tr><td colspan="10"><div class="empty-state">Loading…</div></td></tr>`;
+    `<tr><td colspan="8"><div class="empty-state">Loading…</div></td></tr>`;
 
   const res  = await fetch('/api/markdown?' + params);
   const data = await res.json();
@@ -1198,16 +1188,16 @@ async function loadMarkdown() {
   document.getElementById('md-stat-total').textContent   = t;
   document.getElementById('md-stat-poor').textContent    = s.poor_seller   || 0;
   document.getElementById('md-stat-season').textContent  = s.end_of_season || 0;
-  document.getElementById('md-stat-clear').textContent   = s.size_clearance|| 0;
-  document.getElementById('md-stat-poor-pct').textContent   = t ? `${Math.round((s.poor_seller||0)/t*100)}% of markdowns`    : '';
-  document.getElementById('md-stat-season-pct').textContent = t ? `${Math.round((s.end_of_season||0)/t*100)}% of markdowns`  : '';
-  document.getElementById('md-stat-clear-pct').textContent  = t ? `${Math.round((s.size_clearance||0)/t*100)}% of markdowns` : '';
+  document.getElementById('md-stat-clear').textContent   = s.completed_run || 0;
+  document.getElementById('md-stat-poor-pct').textContent   = t ? `${Math.round((s.poor_seller||0)/t*100)}% of removed`   : '';
+  document.getElementById('md-stat-season-pct').textContent = t ? `${Math.round((s.end_of_season||0)/t*100)}% of removed` : '';
+  document.getElementById('md-stat-clear-pct').textContent  = t ? `${Math.round((s.completed_run||0)/t*100)}% of removed` : '';
 
   // Update reason card bars
   if (t > 0) {
     document.getElementById('md-bar-poor').style.width   = `${Math.round((s.poor_seller||0)/t*100)}%`;
     document.getElementById('md-bar-season').style.width = `${Math.round((s.end_of_season||0)/t*100)}%`;
-    document.getElementById('md-bar-clear').style.width  = `${Math.round((s.size_clearance||0)/t*100)}%`;
+    document.getElementById('md-bar-clear').style.width  = `${Math.round((s.completed_run||0)/t*100)}%`;
   }
 
   // Insights
@@ -1227,13 +1217,11 @@ async function loadMarkdown() {
 }
 
 function renderMarkdown() {
-  const reason    = document.getElementById('md-filter-reason').value;
-  const minDepth  = parseInt(document.getElementById('md-filter-depth').value) || 0;
-  const tbody     = document.getElementById('md-table-body');
+  const reason = document.getElementById('md-filter-reason').value;
+  const tbody  = document.getElementById('md-table-body');
 
   let vis = allMarkdown.filter(p => {
-    if (reason   && p.reason !== reason)                             return false;
-    if (minDepth && (p.markdown_depth_pct || 0) < minDepth)        return false;
+    if (reason && p.reason !== reason) return false;
     return true;
   });
 
@@ -1248,9 +1236,9 @@ function renderMarkdown() {
   });
 
   if (!vis.length) {
-    tbody.innerHTML = `<tr><td colspan="10"><div class="empty-state">
-      <strong>No marked-down products found.</strong>
-      <p>Either no products are currently marked down, or the scorer hasn't run yet.</p>
+    tbody.innerHTML = `<tr><td colspan="8"><div class="empty-state">
+      <strong>No removed products found.</strong>
+      <p>Products with the Removed signal will appear here after the next scoring run.</p>
     </div></td></tr>`;
     return;
   }
@@ -1269,10 +1257,6 @@ function renderMarkdown() {
     const border = REASON_BORDER[p.reason]  || '#e0e0e0';
     const label  = REASON_LABELS[p.reason]  || p.reason;
 
-    const depthBadge = p.markdown_depth_pct
-      ? `<span style="font-size:9px;font-weight:700;color:#ff0066;background:#fff0f3;border-radius:10px;padding:2px 7px;margin-left:4px">${p.markdown_depth_pct}% off</span>`
-      : '';
-
     const confColour = CONF_COLOURS[p.confidence] || '#aaa';
     const confDots   = ['high','medium','low'].map((l,i) => {
       const levels = {high:3, medium:2, low:1};
@@ -1281,9 +1265,7 @@ function renderMarkdown() {
     }).join('');
 
     const spark = buildSparkline(p.score_series || []);
-
-    const sub  = normSub((p.subcategory || p.category || '').replace(/-/g,' '));
-    const mdDay = p.markdown_day != null ? `Day ${p.markdown_day}` : '—';
+    const sub   = normSub((p.subcategory || p.category || '').replace(/-/g,' '));
 
     return `<tr>
       <td style="padding:8px 6px">${img}</td>
@@ -1294,15 +1276,9 @@ function renderMarkdown() {
       <td>
         <span style="display:inline-block;font-size:9px;font-weight:700;letter-spacing:1px;text-transform:uppercase;padding:3px 9px;border-radius:24px;background:${bg};color:${colour};border:1px solid ${border};white-space:nowrap">${label}</span>
       </td>
-      <td style="font-size:12px;font-weight:500;color:#aaa;text-decoration:line-through">
-        ${p.was_price != null ? `£${p.was_price.toFixed(2)}` : '—'}
-      </td>
-      <td style="font-size:12px;font-weight:700;color:#ff0066">
-        ${p.latest_price != null ? `£${p.latest_price.toFixed(2)}` : '—'}${depthBadge}
-      </td>
-      <td style="font-size:11px;color:#555;font-weight:600">${mdDay}</td>
-      <td style="font-size:10px;color:#aaa;font-weight:500">${p.age}d</td>
+      <td style="font-size:11px;color:#555;font-weight:600">${p.days_active != null ? `${p.days_active}d` : '—'}</td>
       <td style="font-size:14px;font-weight:700;color:#000">${p.peak_score}</td>
+      <td style="font-size:12px;font-weight:500;color:#555">${p.avg_score}</td>
       <td>${spark}</td>
       <td style="white-space:nowrap">${confDots}<span style="font-size:10px;font-weight:600;color:${confColour};margin-left:4px;text-transform:capitalize">${p.confidence}</span></td>
     </tr>`;
