@@ -194,6 +194,137 @@ def api_keyword_products():
     return jsonify(matching)
 
 
+@app.route('/api/success')
+def api_success():
+    from datetime import date
+    from collections import Counter
+
+    retailer = request.args.get('retailer') or None
+    category = (request.args.get('category') or '').lower() or None
+    min_days = int(request.args.get('min_days', 30))
+
+    DEMAND_SIGNALS = {'featured', 'rank_improvement', 'sizes_sold_out', 'restock_event', 'review_velocity'}
+
+    SIGNAL_FREQ_CONFIG = [
+        ('long_runner',      'Long runner (30+ days)'),
+        ('featured',         'Featured placement'),
+        ('rank_improvement', 'Rank improvement'),
+        ('sizes_sold_out',   'Selling through (sizes OOS)'),
+        ('restock_event',    'Restock event'),
+        ('review_velocity',  'Review velocity spike'),
+    ]
+
+    products = db.get_all_products(retailer=retailer)
+    today    = date.today()
+    results  = []
+
+    for product in products:
+        pid = product['id']
+
+        if category and not (product.get('category') or '').lower().startswith(category):
+            continue
+
+        history = db.get_score_history(pid, days=365)
+        if not history:
+            continue
+
+        days_tracked = len(history)
+        if days_tracked < min_days:
+            continue
+
+        scores     = [h['score'] for h in history]
+        peak_score = max(scores)
+        cumulative = sum(scores)
+
+        if peak_score <= 40:
+            continue
+
+        # Collect all signal names across full history
+        all_signal_names = set()
+        has_demand       = False
+        for h in history:
+            for sig in (h.get('signals') or {}):
+                all_signal_names.add(sig)
+                if sig in DEMAND_SIGNALS:
+                    has_demand = True
+
+        if not has_demand:
+            continue
+
+        # Trajectory classification
+        peak_idx      = scores.index(peak_score)
+        peak_fraction = peak_idx / max(days_tracked - 1, 1)
+        if peak_fraction <= 0.30:
+            trajectory = 'early_spike'
+        elif peak_fraction >= 0.65:
+            trajectory = 'steady_climber'
+        else:
+            trajectory = 'mid_life_peak'
+
+        # Current signal tags (latest score)
+        latest_signals = history[-1].get('signals', {})
+        signal_tags    = scorer._signals_to_tags(latest_signals)
+
+        results.append({
+            'id':               pid,
+            'name':             product.get('name'),
+            'retailer':         product.get('retailer'),
+            'category':         product.get('category'),
+            'subcategory':      product.get('subcategory'),
+            'url':              product.get('url'),
+            'image_url':        product.get('image_url'),
+            'days_tracked':     days_tracked,
+            'peak_score':       round(peak_score),
+            'peak_day':         peak_idx + 1,
+            'cumulative':       round(cumulative),
+            'trajectory':       trajectory,
+            'signal_tags':      signal_tags,
+            'all_signal_names': sorted(all_signal_names),
+            'score_series':     [{'date': h['scored_date'], 'score': h['score']} for h in history],
+        })
+
+    results.sort(key=lambda x: x['peak_score'], reverse=True)
+
+    total = len(results)
+
+    # Summary stats
+    avg_days = round(sum(r['days_tracked'] for r in results) / total) if total else 0
+    avg_peak = round(sum(r['peak_score']   for r in results) / total) if total else 0
+
+    # Top signal by frequency
+    sig_counter = Counter()
+    for r in results:
+        for sig in r['all_signal_names']:
+            sig_counter[sig] += 1
+
+    sig_label_map = dict(SIGNAL_FREQ_CONFIG)
+    top_sig_key   = sig_counter.most_common(1)[0][0] if sig_counter else None
+    top_sig_pct   = round((sig_counter[top_sig_key] / total) * 100) if top_sig_key and total else 0
+
+    # Signal frequency list (in fixed order)
+    signal_freq = [
+        {
+            'key':   key,
+            'label': label,
+            'count': sig_counter.get(key, 0),
+        }
+        for key, label in SIGNAL_FREQ_CONFIG
+        if sig_counter.get(key, 0) > 0
+    ]
+
+    return jsonify({
+        'summary': {
+            'total':             total,
+            'avg_days':          avg_days,
+            'avg_peak':          avg_peak,
+            'top_signal_label':  sig_label_map.get(top_sig_key, '—') if top_sig_key else '—',
+            'top_signal_pct':    top_sig_pct,
+        },
+        'signal_freq': signal_freq,
+        'products':    results,
+    })
+
+
 @app.route('/api/markdown')
 def api_markdown():
     from collections import Counter

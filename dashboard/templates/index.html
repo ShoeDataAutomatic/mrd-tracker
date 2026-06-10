@@ -265,6 +265,27 @@
     .kw-product-cat   { font-size: 9px; font-weight: 600; letter-spacing: 1px; text-transform: capitalize; color: #bbb; }
     .kw-placeholder   { display: flex; flex-direction: column; align-items: center; justify-content: center; height: 200px; color: #ccc; text-align: center; gap: 8px; }
     .kw-placeholder p { font-size: 10px; font-weight: 700; letter-spacing: 2px; text-transform: uppercase; }
+
+    /* ── Success Analysis tab ── */
+    .sc-card { background: #fff; border: 1px solid #e5e5e5; border-radius: 4px; display: grid; grid-template-columns: 200px 1fr 320px; overflow: hidden; min-height: 200px; }
+    .sc-img  { background: #f5f5f5; border-right: 1px solid #e5e5e5; display: flex; align-items: center; justify-content: center; overflow: hidden; }
+    .sc-img img { width: 100%; height: 100%; object-fit: cover; display: block; }
+    .sc-info { padding: 22px 24px; border-right: 1px solid #f0f0f0; display: flex; flex-direction: column; align-items: flex-start; }
+    .sc-product-name { font-size: 14px; font-weight: 700; color: #000; margin-bottom: 6px; line-height: 1.3; text-decoration: none; display: block; }
+    .sc-product-name:hover { color: #ff0066; }
+    .sc-product-meta { font-size: 10px; color: #bbb; font-weight: 600; letter-spacing: .5px; margin-bottom: 14px; }
+    .sc-chart-col { padding: 22px 24px; display: flex; flex-direction: column; }
+    .sc-scores-row { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 18px; }
+    .sc-score-lbl { font-size: 9px; font-weight: 700; letter-spacing: 1.5px; text-transform: uppercase; color: #bbb; margin-bottom: 4px; }
+    .sc-score-num { font-size: 32px; font-weight: 700; color: #000; letter-spacing: -1px; line-height: 1.1; }
+    .sc-score-sub { font-size: 10px; color: #bbb; font-weight: 600; margin-top: 2px; }
+    .sc-chart-head { font-size: 9px; font-weight: 700; letter-spacing: 1px; text-transform: uppercase; color: #bbb; margin-bottom: 8px; display: flex; align-items: center; justify-content: space-between; }
+    .sc-traj-badge { font-size: 9px; font-weight: 700; letter-spacing: .5px; text-transform: uppercase; padding: 3px 9px; border-radius: 3px; }
+    .sc-signal-grid { display: grid; grid-template-columns: repeat(3,1fr); border-top: 1px solid #f0f0f0; }
+    .sc-signal-cell { padding: 16px 24px; border-right: 1px solid #f0f0f0; border-bottom: 1px solid #f0f0f0; }
+    .sc-signal-cell:nth-child(3n) { border-right: none; }
+    .sc-signal-bar-wrap { background: #f5f5f5; border-radius: 2px; height: 6px; width: 100%; margin-bottom: 6px; overflow: hidden; }
+    .sc-signal-bar { height: 6px; border-radius: 2px; }
   </style>
 </head>
 <body>
@@ -283,6 +304,7 @@
 <div class="tab-bar">
   <button class="tab-btn active" data-tab="rankings" onclick="switchTab('rankings')">Rankings</button>
   <button class="tab-btn" data-tab="keywords" onclick="switchTab('keywords')">Keyword analysis</button>
+  <button class="tab-btn" data-tab="success" onclick="switchTab('success')">Success analysis</button>
   <button class="tab-btn" data-tab="markdown" onclick="switchTab('markdown')">Removed products</button>
 </div>
 
@@ -596,6 +618,72 @@
 
 </div><!-- /tab-markdown -->
 
+<!-- ═══════════════════════ SUCCESS ANALYSIS TAB ═══════════════════════ -->
+<div id="tab-success" style="display:none">
+
+  <div class="controls" style="padding:12px 28px">
+    <button class="pill active" id="sc-cat-btn-all"   onclick="scSetCategory('')">All</button>
+    <button class="pill"        id="sc-cat-btn-women" onclick="scSetCategory('women')">Women</button>
+    <button class="pill"        id="sc-cat-btn-men"   onclick="scSetCategory('men')">Men</button>
+    <button class="pill"        id="sc-cat-btn-girls" onclick="scSetCategory('girls')">Girls</button>
+    <button class="pill"        id="sc-cat-btn-boys"  onclick="scSetCategory('boys')">Boys</button>
+    <div style="margin-left:auto;display:flex;align-items:center;gap:8px">
+      <span style="font-size:10px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:#bbb">Min days</span>
+      <select id="sc-filter-mindays" onchange="loadSuccess()"
+        style="border:1.5px solid #e0e0e0;border-radius:24px;padding:6px 14px;font-size:10px;font-weight:700;color:#000;font-family:'Montserrat',sans-serif;appearance:none;-webkit-appearance:none;outline:none;background:#fff;cursor:pointer">
+        <option value="30">30 days</option>
+        <option value="45">45 days</option>
+        <option value="60">60 days</option>
+      </select>
+      <select id="sc-filter-sort" onchange="renderSuccess()"
+        style="border:1.5px solid #e0e0e0;border-radius:24px;padding:6px 14px;font-size:10px;font-weight:700;color:#000;font-family:'Montserrat',sans-serif;appearance:none;-webkit-appearance:none;outline:none;background:#fff;cursor:pointer">
+        <option value="peak_score">Sort: peak score</option>
+        <option value="cumulative">Sort: cumulative</option>
+      </select>
+    </div>
+  </div>
+
+  <div class="stats">
+    <div class="stat-card">
+      <div class="label">Successful products</div>
+      <div class="value" id="sc-stat-total">—</div>
+    </div>
+    <div class="stat-card">
+      <div class="label">Avg days online</div>
+      <div class="value" id="sc-stat-avgdays">—</div>
+    </div>
+    <div class="stat-card">
+      <div class="label">Avg peak score</div>
+      <div class="value" id="sc-stat-avgpeak">—</div>
+    </div>
+    <div class="stat-card">
+      <div class="label">Top signal</div>
+      <div class="value sm" id="sc-stat-topsignal">—</div>
+      <div class="sub pink" id="sc-stat-topsignal-pct"></div>
+    </div>
+  </div>
+
+  <!-- Signal frequency panel -->
+  <div id="sc-signal-panel" style="background:#fff;border-bottom:1px solid #e5e5e5">
+    <div style="padding:12px 28px">
+      <div style="font-size:10px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:#000">Signal frequency across successful products</div>
+    </div>
+    <div id="sc-signal-grid" class="sc-signal-grid"></div>
+  </div>
+
+  <!-- Section heading -->
+  <div style="background:#fff;border-bottom:1px solid #e5e5e5;padding:14px 28px;display:flex;align-items:center;justify-content:space-between">
+    <div style="font-size:10px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:#000">Successful products — score trajectories</div>
+    <div style="font-size:10px;color:#bbb;font-weight:600" id="sc-section-meta">4-day rolling avg</div>
+  </div>
+
+  <!-- Products list -->
+  <div id="sc-products-list" style="padding:20px 28px;background:#f2f2f2;display:flex;flex-direction:column;gap:14px">
+    <div style="text-align:center;padding:60px 20px;color:#bbb">Loading…</div>
+  </div>
+
+</div><!-- /tab-success -->
+
 <script>
 // ── Capitalise first letter of each word ──────────────────────────────────────
 const cap = s => s ? s.replace(/(?:^|\s|-)\S/g, c => c.toUpperCase()) : s;
@@ -791,11 +879,13 @@ document.addEventListener('click', e => {
 function switchTab(name) {
   document.getElementById('tab-rankings').style.display = name === 'rankings' ? '' : 'none';
   document.getElementById('tab-keywords').style.display = name === 'keywords' ? '' : 'none';
+  document.getElementById('tab-success').style.display  = name === 'success'  ? '' : 'none';
   document.getElementById('tab-markdown').style.display = name === 'markdown' ? '' : 'none';
   document.querySelectorAll('.tab-btn').forEach(b =>
     b.classList.toggle('active', b.dataset.tab === name));
   if (name === 'keywords' && allKeywords.length === 0) loadKeywords();
   if (name === 'markdown' && allMarkdown.length === 0) loadMarkdown();
+  if (name === 'success'  && allSuccess.length  === 0) loadSuccess();
 }
 
 
@@ -1286,6 +1376,179 @@ function renderMarkdown() {
     </tr>`;
   }).join('');
 }
+
+// ═══════════════════════════════════════════════════
+// SUCCESS ANALYSIS TAB
+// ═══════════════════════════════════════════════════
+let allSuccess = [], scCategory = '';
+
+const TRAJ_LABELS = {
+  early_spike:    'Early spike',
+  steady_climber: 'Steady climber',
+  mid_life_peak:  'Mid-life peak',
+};
+const TRAJ_STYLE = {
+  early_spike:    { bg: '#fff3e0', color: '#b36200', stroke: '#ff6600' },
+  steady_climber: { bg: '#e6f0ff', color: '#1a4fa3', stroke: '#0066cc' },
+  mid_life_peak:  { bg: '#ffe6ef', color: '#b3004a', stroke: '#ff0066' },
+};
+const SC_SIGNAL_COLORS = {
+  long_runner:      '#00a651',
+  featured:         '#0066cc',
+  rank_improvement: '#6633cc',
+  sizes_sold_out:   '#ff6600',
+  restock_event:    '#cc9900',
+  review_velocity:  '#cc0052',
+};
+
+function scSetCategory(cat) {
+  scCategory = cat;
+  document.querySelectorAll('[id^="sc-cat-btn-"]').forEach(b => {
+    const btnCat = b.id.replace('sc-cat-btn-', '');
+    b.classList.toggle('active', btnCat === (cat || 'all'));
+  });
+  renderSuccess();
+}
+
+async function loadSuccess() {
+  const minDays = document.getElementById('sc-filter-mindays').value;
+  document.getElementById('sc-products-list').innerHTML =
+    '<div style="text-align:center;padding:60px 20px;color:#bbb;font-size:12px;font-weight:600">Loading…</div>';
+
+  const res  = await fetch('/api/success?min_days=' + minDays);
+  const data = await res.json();
+  allSuccess = data.products || [];
+
+  const s = data.summary || {};
+  document.getElementById('sc-stat-total').textContent         = s.total    || 0;
+  document.getElementById('sc-stat-avgdays').textContent       = s.avg_days || '—';
+  document.getElementById('sc-stat-avgpeak').textContent       = s.avg_peak || '—';
+  document.getElementById('sc-stat-topsignal').textContent     = s.top_signal_label || '—';
+  document.getElementById('sc-stat-topsignal-pct').textContent = s.top_signal_pct
+    ? s.top_signal_pct + '% of successes' : '';
+
+  renderSignalFreq(data.signal_freq || []);
+  renderSuccess();
+}
+
+function renderSignalFreq(freqData) {
+  const grid  = document.getElementById('sc-signal-grid');
+  const panel = document.getElementById('sc-signal-panel');
+  if (!freqData.length) { panel.style.display = 'none'; return; }
+  panel.style.display = '';
+
+  const total  = allSuccess.length || 1;
+  const maxCnt = Math.max(...freqData.map(f => f.count), 1);
+
+  grid.innerHTML = freqData.map(f => {
+    const pct    = Math.round((f.count / total) * 100);
+    const barW   = Math.round((f.count / maxCnt) * 100);
+    const color  = SC_SIGNAL_COLORS[f.key] || '#888';
+    return `<div class="sc-signal-cell">
+      <div style="font-size:10px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:#555;margin-bottom:8px">${f.label}</div>
+      <div class="sc-signal-bar-wrap"><div class="sc-signal-bar" style="width:${barW}%;background:${color}"></div></div>
+      <div style="font-size:10px;color:#999;font-weight:600">${f.count} of ${total} · ${pct}%</div>
+    </div>`;
+  }).join('');
+}
+
+function renderSuccess() {
+  const sortBy  = document.getElementById('sc-filter-sort').value;
+  const minDays = document.getElementById('sc-filter-mindays').value;
+  const list    = document.getElementById('sc-products-list');
+
+  let vis = allSuccess.filter(p => {
+    if (!scCategory) return true;
+    return (p.category || '').toLowerCase().split('/').includes(scCategory);
+  });
+
+  vis = [...vis].sort((a, b) =>
+    sortBy === 'cumulative' ? b.cumulative - a.cumulative : b.peak_score - a.peak_score
+  );
+
+  document.getElementById('sc-section-meta').textContent =
+    `${vis.length} product${vis.length !== 1 ? 's' : ''} · min ${minDays} days · peak > 40 · demand signal required · 4-day rolling avg`;
+
+  if (!vis.length) {
+    list.innerHTML = `<div class="empty-state">
+      <strong>No successful products found.</strong>
+      <p>Try reducing the minimum days threshold, or run the scorer to collect more data.</p>
+    </div>`;
+    return;
+  }
+
+  list.innerHTML = vis.map(p => buildSuccessCard(p)).join('');
+}
+
+function buildSuccessCard(p) {
+  const traj     = TRAJ_STYLE[p.trajectory] || TRAJ_STYLE.mid_life_peak;
+  const trajLbl  = TRAJ_LABELS[p.trajectory] || '';
+  const sub      = normSub((p.subcategory || p.category || '').replace(/-/g, ' ')) || '—';
+  const cumFmt   = p.cumulative.toLocaleString();
+
+  const img = p.image_url
+    ? `<img src="${p.image_url}" alt="${p.name}" loading="lazy"
+           onerror="this.parentElement.innerHTML='<div style=\\'color:#ccc;font-size:48px;display:flex;align-items:center;justify-content:center;width:100%;height:100%\\'>&#128094;</div>'">`
+    : `<div style="color:#ccc;font-size:48px;display:flex;align-items:center;justify-content:center;width:100%;height:100%">&#128094;</div>`;
+
+  const tags = (p.signal_tags || [])
+    .filter(t => t !== 'Removed' && t !== 'Marked down')
+    .map(t => `<span class="tag ${TAG_CLASSES[t] || 'tag-markdown'}">${t}</span>`)
+    .join('');
+
+  const spark = buildSuccessSparkline(p.score_series || [], traj.stroke);
+
+  return `<div class="sc-card">
+    <div class="sc-img">${img}</div>
+    <div class="sc-info">
+      <a class="sc-product-name" href="${p.url}" target="_blank">${cap(p.name)}</a>
+      <div class="sc-product-meta">${sub}</div>
+      <div class="tags">${tags}</div>
+    </div>
+    <div class="sc-chart-col">
+      <div class="sc-scores-row">
+        <div>
+          <div class="sc-score-lbl">Peak score</div>
+          <div class="sc-score-num">${p.peak_score}</div>
+          <div class="sc-score-sub">Day ${p.peak_day} of ${p.days_tracked}</div>
+        </div>
+        <div style="text-align:right">
+          <div class="sc-score-lbl">Cumulative</div>
+          <div class="sc-score-num">${cumFmt}</div>
+          <div class="sc-score-sub">Over ${p.days_tracked} days</div>
+        </div>
+      </div>
+      <div class="sc-chart-head">
+        <span>4-day avg score</span>
+        <span class="sc-traj-badge" style="background:${traj.bg};color:${traj.color}">${trajLbl}</span>
+      </div>
+      <div style="flex:1;min-height:70px">${spark}</div>
+    </div>
+  </div>`;
+}
+
+function buildSuccessSparkline(series, strokeColor) {
+  if (!series || series.length < 2) return '<svg style="width:100%;height:70px"></svg>';
+  const raw      = series.map(s => s.score);
+  const smoothed = raw.map((_, i) => {
+    const slice = raw.slice(Math.max(0, i - 3), i + 1);
+    return slice.reduce((a, b) => a + b, 0) / slice.length;
+  });
+  const maxV = Math.max(...smoothed, 1);
+  const w = 280, h = 70;
+  const pts = smoothed.map((v, i) => {
+    const x = (i / (smoothed.length - 1)) * w;
+    const y = h - (v / maxV) * (h - 6) - 3;
+    return x.toFixed(1) + ',' + y.toFixed(1);
+  });
+  const polyPts = pts.join(' ');
+  const fillPts = '0,' + h + ' ' + polyPts + ' ' + w + ',' + h;
+  return `<svg viewBox="0 0 ${w} ${h}" style="width:100%;height:70px;display:block" preserveAspectRatio="none">
+    <polygon points="${fillPts}" fill="${strokeColor}" fill-opacity="0.07"/>
+    <polyline points="${polyPts}" fill="none" stroke="${strokeColor}" stroke-width="1.5" stroke-linejoin="round" stroke-linecap="round"/>
+  </svg>`;
+}
+
 
 loadAll();
 </script>
