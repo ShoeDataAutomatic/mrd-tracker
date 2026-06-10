@@ -236,9 +236,6 @@ def api_success():
         peak_score = max(scores)
         cumulative = sum(scores)
 
-        if peak_score <= 40:
-            continue
-
         # Collect all signal names across full history
         all_signal_names = set()
         has_demand       = False
@@ -284,6 +281,11 @@ def api_success():
         })
 
     results.sort(key=lambda x: x['peak_score'], reverse=True)
+
+    # Retain only the top 20% by peak score (self-calibrates with catalogue size).
+    # Require a hard floor of at least 5 products so the view is never empty.
+    top_n = max(5, round(len(results) * 0.20))
+    results = results[:top_n]
 
     total = len(results)
 
