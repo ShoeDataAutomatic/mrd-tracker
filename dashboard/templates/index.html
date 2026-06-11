@@ -311,24 +311,13 @@
 <!-- ═══════════════════════ RANKINGS TAB ═══════════════════════ -->
 <div id="tab-rankings">
 
-  <div class="category-pills" style="justify-content:space-between">
-    <div style="display:flex;gap:6px">
-      <button class="pill active" onclick="setCategory('')">All</button>
-      <button class="pill" onclick="setCategory('women')">Women</button>
-      <button class="pill" onclick="setCategory('men')">Men</button>
-      <button class="pill" onclick="setCategory('girls')">Girls</button>
-      <button class="pill" onclick="setCategory('boys')">Boys</button>
-    </div>
-    <button class="btn-refresh" onclick="loadAll()">Refresh</button>
-  </div>
-
   <div class="stats">
     <div class="stat-card">
       <div class="label">Products tracked</div>
       <div class="value" id="stat-total">—</div>
     </div>
     <div class="stat-card">
-      <div class="label">New today</div>
+      <div class="label">New this week</div>
       <div class="value" id="stat-new">—</div>
     </div>
     <div class="stat-card">
@@ -361,7 +350,7 @@
             <th style="width:58px" class="no-sort"></th>
             <th class="sortable" data-col="name">Product<span class="sort-icon"></span></th>
             <th class="sortable" data-col="retailer">Retailer<span class="sort-icon"></span></th>
-            <th class="sortable" data-col="category">Category<span class="sort-icon"></span></th>
+            <th class="sortable" data-col="category">Gender<span class="sort-icon"></span></th>
             <th class="sortable" data-col="subcategory">Subcategory<span class="sort-icon"></span></th>
             <th class="sortable sort-desc" data-col="total_score">Score<span class="sort-icon"></span></th>
             <th class="sortable" data-col="latest_price">Price<span class="sort-icon"></span></th>
@@ -445,7 +434,7 @@
     </div>
     <div>
       <select id="kw-filter-category" onchange="loadKeywords()">
-        <option value="">All categories</option>
+        <option value="">All genders</option>
         <option value="women">Women</option>
         <option value="men">Men</option>
         <option value="girls">Girls</option>
@@ -528,7 +517,7 @@
     </div>
     <div>
       <select id="md-filter-category" onchange="loadMarkdown()">
-        <option value="">All categories</option>
+        <option value="">All genders</option>
         <option value="women">Women</option>
         <option value="men">Men</option>
         <option value="girls">Girls</option>
@@ -925,11 +914,11 @@ async function loadStats() {
   const res = await fetch('/api/stats');
   const d   = await res.json();
   document.getElementById('stat-total').textContent     = d.total_products;
-  document.getElementById('stat-new').textContent       = d.new_today;
+  document.getElementById('stat-new').textContent       = d.new_this_week;
   document.getElementById('stat-top').textContent       = cap(d.top_product);
   document.getElementById('stat-top-score').textContent = d.top_score ? `${d.top_score.toFixed(0)} pts` : '';
   document.getElementById('stat-rising').textContent    = d.fastest_rising ? cap(d.fastest_rising) : '—';
-  document.getElementById('stat-rising-sub').textContent= d.fastest_rising_delta ? `+${d.fastest_rising_delta}% this week` : '';
+  document.getElementById('stat-rising-sub').textContent= d.fastest_rising_delta ? `+${d.fastest_rising_delta}% vs prev week` : '';
   document.getElementById('header-time').textContent    =
     new Date().toLocaleTimeString('en-GB', {hour:'2-digit',minute:'2-digit'});
 }

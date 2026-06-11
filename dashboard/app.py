@@ -99,24 +99,50 @@ def api_product(product_id):
 
 @app.route('/api/stats')
 def api_stats():
-    retailer = request.args.get('retailer') or None
-    products = db.get_all_products(retailer=retailer)
-    top      = scorer.get_rankings(limit=1, retailer=retailer)
-
     from datetime import date, timedelta
-    today     = date.today().isoformat()
-    yesterday = (date.today() - timedelta(days=1)).isoformat()
 
-    new_today = sum(
+    retailer      = request.args.get('retailer') or None
+    products      = db.get_all_products(retailer=retailer)
+    top           = scorer.get_rankings(limit=1, retailer=retailer)
+
+    today         = date.today()
+    week_ago      = (today - timedelta(days=7)).isoformat()
+    two_weeks_ago = (today - timedelta(days=14)).isoformat()
+
+    new_this_week = sum(
         1 for p in products
-        if p.get('first_seen', '') >= today
+        if p.get('first_seen', '') >= week_ago
     )
 
+    # Fastest rising: product with the biggest average daily score improvement
+    # comparing the last 7 days to the 7 days before that.
+    rankings = scorer.get_rankings(limit=9999, days=14, retailer=retailer)
+    fastest_rising       = None
+    fastest_rising_delta = None
+    best_delta           = 0
+
+    for p in rankings:
+        history = p.get('score_history') or []
+        recent  = [h['score'] for h in history if h.get('scored_date', '') >= week_ago]
+        prev    = [h['score'] for h in history
+                   if two_weeks_ago <= h.get('scored_date', '') < week_ago]
+        if recent and prev:
+            recent_avg = sum(recent) / len(recent)
+            prev_avg   = sum(prev)   / len(prev)
+            if prev_avg > 0:
+                delta = round(((recent_avg - prev_avg) / prev_avg) * 100)
+                if delta > best_delta:
+                    best_delta           = delta
+                    fastest_rising       = p['name']
+                    fastest_rising_delta = delta
+
     return jsonify({
-        'total_products': len(products),
-        'new_today':      new_today,
-        'top_product':    top[0]['name'] if top else '—',
-        'top_score':      top[0]['total_score'] if top else 0,
+        'total_products':       len(products),
+        'new_this_week':        new_this_week,
+        'top_product':          top[0]['name'] if top else '—',
+        'top_score':            top[0]['total_score'] if top else 0,
+        'fastest_rising':       fastest_rising,
+        'fastest_rising_delta': fastest_rising_delta,
     })
 
 
