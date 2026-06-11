@@ -219,11 +219,12 @@ def api_keywords():
         last_seen = p.get('last_seen') or ''
         if not name:
             continue
-        tokens = _tokenise(name)
-        if curr_start <= last_seen <= curr_end:
+        tokens    = _tokenise(name)
+        last_date = last_seen[:10]   # normalise datetime -> date for comparison
+        if curr_start <= last_date <= curr_end:
             curr_counter.update(tokens)
             curr_total += 1
-        elif prev_start <= last_seen <= prev_end:
+        elif prev_start <= last_date <= prev_end:
             prev_counter.update(tokens)
             prev_total += 1
 
@@ -277,7 +278,7 @@ def api_success():
 
     retailer   = request.args.get('retailer') or None
     category   = (request.args.get('category') or '').lower() or None
-    min_days   = int(request.args.get('min_days', 30))
+    min_days   = int(request.args.get('min_days', 3))
     start_date = request.args.get('start_date') or None
     end_date   = request.args.get('end_date')   or None
 
