@@ -14,7 +14,7 @@ sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..'))
 import re
 import json
 from collections import Counter
-from flask import Flask, render_template, jsonify, request
+from flask import Flask, render_template, jsonify, request, Response, redirect
 from config import DASHBOARD_HOST, DASHBOARD_PORT, DASHBOARD_DEBUG, RETAILERS
 import scorer
 import database as db
@@ -82,6 +82,19 @@ def api_rankings():
         # image_url is already on the product row from the DB join
 
     return jsonify(products)
+
+
+@app.route('/api/image/<int:product_id>')
+def api_image(product_id):
+    data, content_type = db.get_image_blob(product_id)
+    if data:
+        return Response(data, mimetype=content_type or 'image/jpeg',
+                        headers={'Cache-Control': 'public, max-age=86400'})
+    # Blob not cached yet — redirect to CDN URL as fallback
+    product = db.get_product(product_id)
+    if product and product.get('image_url'):
+        return redirect(product['image_url'])
+    return '', 404
 
 
 @app.route('/api/product/<int:product_id>')

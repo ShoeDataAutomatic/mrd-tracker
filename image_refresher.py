@@ -15,6 +15,8 @@ Schedule:
 """
 
 import logging
+import requests
+from concurrent.futures import ThreadPoolExecutor, as_completed
 from config import RETAILERS
 from scrapers import get_scraper
 import database as db
@@ -76,15 +78,21 @@ def _refresh_retailer(key, config):
 
     updated = 0
     missing = 0
+    to_download = []
+
+    # One query upfront — avoid per-product round-trips
+    existing_blob_ids = db.get_product_ids_with_blobs(retailer=key)
 
     for p in products:
         image_url = p.get('image_url')
         if image_url:
-            db.update_product_image(
+            product_id = db.update_product_image(
                 retailer  = key,
                 sku       = p['sku'],
                 image_url = image_url,
             )
+            if product_id and product_id not in existing_blob_ids:
+                to_download.append((product_id, image_url))
             updated += 1
         else:
             missing += 1
@@ -95,7 +103,43 @@ def _refresh_retailer(key, config):
             f'Their existing URLs were not changed.'
         )
 
+    # Download and cache blobs for products that don't have one yet
+    if to_download:
+        logger.info(f'[image-refresh] {key}: downloading {len(to_download)} new image blobs…')
+        blobs_saved = 0
+        with ThreadPoolExecutor(max_workers=10) as executor:
+            futures = {
+                executor.submit(_download_image, url): pid
+                for pid, url in to_download
+            }
+            for future in as_completed(futures):
+                pid = futures[future]
+                data, content_type = future.result()
+                if data:
+                    db.save_image_blob(pid, data, content_type)
+                    blobs_saved += 1
+        logger.info(f'[image-refresh] {key}: cached {blobs_saved}/{len(to_download)} blobs.')
+
     return updated
+
+
+# ---------------------------------------------------------------------------
+# Image download helper
+# ---------------------------------------------------------------------------
+
+def _download_image(url):
+    """Download an image URL. Returns (bytes, content_type) or (None, None)."""
+    try:
+        resp = requests.get(
+            url, timeout=10,
+            headers={'User-Agent': 'Mozilla/5.0 (compatible; MRDTracker/1.0)'}
+        )
+        if resp.status_code == 200:
+            ct = resp.headers.get('Content-Type', 'image/jpeg').split(';')[0].strip()
+            return resp.content, ct
+    except Exception as e:
+        logger.debug(f'[image-refresh] Failed to download {url}: {e}')
+    return None, None
 
 
 # ---------------------------------------------------------------------------

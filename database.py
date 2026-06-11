@@ -54,6 +54,8 @@ def init_db():
     for col, definition in [
         ('image_refreshed_at', 'TEXT'),
         ('subcategory',        'TEXT'),
+        ('image_blob',         'BLOB'),
+        ('image_content_type', 'TEXT'),
     ]:
         try:
             c.execute(f'ALTER TABLE products ADD COLUMN {col} {definition}')
@@ -143,9 +145,10 @@ def update_product_image(retailer, sku, image_url):
     """
     Update only the image URL and refresh timestamp for a product.
     Used by the image refresher — does not touch any other fields.
+    Returns the product's id, or None if not found.
     """
     if not image_url:
-        return
+        return None
     conn = get_connection()
     c = conn.cursor()
     now = datetime.utcnow().isoformat()
@@ -155,7 +158,46 @@ def update_product_image(retailer, sku, image_url):
         WHERE retailer = ? AND sku = ?
     ''', (image_url, now, retailer, sku))
     conn.commit()
+    c.execute('SELECT id FROM products WHERE retailer = ? AND sku = ?', (retailer, sku))
+    row = c.fetchone()
     conn.close()
+    return row['id'] if row else None
+
+
+def save_image_blob(product_id, data, content_type):
+    """Store a downloaded image as a BLOB on the product row."""
+    conn = get_connection()
+    c = conn.cursor()
+    c.execute('''
+        UPDATE products SET image_blob = ?, image_content_type = ? WHERE id = ?
+    ''', (data, content_type, product_id))
+    conn.commit()
+    conn.close()
+
+
+def get_image_blob(product_id):
+    """Return (blob_bytes, content_type) for a product, or (None, None) if not cached."""
+    conn = get_connection()
+    c = conn.cursor()
+    c.execute('SELECT image_blob, image_content_type FROM products WHERE id = ?', (product_id,))
+    row = c.fetchone()
+    conn.close()
+    if row and row['image_blob']:
+        return row['image_blob'], row['image_content_type'] or 'image/jpeg'
+    return None, None
+
+
+def get_product_ids_with_blobs(retailer=None):
+    """Return a set of product IDs that already have a cached image blob."""
+    conn = get_connection()
+    c = conn.cursor()
+    if retailer:
+        c.execute('SELECT id FROM products WHERE image_blob IS NOT NULL AND retailer = ?', (retailer,))
+    else:
+        c.execute('SELECT id FROM products WHERE image_blob IS NOT NULL')
+    ids = {row['id'] for row in c.fetchall()}
+    conn.close()
+    return ids
 
 
 def get_all_products(retailer=None):
