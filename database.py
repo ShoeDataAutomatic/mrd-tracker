@@ -418,3 +418,39 @@ def get_score_history(product_id, days=30, start_date=None, end_date=None):
         rows.append(d)
     conn.close()
     return rows
+
+
+def get_score_history_batch(product_ids, days=30, start_date=None, end_date=None):
+    """
+    Fetch score histories for multiple products in a single query.
+    Returns a dict mapping product_id → list of {scored_date, score, signals}.
+    """
+    if not product_ids:
+        return {}
+    conn = get_connection()
+    c = conn.cursor()
+    placeholders = ','.join('?' * len(product_ids))
+    if start_date and end_date:
+        c.execute(f'''
+            SELECT product_id, scored_date, score, signals
+            FROM scores
+            WHERE product_id IN ({placeholders})
+              AND scored_date BETWEEN ? AND ?
+            ORDER BY product_id, scored_date ASC
+        ''', list(product_ids) + [start_date, end_date])
+    else:
+        c.execute(f'''
+            SELECT product_id, scored_date, score, signals
+            FROM scores
+            WHERE product_id IN ({placeholders})
+              AND scored_date >= date('now', ?)
+            ORDER BY product_id, scored_date ASC
+        ''', list(product_ids) + [f'-{days} days'])
+    result = {}
+    for r in c.fetchall():
+        d = dict(r)
+        d['signals'] = json.loads(d['signals'] or '{}')
+        pid = d.pop('product_id')
+        result.setdefault(pid, []).append(d)
+    conn.close()
+    return result

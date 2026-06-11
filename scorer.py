@@ -180,14 +180,18 @@ def get_rankings(limit=50, days=None, retailer=None, start_date=None, end_date=N
     rows = db.get_top_products(limit=limit, days=days, retailer=retailer,
                                start_date=start_date, end_date=end_date)
 
+    # Batch-fetch all score histories in one query instead of N queries
+    product_ids = [row['id'] for row in rows]
+    histories   = db.get_score_history_batch(product_ids, days=days,
+                                              start_date=start_date, end_date=end_date)
+
     for row in rows:
-        pid         = row['id']
-        first_seen  = _parse_date(row.get('first_seen', ''))
-        today       = date.today()
+        pid        = row['id']
+        first_seen = _parse_date(row.get('first_seen', ''))
+        today      = date.today()
 
         row['days_tracked']  = (today - first_seen).days if first_seen else 0
-        row['score_history'] = db.get_score_history(pid, days=days,
-                                                     start_date=start_date, end_date=end_date)
+        row['score_history'] = histories.get(pid, [])
 
         # Extract was_price from the latest snapshot's raw_data blob
         try:
