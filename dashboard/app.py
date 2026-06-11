@@ -219,12 +219,15 @@ def api_keyword_products():
     category = (request.args.get('category') or '').lower() or None
     if not keyword:
         return jsonify([])
-    products = db.get_all_products(retailer=retailer)
+    # Use get_top_products so each product includes total_score and latest_price
+    products = db.get_top_products(limit=9999, days=30, retailer=retailer)
     matching = [
         p for p in products
         if keyword in (p.get('name') or '').lower()
         and (not category or (p.get('category') or '').lower().startswith(category))
     ]
+    for p in matching:
+        p.pop('latest_raw_data', None)  # strip heavy field
     matching.sort(key=lambda p: p.get('last_seen') or '', reverse=True)
     return jsonify(matching)
 

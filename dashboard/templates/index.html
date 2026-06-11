@@ -252,7 +252,7 @@
     .kw-active .kw-delta-up { color: #4ecf7f; }
     .kw-active .kw-delta-dn { color: #ff6699; }
     .kw-products-panel { padding: 16px; overflow-y: auto; max-height: calc(100vh - 260px); }
-    .kw-products-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 14px; padding-bottom: 10px; border-bottom: 1px solid #f0f0f0; position: sticky; top: 0; background: #fff; z-index: 1; }
+    .kw-products-header { display: flex; align-items: center; justify-content: space-between; border-bottom: 1px solid #f0f0f0; position: sticky; top: 0; background: #fff; z-index: 1; margin: -16px -16px 14px -16px; padding: 16px 16px 10px 16px; }
     .kw-products-title  { font-size: 9px; font-weight: 700; letter-spacing: 2px; text-transform: uppercase; color: #bbb; }
     .kw-products-count  { font-size: 9px; font-weight: 700; letter-spacing: 1px; text-transform: uppercase; padding: 3px 12px; border-radius: 24px; background: #ff0066; color: #fff; }
     .kw-products-grid   { display: grid; grid-template-columns: repeat(auto-fill,minmax(160px,1fr)); gap: 16px; }
@@ -514,7 +514,15 @@
     <div class="kw-products-panel">
       <div class="kw-products-header">
         <div class="kw-products-title" id="kw-panel-title">Product examples</div>
-        <span class="kw-products-count" id="kw-panel-count" style="display:none"></span>
+        <div style="display:flex;align-items:center;gap:8px">
+          <span class="kw-products-count" id="kw-panel-count" style="display:none"></span>
+          <select id="kw-products-sort" onchange="renderKwProducts()" style="display:none;border:1.5px solid #e0e0e0;border-radius:24px;padding:4px 12px;font-size:10px;font-weight:700;color:#000;font-family:'Montserrat',sans-serif;appearance:none;-webkit-appearance:none;outline:none;background:#fff;cursor:pointer">
+            <option value="default">Recent first</option>
+            <option value="name">A–Z</option>
+            <option value="score">Top score</option>
+            <option value="subcategory">Subcategory</option>
+          </select>
+        </div>
       </div>
       <div id="kw-products-grid" class="kw-products-grid">
         <div class="kw-placeholder" style="grid-column:1/-1"><p>Select a keyword</p></div>
@@ -1203,6 +1211,8 @@ function kwSort(th) {
   renderKeywords();
 }
 
+let kwProducts = [];
+
 async function selectKeyword(keyword, count) {
   activeKeyword=keyword;
   renderKeywords();
@@ -1217,12 +1227,30 @@ async function selectKeyword(keyword, count) {
   if (retailer) params.set('retailer',retailer);
   if (category) params.set('category',category);
   const res=await fetch('/api/keywords/products?'+params);
-  const products=await res.json();
-  if (!products.length) {
+  kwProducts=await res.json();
+  const sortEl=document.getElementById('kw-products-sort');
+  if (sortEl) sortEl.style.display=kwProducts.length?'':'none';
+  renderKwProducts();
+}
+
+function renderKwProducts() {
+  const grid=document.getElementById('kw-products-grid');
+  if (!kwProducts.length) {
     grid.innerHTML='<div class="kw-placeholder" style="grid-column:1/-1"><p>No images available yet</p></div>';
     return;
   }
-  grid.innerHTML=products.map(p=>{
+  const sortBy=(document.getElementById('kw-products-sort')||{}).value||'default';
+  const sorted=[...kwProducts].sort((a,b)=>{
+    if (sortBy==='name')        return (a.name||'').localeCompare(b.name||'');
+    if (sortBy==='score')       return (b.total_score||0)-(a.total_score||0);
+    if (sortBy==='subcategory') {
+      const sa=normSub((a.subcategory||a.category||'').replace(/-/g,' '))||'';
+      const sb=normSub((b.subcategory||b.category||'').replace(/-/g,' '))||'';
+      return sa.localeCompare(sb);
+    }
+    return (b.last_seen||'').localeCompare(a.last_seen||'');
+  });
+  grid.innerHTML=sorted.map(p=>{
     const price=(p.latest_price!=null)?`£${p.latest_price.toFixed(2)}`:'';
     const cat=normSub((p.subcategory||p.category||'').replace(/-/g,' '));
     const imgH=p.image_url
