@@ -251,8 +251,9 @@
     .kw-delta-new { font-size: 10px; color: #bbb; font-weight: 500; }
     .kw-active .kw-delta-up { color: #4ecf7f; }
     .kw-active .kw-delta-dn { color: #ff6699; }
-    .kw-products-panel { padding: 16px; overflow-y: auto; max-height: calc(100vh - 260px); }
-    .kw-products-header { display: flex; align-items: center; justify-content: space-between; border-bottom: 1px solid #f0f0f0; position: sticky; top: 0; background: #fff; z-index: 1; margin: -16px -16px 14px -16px; padding: 16px 16px 10px 16px; }
+    .kw-products-panel { display: flex; flex-direction: column; overflow: hidden; max-height: calc(100vh - 260px); }
+    .kw-products-header { display: flex; align-items: center; justify-content: space-between; border-bottom: 1px solid #f0f0f0; background: #fff; padding: 14px 16px 10px 16px; flex-shrink: 0; }
+    .kw-products-body { flex: 1; overflow-y: auto; padding: 16px; }
     .kw-products-title  { font-size: 9px; font-weight: 700; letter-spacing: 2px; text-transform: uppercase; color: #bbb; }
     .kw-products-count  { font-size: 9px; font-weight: 700; letter-spacing: 1px; text-transform: uppercase; padding: 3px 12px; border-radius: 24px; background: #ff0066; color: #fff; }
     .kw-products-grid   { display: grid; grid-template-columns: repeat(auto-fill,minmax(160px,1fr)); gap: 16px; }
@@ -524,8 +525,10 @@
           </select>
         </div>
       </div>
-      <div id="kw-products-grid" class="kw-products-grid">
-        <div class="kw-placeholder" style="grid-column:1/-1"><p>Select a keyword</p></div>
+      <div class="kw-products-body">
+        <div id="kw-products-grid" class="kw-products-grid">
+          <div class="kw-placeholder" style="grid-column:1/-1"><p>Select a keyword</p></div>
+        </div>
       </div>
     </div>
   </div>
