@@ -276,8 +276,12 @@
     .date-input { border: 1.5px solid #e0e0e0; border-radius: 24px; padding: 5px 14px; font-size: 10px; font-weight: 600; font-family: 'Montserrat', sans-serif; color: #222; outline: none; background: #fff; cursor: pointer; }
     .date-input:focus { border-color: #000; }
     .date-sep { font-size: 11px; color: #bbb; font-weight: 600; }
-    .date-apply-btn { margin-left: auto; background: #ff0066; color: #fff; border: none; border-radius: 24px; padding: 7px 20px; font-size: 10px; font-weight: 700; letter-spacing: 2px; text-transform: uppercase; font-family: 'Montserrat', sans-serif; cursor: pointer; }
-    .date-apply-btn:hover { background: #cc0052; }
+    .date-removed-btn { margin-left: auto; background: #000; color: #fff; border: none; border-radius: 24px; padding: 7px 20px; font-size: 10px; font-weight: 700; letter-spacing: 2px; text-transform: uppercase; font-family: 'Montserrat', sans-serif; cursor: pointer; }
+    .date-removed-btn:hover { background: #333; }
+    /* ── Image lightbox ── */
+    .img-lb { display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.78); z-index:9999; align-items:center; justify-content:center; cursor:pointer; }
+    .img-lb.open { display:flex; }
+    .img-lb img { height:300px; max-width:90vw; object-fit:contain; border-radius:4px; cursor:default; box-shadow:0 8px 40px rgba(0,0,0,0.4); }
 
     /* ── Success Analysis tab ── */
     .sc-card { background: #fff; border: 1px solid #e5e5e5; border-radius: 4px; display: grid; grid-template-columns: 200px 1fr 320px; overflow: hidden; min-height: 200px; }
@@ -330,7 +334,7 @@
   <input type="date" id="date-start" class="date-input" onchange="onCustomDate()">
   <span class="date-sep">→</span>
   <input type="date" id="date-end" class="date-input" onchange="onCustomDate()">
-  <button class="date-apply-btn" onclick="applyDateRange()">Apply</button>
+  <button class="date-removed-btn" onclick="switchTab('markdown')">Removed products</button>
 </div>
 
 <!-- ═══════════════════════ RANKINGS TAB ═══════════════════════ -->
@@ -515,6 +519,9 @@
         <option value="month" selected>Month vs month</option>
         <option value="quarter">Quarter vs quarter</option>
       </select>
+    </div>
+    <div>
+      <button id="kw-btn-clear" onclick="clearKwFilters()" style="display:none;background:#000;color:#fff;border:none;border-radius:24px;padding:6px 18px;font-size:10px;font-weight:700;letter-spacing:1px;text-transform:uppercase;font-family:'Montserrat',sans-serif;cursor:pointer">Clear filters</button>
     </div>
   </div>
 
@@ -742,6 +749,8 @@ function getDateRange() {
   };
 }
 
+let _dateBarReady = false;
+
 function setDatePreset(months) {
   const today = new Date();
   const start = new Date(today);
@@ -750,10 +759,12 @@ function setDatePreset(months) {
   document.getElementById('date-end').value   = _isoDate(today);
   document.querySelectorAll('.date-preset-btn').forEach(b =>
     b.classList.toggle('active', parseInt(b.dataset.months) === months));
+  if (_dateBarReady) applyDateRange();
 }
 
 function onCustomDate() {
   document.querySelectorAll('.date-preset-btn').forEach(b => b.classList.remove('active'));
+  if (_dateBarReady) applyDateRange();
 }
 
 function applyDateRange() {
@@ -766,7 +777,19 @@ function applyDateRange() {
 
 function _initDateBar() {
   setDatePreset(6);
+  _dateBarReady = true;
 }
+
+// ── Image lightbox ────────────────────────────────────────────────────────────
+function showImageLightbox(url, name) {
+  document.getElementById('img-lb-img').src = url;
+  document.getElementById('img-lb-img').alt = name || '';
+  document.getElementById('img-lb').classList.add('open');
+}
+function closeLightbox() {
+  document.getElementById('img-lb').classList.remove('open');
+}
+document.addEventListener('keydown', e => { if (e.key === 'Escape') closeLightbox(); });
 
 // ── Capitalise first letter of each word ──────────────────────────────────────
 const cap = s => s ? s.replace(/(?:^|\s|-)\S/g, c => c.toUpperCase()) : s;
@@ -1127,7 +1150,8 @@ function renderTable() {
     const spark  = buildSparkline(p.score_series||[]);
     const img    = p.image_url
       ? `<div class="thumb-wrap" style="position:relative">
-           <img src="${p.image_url}" alt="${p.name}" loading="lazy"
+           <img src="${p.image_url}" alt="${p.name}" loading="lazy" style="cursor:pointer"
+                onclick="showImageLightbox(this.src,this.alt)"
                 onerror="this.parentElement.innerHTML='<div class=\\'no-img\\'>&#128094;</div>'">
            <div class="preview"><img src="${p.image_url}" alt="${p.name}"></div>
          </div>`
@@ -1233,7 +1257,26 @@ async function loadKeywords() {
   document.getElementById('kw-panel-count').style.display='none';
   document.getElementById('kw-products-grid').innerHTML=
     '<div class="kw-placeholder" style="grid-column:1/-1"><p>Select a keyword</p></div>';
+  checkKwClearBtn();
   renderKeywords();
+}
+
+function checkKwClearBtn() {
+  const retailer    = document.getElementById('kw-filter-retailer').value;
+  const category    = document.getElementById('kw-filter-category').value;
+  const subcategory = document.getElementById('kw-filter-subcategory').value;
+  const age         = document.getElementById('kw-filter-age').value;
+  const btn = document.getElementById('kw-btn-clear');
+  if (btn) btn.style.display = (retailer || category || subcategory || age) ? 'inline-block' : 'none';
+}
+
+function clearKwFilters() {
+  document.getElementById('kw-filter-retailer').value    = '';
+  document.getElementById('kw-filter-category').value    = '';
+  document.getElementById('kw-filter-subcategory').value = '';
+  document.getElementById('kw-filter-age').value         = '';
+  checkKwClearBtn();
+  loadKeywords();
 }
 
 function renderKeywords() {
@@ -1321,7 +1364,8 @@ function renderKwProducts() {
     const price=(p.latest_price!=null)?`£${p.latest_price.toFixed(2)}`:'';
     const cat=normSub((p.subcategory||p.category||'').replace(/-/g,' '));
     const imgH=p.image_url
-      ?`<img src="${p.image_url}" alt="${p.name}" loading="lazy"
+      ?`<img src="${p.image_url}" alt="${p.name}" loading="lazy" style="cursor:pointer"
+            onclick="event.preventDefault();event.stopPropagation();showImageLightbox(this.src,this.alt)"
             onerror="this.parentElement.innerHTML='<div class=\\'no-img\\'>&#128094;</div>'">`
       :`<div class="no-img">&#128094;</div>`;
     return `<a class="kw-product-card" href="${p.url}" target="_blank">
@@ -1447,7 +1491,8 @@ function renderMarkdown() {
   tbody.innerHTML = vis.map(p => {
     const img = p.image_url
       ? `<div class="thumb-wrap" style="position:relative">
-           <img src="${p.image_url}" alt="${p.name}" loading="lazy"
+           <img src="${p.image_url}" alt="${p.name}" loading="lazy" style="cursor:pointer"
+                onclick="showImageLightbox(this.src,this.alt)"
                 onerror="this.parentElement.innerHTML='<div class=\\'no-img\\'>&#128094;</div>'">
            <div class="preview"><img src="${p.image_url}" alt="${p.name}"></div>
          </div>`
@@ -1596,7 +1641,8 @@ function buildSuccessCard(p) {
   const cumFmt   = p.cumulative.toLocaleString();
 
   const img = p.image_url
-    ? `<img src="${p.image_url}" alt="${p.name}" loading="lazy"
+    ? `<img src="${p.image_url}" alt="${p.name}" loading="lazy" style="cursor:pointer"
+           onclick="showImageLightbox(this.src,this.alt)"
            onerror="this.parentElement.innerHTML='<div style=\\'color:#ccc;font-size:48px;display:flex;align-items:center;justify-content:center;width:100%;height:100%\\'>&#128094;</div>'">`
     : `<div style="color:#ccc;font-size:48px;display:flex;align-items:center;justify-content:center;width:100%;height:100%">&#128094;</div>`;
 
@@ -1662,5 +1708,9 @@ function buildSuccessSparkline(series, strokeColor) {
 _initDateBar();
 loadAll();
 </script>
+
+<div class="img-lb" id="img-lb" onclick="closeLightbox()">
+  <img id="img-lb-img" src="" alt="" onclick="event.stopPropagation()">
+</div>
 </body>
 </html>
