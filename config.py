@@ -59,6 +59,20 @@ RETAILERS = {
             'rows_override': 100,   # Server accepts max 100 per request
         },
     },
+    'newlook': {
+        'name':     'New Look',
+        'base_url': 'https://www.newlook.com',
+        'region':   'uk',
+        'categories': [
+            # Women's footwear — ~1,074 products
+            '/uk/womens/footwear/c/uk-womens-footwear',
+            # Men's footwear — ~37 products
+            '/uk/mens/mens-footwear/c/uk-mens-footwear',
+            # Girls' (teens) footwear — ~387 products
+            '/uk/girls/shoes-for-girls/c/uk-teens-footwear',
+        ],
+        'enabled': True,
+    },
     # Add more retailers here following the same pattern, e.g.:
     # 'asos': { ... },
     # 'hm': { ... },

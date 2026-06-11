@@ -1,7 +1,9 @@
 from scrapers.primark import PrimarkScraper
+from scrapers.newlook import NewLookScraper
 
 SCRAPER_MAP = {
     'primark': PrimarkScraper,
+    'newlook': NewLookScraper,
 }
 
 def get_scraper(retailer_key, config):
