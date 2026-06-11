@@ -64,12 +64,11 @@ RETAILERS = {
         'base_url': 'https://www.newlook.com',
         'region':   'uk',
         'categories': [
-            # Women's footwear — ~1,074 products
+            # Women's footwear — ~1,389 products in sitemap
             '/uk/womens/footwear/c/uk-womens-footwear',
-            # Men's footwear — ~37 products
+            # Men's footwear — ~31 products in sitemap
             '/uk/mens/mens-footwear/c/uk-mens-footwear',
-            # Girls' (teens) footwear — ~387 products
-            '/uk/girls/shoes-for-girls/c/uk-teens-footwear',
+            # Girls not included — absent from New Look's product sitemap
         ],
         'enabled': True,
     },
