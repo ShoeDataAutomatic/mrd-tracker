@@ -247,15 +247,6 @@ def get_stale_image_products(retailer=None, stale_hours=20):
     rows = [dict(r) for r in c.fetchall()]
     conn.close()
     return rows
-    conn = get_connection()
-    c = conn.cursor()
-    if retailer:
-        c.execute('SELECT * FROM products WHERE retailer=? ORDER BY last_seen DESC', (retailer,))
-    else:
-        c.execute('SELECT * FROM products ORDER BY last_seen DESC')
-    rows = [dict(r) for r in c.fetchall()]
-    conn.close()
-    return rows
 
 
 def mark_product_unseen(product_id):
@@ -424,111 +415,43 @@ def get_score_history_batch(product_ids, days=30, start_date=None, end_date=None
     """
     Fetch score histories for multiple products in a single query.
     Returns a dict mapping product_id -> list of {scored_date, score, signals}.
+
+    Chunks IDs into batches of 500 to stay under SQLite's 999-variable limit.
     """
     if not product_ids:
         return {}
-    conn = get_connection()
-    c = conn.cursor()
-    placeholders = ','.join('?' * len(product_ids))
-    if start_date and end_date:
-        score_date_clause = 'AND s.scored_date BETWEEN ? AND ?'
-        date_params = [start_date, end_date]
-    else:
-        score_date_clause = "AND s.scored_date >= date('now', ?)"
-        date_params = [f'-{days} days']
 
-    params = date_params + ([retailer] if retailer else []) + [limit]
-
-    c.execute(f'''
-        SELECT
-            p.*,
-            COALESCE(SUM(s.score), 0) AS total_score,
-            sn.price         AS latest_price,
-            sn.rank          AS latest_rank,
-            sn.review_count  AS latest_reviews,
-            sn.is_featured   AS latest_featured,
-            sn.timestamp     AS latest_snapshot_time,
-            sn.raw_data      AS latest_raw_data
-        FROM products p
-        LEFT JOIN scores s
-            ON s.product_id = p.id
-            {score_date_clause}
-        LEFT JOIN (
-            SELECT product_id, price, rank, review_count, is_featured, timestamp, raw_data,
-                   ROW_NUMBER() OVER (PARTITION BY product_id ORDER BY timestamp DESC) AS rn
-            FROM snapshots
-        ) sn ON sn.product_id = p.id AND sn.rn = 1
-        WHERE 1=1 {retailer_filter}
-        GROUP BY p.id
-        ORDER BY total_score DESC
-        LIMIT ?
-    ''', params)
-
-    rows = [dict(r) for r in c.fetchall()]
-    conn.close()
-    return rows
-
-
-def get_score_history(product_id, days=30, start_date=None, end_date=None):
-    """Return daily scores for a product over the past N days, or within an explicit range."""
-    conn = get_connection()
-    c = conn.cursor()
-    if start_date and end_date:
-        c.execute('''
-            SELECT scored_date, score, signals
-            FROM scores
-            WHERE product_id = ?
-              AND scored_date BETWEEN ? AND ?
-            ORDER BY scored_date ASC
-        ''', (product_id, start_date, end_date))
-    else:
-        c.execute('''
-            SELECT scored_date, score, signals
-            FROM scores
-            WHERE product_id = ?
-              AND scored_date >= date('now', ?)
-            ORDER BY scored_date ASC
-        ''', (product_id, f'-{days} days'))
-    rows = []
-    for r in c.fetchall():
-        d = dict(r)
-        d['signals'] = json.loads(d['signals'] or '{}')
-        rows.append(d)
-    conn.close()
-    return rows
-
-
-def get_score_history_batch(product_ids, days=30, start_date=None, end_date=None):
-    """
-    Fetch score histories for multiple products in a single query.
-    Returns a dict mapping product_id -> list of {scored_date, score, signals}.
-    """
-    if not product_ids:
-        return {}
-    conn = get_connection()
-    c = conn.cursor()
-    placeholders = ','.join('?' * len(product_ids))
-    if start_date and end_date:
-        c.execute(f'''
-            SELECT product_id, scored_date, score, signals
-            FROM scores
-            WHERE product_id IN ({placeholders})
-              AND scored_date BETWEEN ? AND ?
-            ORDER BY product_id, scored_date ASC
-        ''', list(product_ids) + [start_date, end_date])
-    else:
-        c.execute(f'''
-            SELECT product_id, scored_date, score, signals
-            FROM scores
-            WHERE product_id IN ({placeholders})
-              AND scored_date >= date('now', ?)
-            ORDER BY product_id, scored_date ASC
-        ''', list(product_ids) + [f'-{days} days'])
     result = {}
-    for r in c.fetchall():
-        d = dict(r)
-        d['signals'] = json.loads(d['signals'] or '{}')
-        pid = d.pop('product_id')
-        result.setdefault(pid, []).append(d)
+    chunk_size = 500
+
+    conn = get_connection()
+    c = conn.cursor()
+
+    for i in range(0, len(product_ids), chunk_size):
+        chunk = list(product_ids[i:i + chunk_size])
+        placeholders = ','.join('?' * len(chunk))
+        if start_date and end_date:
+            c.execute(f'''
+                SELECT product_id, scored_date, score, signals
+                FROM scores
+                WHERE product_id IN ({placeholders})
+                  AND scored_date BETWEEN ? AND ?
+                ORDER BY product_id, scored_date ASC
+            ''', chunk + [start_date, end_date])
+        else:
+            c.execute(f'''
+                SELECT product_id, scored_date, score, signals
+                FROM scores
+                WHERE product_id IN ({placeholders})
+                  AND scored_date >= date('now', ?)
+                ORDER BY product_id, scored_date ASC
+            ''', chunk + [f'-{days} days'])
+
+        for r in c.fetchall():
+            d = dict(r)
+            d['signals'] = json.loads(d['signals'] or '{}')
+            pid = d.pop('product_id')
+            result.setdefault(pid, []).append(d)
+
     conn.close()
     return result
