@@ -63,11 +63,14 @@ def index():
 
 @app.route('/api/rankings')
 def api_rankings():
-    retailer = request.args.get('retailer') or None
-    days     = int(request.args.get('days', 30))
-    limit    = request.args.get('limit', '50')
-    limit    = 9999 if limit == '9999' else int(limit)
-    products = scorer.get_rankings(limit=limit, days=days, retailer=retailer)
+    retailer   = request.args.get('retailer') or None
+    days       = int(request.args.get('days', 30))
+    limit      = request.args.get('limit', '50')
+    limit      = 9999 if limit == '9999' else int(limit)
+    start_date = request.args.get('start_date') or None
+    end_date   = request.args.get('end_date')   or None
+    products   = scorer.get_rankings(limit=limit, days=days, retailer=retailer,
+                                     start_date=start_date, end_date=end_date)
 
     # Serialise score_history as a simple list of [date, score] for sparklines
     for p in products:
@@ -101,9 +104,13 @@ def api_product(product_id):
 def api_stats():
     from datetime import date, timedelta
 
-    retailer      = request.args.get('retailer') or None
+    retailer   = request.args.get('retailer') or None
+    start_date = request.args.get('start_date') or None
+    end_date   = request.args.get('end_date')   or None
+
     products      = db.get_all_products(retailer=retailer)
-    top           = scorer.get_rankings(limit=1, retailer=retailer)
+    top           = scorer.get_rankings(limit=1, retailer=retailer,
+                                        start_date=start_date, end_date=end_date)
 
     today         = date.today()
     week_ago      = (today - timedelta(days=7)).isoformat()
@@ -114,9 +121,9 @@ def api_stats():
         if p.get('first_seen', '') >= week_ago
     )
 
-    # Fastest rising: product with the biggest average daily score improvement
-    # comparing the last 7 days to the 7 days before that.
-    rankings = scorer.get_rankings(limit=9999, days=14, retailer=retailer)
+    # Fastest rising: biggest average score improvement week-on-week within range
+    rankings = scorer.get_rankings(limit=9999, days=14, retailer=retailer,
+                                   start_date=start_date, end_date=end_date)
     fastest_rising       = None
     fastest_rising_delta = None
     best_delta           = 0
@@ -153,13 +160,31 @@ def api_keywords():
     retailer    = request.args.get('retailer') or None
     category    = (request.args.get('category')    or '').lower() or None
     subcategory = (request.args.get('subcategory') or '').lower() or None
-    max_age     = request.args.get('max_age') or None   # max product age in days
+    max_age     = request.args.get('max_age') or None
+    start_date  = request.args.get('start_date') or None
+    end_date    = request.args.get('end_date')   or None
 
     spans = {'week': 7, 'month': 30, 'quarter': 90}
-    n          = spans.get(comparison, 7)
-    today      = date.today()
-    curr_start = (today - timedelta(days=n)).isoformat()
-    prev_start = (today - timedelta(days=n * 2)).isoformat()
+    n     = spans.get(comparison, 7)
+    today = date.today()
+
+    # If a date range is supplied, use it as the "current" window; the
+    # equally-long period before it becomes the comparison "previous" window.
+    if start_date and end_date:
+        from datetime import date as date_cls
+        d1 = date_cls.fromisoformat(start_date)
+        d2 = date_cls.fromisoformat(end_date)
+        range_days = max((d2 - d1).days, 1)
+        curr_start = start_date
+        curr_end   = end_date
+        prev_end   = (d1 - timedelta(days=1)).isoformat()
+        prev_start = (d1 - timedelta(days=range_days)).isoformat()
+    else:
+        curr_start = (today - timedelta(days=n)).isoformat()
+        curr_end   = today.isoformat()
+        prev_start = (today - timedelta(days=n * 2)).isoformat()
+        prev_end   = (today - timedelta(days=n)).isoformat()
+
     age_cutoff = (today - timedelta(days=int(max_age))).isoformat() if max_age else None
 
     products     = db.get_all_products(retailer=retailer)
@@ -182,10 +207,10 @@ def api_keywords():
         if not name:
             continue
         tokens = _tokenise(name)
-        if last_seen >= curr_start:
+        if curr_start <= last_seen <= curr_end:
             curr_counter.update(tokens)
             curr_total += 1
-        elif last_seen >= prev_start:
+        elif prev_start <= last_seen <= prev_end:
             prev_counter.update(tokens)
             prev_total += 1
 
@@ -237,9 +262,11 @@ def api_success():
     from datetime import date
     from collections import Counter
 
-    retailer = request.args.get('retailer') or None
-    category = (request.args.get('category') or '').lower() or None
-    min_days = int(request.args.get('min_days', 30))
+    retailer   = request.args.get('retailer') or None
+    category   = (request.args.get('category') or '').lower() or None
+    min_days   = int(request.args.get('min_days', 30))
+    start_date = request.args.get('start_date') or None
+    end_date   = request.args.get('end_date')   or None
 
     DEMAND_SIGNALS = {'featured', 'rank_improvement', 'sizes_sold_out', 'restock_event', 'review_velocity'}
 
@@ -262,7 +289,7 @@ def api_success():
         if category and not (product.get('category') or '').lower().startswith(category):
             continue
 
-        history = db.get_score_history(pid, days=365)
+        history = db.get_score_history(pid, days=365, start_date=start_date, end_date=end_date)
         if not history:
             continue
 
@@ -368,10 +395,13 @@ def api_success():
 @app.route('/api/markdown')
 def api_markdown():
     from collections import Counter
-    retailer = request.args.get('retailer') or None
-    category = (request.args.get('category') or '').lower() or None
+    retailer   = request.args.get('retailer') or None
+    category   = (request.args.get('category') or '').lower() or None
+    start_date = request.args.get('start_date') or None
+    end_date   = request.args.get('end_date')   or None
 
-    products = scorer.get_removed_analysis(retailer=retailer)
+    products = scorer.get_removed_analysis(retailer=retailer,
+                                           start_date=start_date, end_date=end_date)
 
     if category:
         products = [p for p in products if (p.get('category') or '').lower().startswith(category)]

@@ -171,13 +171,14 @@ def _score_product(product):
 # Rankings summary
 # ---------------------------------------------------------------------------
 
-def get_rankings(limit=50, days=None, retailer=None):
+def get_rankings(limit=50, days=None, retailer=None, start_date=None, end_date=None):
     """
     Return ranked products with their cumulative scores.
     Wrapper around database.get_top_products() with signal decoding.
     """
     days = days or ROLLING_WINDOW_DAYS
-    rows = db.get_top_products(limit=limit, days=days, retailer=retailer)
+    rows = db.get_top_products(limit=limit, days=days, retailer=retailer,
+                               start_date=start_date, end_date=end_date)
 
     for row in rows:
         pid         = row['id']
@@ -185,7 +186,8 @@ def get_rankings(limit=50, days=None, retailer=None):
         today       = date.today()
 
         row['days_tracked']  = (today - first_seen).days if first_seen else 0
-        row['score_history'] = db.get_score_history(pid, days=days)
+        row['score_history'] = db.get_score_history(pid, days=days,
+                                                     start_date=start_date, end_date=end_date)
 
         # Extract was_price from the latest snapshot's raw_data blob
         try:
@@ -230,7 +232,7 @@ def _signals_to_tags(signals):
     return tags
 
 
-def get_removed_analysis(retailer=None):
+def get_removed_analysis(retailer=None, start_date=None, end_date=None):
     """
     Return all removed products with a classification of WHY they were removed:
     poor_seller, end_of_season, or completed_run (sold through successfully).
@@ -248,7 +250,7 @@ def get_removed_analysis(retailer=None):
 
     for product in products:
         pid     = product['id']
-        history = db.get_score_history(pid, days=180)
+        history = db.get_score_history(pid, days=180, start_date=start_date, end_date=end_date)
         if not history:
             continue
 

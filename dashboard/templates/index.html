@@ -267,6 +267,18 @@
     .kw-placeholder   { display: flex; flex-direction: column; align-items: center; justify-content: center; height: 200px; color: #ccc; text-align: center; gap: 8px; }
     .kw-placeholder p { font-size: 10px; font-weight: 700; letter-spacing: 2px; text-transform: uppercase; }
 
+    /* ── Date range bar ── */
+    .date-bar { background: #fff; border-bottom: 1px solid #e5e5e5; padding: 9px 28px; display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
+    .date-bar-label { font-size: 9px; font-weight: 700; letter-spacing: 2px; text-transform: uppercase; color: #999; white-space: nowrap; margin-right: 4px; }
+    .date-preset-btn { border: 1.5px solid #e0e0e0; border-radius: 24px; padding: 5px 14px; font-size: 10px; font-weight: 700; letter-spacing: 1px; text-transform: uppercase; font-family: 'Montserrat', sans-serif; color: #888; background: #fff; cursor: pointer; white-space: nowrap; }
+    .date-preset-btn.active { background: #000; border-color: #000; color: #fff; }
+    .date-preset-btn:hover:not(.active) { border-color: #aaa; color: #444; }
+    .date-input { border: 1.5px solid #e0e0e0; border-radius: 24px; padding: 5px 14px; font-size: 10px; font-weight: 600; font-family: 'Montserrat', sans-serif; color: #222; outline: none; background: #fff; cursor: pointer; }
+    .date-input:focus { border-color: #000; }
+    .date-sep { font-size: 11px; color: #bbb; font-weight: 600; }
+    .date-apply-btn { margin-left: auto; background: #ff0066; color: #fff; border: none; border-radius: 24px; padding: 7px 20px; font-size: 10px; font-weight: 700; letter-spacing: 2px; text-transform: uppercase; font-family: 'Montserrat', sans-serif; cursor: pointer; }
+    .date-apply-btn:hover { background: #cc0052; }
+
     /* ── Success Analysis tab ── */
     .sc-card { background: #fff; border: 1px solid #e5e5e5; border-radius: 4px; display: grid; grid-template-columns: 200px 1fr 320px; overflow: hidden; min-height: 200px; }
     .sc-img  { background: #f5f5f5; border-right: 1px solid #e5e5e5; display: flex; align-items: center; justify-content: center; overflow: hidden; }
@@ -307,6 +319,18 @@
   <button class="tab-btn" data-tab="keywords" onclick="switchTab('keywords')">Keyword analysis</button>
   <button class="tab-btn" data-tab="success" onclick="switchTab('success')">Success analysis</button>
   <button class="tab-btn" data-tab="markdown" onclick="switchTab('markdown')">Removed products</button>
+</div>
+
+<!-- ═══ UNIVERSAL DATE BAR ═══ -->
+<div class="date-bar">
+  <span class="date-bar-label">Date range for data</span>
+  <button class="date-preset-btn" data-months="1" onclick="setDatePreset(1)">1 month</button>
+  <button class="date-preset-btn" data-months="3" onclick="setDatePreset(3)">3 months</button>
+  <button class="date-preset-btn active" data-months="6" onclick="setDatePreset(6)">6 months</button>
+  <input type="date" id="date-start" class="date-input" onchange="onCustomDate()">
+  <span class="date-sep">→</span>
+  <input type="date" id="date-end" class="date-input" onchange="onCustomDate()">
+  <button class="date-apply-btn" onclick="applyDateRange()">Apply</button>
 </div>
 
 <!-- ═══════════════════════ RANKINGS TAB ═══════════════════════ -->
@@ -706,6 +730,44 @@
 </div><!-- /tab-success -->
 
 <script>
+// ═══════════════════════════════════════════════════
+// DATE RANGE
+// ═══════════════════════════════════════════════════
+function _isoDate(d) { return d.toISOString().slice(0, 10); }
+
+function getDateRange() {
+  return {
+    start_date: document.getElementById('date-start').value,
+    end_date:   document.getElementById('date-end').value,
+  };
+}
+
+function setDatePreset(months) {
+  const today = new Date();
+  const start = new Date(today);
+  start.setMonth(start.getMonth() - months);
+  document.getElementById('date-start').value = _isoDate(start);
+  document.getElementById('date-end').value   = _isoDate(today);
+  document.querySelectorAll('.date-preset-btn').forEach(b =>
+    b.classList.toggle('active', parseInt(b.dataset.months) === months));
+}
+
+function onCustomDate() {
+  document.querySelectorAll('.date-preset-btn').forEach(b => b.classList.remove('active'));
+}
+
+function applyDateRange() {
+  loadStats();
+  loadRankings();
+  if (allKeywords.length > 0) loadKeywords();
+  if (allSuccess.length  > 0) loadSuccess();
+  if (allMarkdown.length > 0) loadMarkdown();
+}
+
+function _initDateBar() {
+  setDatePreset(6);
+}
+
 // ── Capitalise first letter of each word ──────────────────────────────────────
 const cap = s => s ? s.replace(/(?:^|\s|-)\S/g, c => c.toUpperCase()) : s;
 
@@ -943,7 +1005,8 @@ document.querySelectorAll('th.sortable').forEach(th => {
 document.getElementById('col-filter-name').addEventListener('input', renderTable);
 
 async function loadStats() {
-  const res = await fetch('/api/stats');
+  const dr  = getDateRange();
+  const res = await fetch('/api/stats?' + new URLSearchParams(dr));
   const d   = await res.json();
   document.getElementById('stat-total').textContent     = d.total_products;
   document.getElementById('stat-new').textContent       = d.new_this_week;
@@ -956,7 +1019,7 @@ async function loadStats() {
 }
 
 async function loadRankings() {
-  const params = new URLSearchParams({days: 90, limit: 9999});
+  const params = new URLSearchParams({days: 90, limit: 9999, ...getDateRange()});
 
   const res   = await fetch('/api/rankings?' + params);
   allProducts = await res.json();
@@ -1143,7 +1206,8 @@ async function loadKeywords() {
   const subcategory = document.getElementById('kw-filter-subcategory').value;
   const age         = document.getElementById('kw-filter-age').value;
   const comparison  = document.getElementById('kw-filter-comparison').value;
-  const params = new URLSearchParams({comparison});
+  const dr = getDateRange();
+  const params = new URLSearchParams({comparison, ...dr});
   if (retailer)    params.set('retailer',    retailer);
   if (category)    params.set('category',    category);
   if (subcategory) params.set('subcategory', subcategory);
@@ -1310,7 +1374,7 @@ document.querySelectorAll('th[data-mdcol]').forEach(th => {
 async function loadMarkdown() {
   const retailer = document.getElementById('md-filter-retailer').value;
   const category = document.getElementById('md-filter-category').value;
-  const params   = new URLSearchParams();
+  const params   = new URLSearchParams(getDateRange());
   if (retailer) params.set('retailer', retailer);
   if (category) params.set('category', category);
   document.getElementById('md-table-body').innerHTML =
@@ -1460,7 +1524,7 @@ async function loadSuccess() {
   document.getElementById('sc-products-list').innerHTML =
     '<div style="text-align:center;padding:60px 20px;color:#bbb;font-size:12px;font-weight:600">Loading…</div>';
 
-  const res  = await fetch('/api/success?min_days=' + minDays);
+  const res  = await fetch('/api/success?' + new URLSearchParams({min_days: minDays, ...getDateRange()}));
   const data = await res.json();
   allSuccess = data.products || [];
 
@@ -1595,6 +1659,7 @@ function buildSuccessSparkline(series, strokeColor) {
 }
 
 
+_initDateBar();
 loadAll();
 </script>
 </body>

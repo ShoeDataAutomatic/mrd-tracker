@@ -299,18 +299,25 @@ def save_score(product_id, score, signals):
     conn.close()
 
 
-def get_top_products(limit=50, days=30, retailer=None):
+def get_top_products(limit=50, days=30, retailer=None, start_date=None, end_date=None):
     """
-    Return top N products ranked by cumulative score over the past `days` days.
-    Each result includes the product fields plus total_score and latest snapshot data.
+    Return top N products ranked by cumulative score over the given window.
+    Pass start_date + end_date (ISO strings) for an explicit range, or days
+    for a rolling window ending today.
     """
     conn = get_connection()
     c = conn.cursor()
 
     retailer_filter = 'AND p.retailer = ?' if retailer else ''
-    params = [f'-{days} days', limit]
-    if retailer:
-        params.insert(1, retailer)
+
+    if start_date and end_date:
+        score_date_clause = 'AND s.scored_date BETWEEN ? AND ?'
+        date_params = [start_date, end_date]
+    else:
+        score_date_clause = "AND s.scored_date >= date('now', ?)"
+        date_params = [f'-{days} days']
+
+    params = date_params + ([retailer] if retailer else []) + [limit]
 
     c.execute(f'''
         SELECT
@@ -325,7 +332,7 @@ def get_top_products(limit=50, days=30, retailer=None):
         FROM products p
         LEFT JOIN scores s
             ON s.product_id = p.id
-            AND s.scored_date >= date('now', ?)
+            {score_date_clause}
         LEFT JOIN (
             SELECT product_id, price, rank, review_count, is_featured, timestamp, raw_data,
                    ROW_NUMBER() OVER (PARTITION BY product_id ORDER BY timestamp DESC) AS rn
@@ -342,17 +349,26 @@ def get_top_products(limit=50, days=30, retailer=None):
     return rows
 
 
-def get_score_history(product_id, days=30):
-    """Return daily scores for a product over the past N days."""
+def get_score_history(product_id, days=30, start_date=None, end_date=None):
+    """Return daily scores for a product over the past N days, or within an explicit range."""
     conn = get_connection()
     c = conn.cursor()
-    c.execute('''
-        SELECT scored_date, score, signals
-        FROM scores
-        WHERE product_id = ?
-          AND scored_date >= date('now', ?)
-        ORDER BY scored_date ASC
-    ''', (product_id, f'-{days} days'))
+    if start_date and end_date:
+        c.execute('''
+            SELECT scored_date, score, signals
+            FROM scores
+            WHERE product_id = ?
+              AND scored_date BETWEEN ? AND ?
+            ORDER BY scored_date ASC
+        ''', (product_id, start_date, end_date))
+    else:
+        c.execute('''
+            SELECT scored_date, score, signals
+            FROM scores
+            WHERE product_id = ?
+              AND scored_date >= date('now', ?)
+            ORDER BY scored_date ASC
+        ''', (product_id, f'-{days} days'))
     rows = []
     for r in c.fetchall():
         d = dict(r)
