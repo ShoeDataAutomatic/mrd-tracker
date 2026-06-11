@@ -423,6 +423,27 @@
 <!-- ═══════════════════════ KEYWORDS TAB ═══════════════════════ -->
 <div id="tab-keywords" style="display:none">
 
+  <div class="stats">
+    <div class="stat-card">
+      <div class="label">Unique keywords</div>
+      <div class="value" id="kw-stat-unique">—</div>
+    </div>
+    <div class="stat-card">
+      <div class="label">Products analysed</div>
+      <div class="value" id="kw-stat-products">—</div>
+    </div>
+    <div class="stat-card">
+      <div class="label">Top keyword</div>
+      <div class="value sm" id="kw-stat-top">—</div>
+      <div class="sub pink" id="kw-stat-top-count"></div>
+    </div>
+    <div class="stat-card">
+      <div class="label">Fastest rising</div>
+      <div class="value sm" id="kw-stat-rising" style="color:#00a651">—</div>
+      <div class="sub up" id="kw-stat-rising-delta"></div>
+    </div>
+  </div>
+
   <div class="controls">
     <div>
       <select id="kw-filter-retailer" onchange="loadKeywords()">
@@ -442,33 +463,33 @@
       </select>
     </div>
     <div>
+      <select id="kw-filter-subcategory" onchange="loadKeywords()">
+        <option value="">All subcategories</option>
+        <option value="trainers">Trainers</option>
+        <option value="boots">Boots</option>
+        <option value="sandals">Sandals &amp; sliders</option>
+        <option value="heels">Heels</option>
+        <option value="flats">Flats</option>
+        <option value="loafers">Loafers</option>
+        <option value="slippers">Slippers</option>
+        <option value="clogs">Clogs</option>
+      </select>
+    </div>
+    <div>
+      <select id="kw-filter-age" onchange="loadKeywords()">
+        <option value="">Any age</option>
+        <option value="14">Last 14 days</option>
+        <option value="30">Last 30 days</option>
+        <option value="60">Last 60 days</option>
+        <option value="90">Last 90 days</option>
+      </select>
+    </div>
+    <div>
       <select id="kw-filter-comparison" onchange="loadKeywords()">
         <option value="week">Week vs week</option>
         <option value="month" selected>Month vs month</option>
         <option value="quarter">Quarter vs quarter</option>
       </select>
-    </div>
-    <button class="btn-refresh" onclick="loadKeywords()">Refresh</button>
-  </div>
-
-  <div class="stats">
-    <div class="stat-card">
-      <div class="label">Unique keywords</div>
-      <div class="value" id="kw-stat-unique">—</div>
-    </div>
-    <div class="stat-card">
-      <div class="label">Products analysed</div>
-      <div class="value" id="kw-stat-products">—</div>
-    </div>
-    <div class="stat-card">
-      <div class="label">Top keyword</div>
-      <div class="value sm" id="kw-stat-top">—</div>
-      <div class="sub pink" id="kw-stat-top-count"></div>
-    </div>
-    <div class="stat-card">
-      <div class="label">Fastest rising</div>
-      <div class="value sm" id="kw-stat-rising" style="color:#00a651">—</div>
-      <div class="sub up" id="kw-stat-rising-delta"></div>
     </div>
   </div>
 
@@ -1106,12 +1127,16 @@ initMultiSelects([], []);
 let allKeywords=[], kwMaxCount=1, kwSortCol='count', kwSortDir='desc', activeKeyword=null;
 
 async function loadKeywords() {
-  const retailer   = document.getElementById('kw-filter-retailer').value;
-  const category   = document.getElementById('kw-filter-category').value;
-  const comparison = document.getElementById('kw-filter-comparison').value;
+  const retailer    = document.getElementById('kw-filter-retailer').value;
+  const category    = document.getElementById('kw-filter-category').value;
+  const subcategory = document.getElementById('kw-filter-subcategory').value;
+  const age         = document.getElementById('kw-filter-age').value;
+  const comparison  = document.getElementById('kw-filter-comparison').value;
   const params = new URLSearchParams({comparison});
-  if (retailer) params.set('retailer', retailer);
-  if (category) params.set('category', category);
+  if (retailer)    params.set('retailer',    retailer);
+  if (category)    params.set('category',    category);
+  if (subcategory) params.set('subcategory', subcategory);
+  if (age)         params.set('max_age',     age);
   document.getElementById('kw-table-body').innerHTML =
     '<tr><td colspan="3"><div class="empty-state" style="padding:40px 20px">Loading…</div></td></tr>';
   const res  = await fetch('/api/keywords?' + params);

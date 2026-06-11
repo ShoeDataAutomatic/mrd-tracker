@@ -149,15 +149,18 @@ def api_stats():
 @app.route('/api/keywords')
 def api_keywords():
     from datetime import date, timedelta
-    comparison = request.args.get('comparison', 'week')
-    retailer   = request.args.get('retailer') or None
-    category   = (request.args.get('category') or '').lower() or None
+    comparison  = request.args.get('comparison', 'week')
+    retailer    = request.args.get('retailer') or None
+    category    = (request.args.get('category')    or '').lower() or None
+    subcategory = (request.args.get('subcategory') or '').lower() or None
+    max_age     = request.args.get('max_age') or None   # max product age in days
 
     spans = {'week': 7, 'month': 30, 'quarter': 90}
     n          = spans.get(comparison, 7)
     today      = date.today()
     curr_start = (today - timedelta(days=n)).isoformat()
     prev_start = (today - timedelta(days=n * 2)).isoformat()
+    age_cutoff = (today - timedelta(days=int(max_age))).isoformat() if max_age else None
 
     products     = db.get_all_products(retailer=retailer)
     curr_counter = Counter()
@@ -167,6 +170,12 @@ def api_keywords():
 
     for p in products:
         if category and not (p.get('category') or '').lower().startswith(category):
+            continue
+        if subcategory:
+            prod_sub = (p.get('subcategory') or '').lower().replace('-', ' ')
+            if subcategory not in prod_sub:
+                continue
+        if age_cutoff and (p.get('first_seen') or '') < age_cutoff:
             continue
         name      = (p.get('name') or '').strip()
         last_seen = p.get('last_seen') or ''
