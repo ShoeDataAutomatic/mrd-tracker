@@ -354,7 +354,9 @@ def get_top_products(limit=50, days=30, retailer=None, start_date=None, end_date
 
     c.execute(f'''
         SELECT
-            p.*,
+            p.id, p.retailer, p.sku, p.name, p.url,
+            p.category, p.subcategory, p.image_url,
+            p.first_seen, p.last_seen,
             COALESCE(SUM(s.score), 0) AS total_score,
             sn.price         AS latest_price,
             sn.rank          AS latest_rank,
