@@ -235,7 +235,7 @@ class PrimarkScraper(BaseScraper):
         was_price   = round(prev_pence / 100.0, 2) if prev_pence else None
         is_markdown = bool(was_price and price and was_price > price)
         thumb       = item.get('thumb_image', '').strip()
-        image_url   = f'{thumb}?w=400&fmt=auto' if thumb else None
+        image_url   = f'{thumb}?w=600&fmt=auto' if thumb else None
 
         # Use provided label, otherwise derive from category_path
         if not category_label:
