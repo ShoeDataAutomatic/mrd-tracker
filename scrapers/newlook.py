@@ -322,18 +322,23 @@ class NewLookScraper(BaseScraper):
     def _subcategory_from_path(url_path):
         """
         Derive subcategory from URL path.
-        e.g. '/uk/womens/footwear/shoes/...'    → 'shoes'
-             '/uk/womens/footwear/sandals/...'  → 'sandals'
+        e.g. '/uk/womens/footwear/shoes/product-name/p/SKU'   → 'shoes'
+             '/uk/womens/footwear/product-name/p/SKU'         → None  (no subfolder)
+             '/uk/mens/mens-footwear/trainers/product/p/SKU'  → 'trainers'
+
+        Requires TWO path segments between the category anchor and /p/ to avoid
+        treating the product slug as a subcategory.
         """
-        m = re.search(r'/footwear/([^/]+)/', url_path)
+        # Women's/girls' footwear: /footwear/<subcat>/<slug>/p/<SKU>
+        m = re.search(r'/footwear/([^/]+)/[^/]+/p/', url_path)
         if m:
             return m.group(1).replace('-', ' ')
-        # Fallback for mens path: /uk/mens/mens-footwear/...
-        m = re.search(r'/mens-footwear/([^/]+)/', url_path)
+        # Men's: /mens-footwear/<subcat>/<slug>/p/<SKU>
+        m = re.search(r'/mens-footwear/([^/]+)/[^/]+/p/', url_path)
         if m:
             return m.group(1).replace('-', ' ')
-        # Girls path: /uk/girls/shoes-for-girls/...
-        m = re.search(r'/shoes-for-girls/([^/]+)/', url_path)
+        # Girls: /shoes-for-girls/<subcat>/<slug>/p/<SKU>
+        m = re.search(r'/shoes-for-girls/([^/]+)/[^/]+/p/', url_path)
         if m:
             return m.group(1).replace('-', ' ')
         return None
@@ -390,9 +395,29 @@ class NewLookScraper(BaseScraper):
             print(f'  Image={e["image_url"][:60]}')
             print()
 
+        # Check for a second sitemap file (girls/other may be in en_2)
+        print('\nChecking for sitemap_uk_product_en_2.xml …')
+        sitemap2_url = _SITEMAP_URL.replace('_en_1.xml', '_en_2.xml')
+        try:
+            r2 = requests.get(sitemap2_url, headers=_HEADERS, timeout=15)
+            print(f'  HTTP {r2.status_code}  size: {len(r2.text):,} chars')
+            if r2.status_code == 200:
+                entries2 = self._parse_sitemap(r2.text)
+                print(f'  Entries: {len(entries2)}')
+                foot2 = [e for e in entries2 if any(e['url_path'].startswith(px) for px in prefixes)]
+                print(f'  Footwear matches: {len(foot2)}')
+                # Gender sample
+                g2 = {}
+                for e in entries2:
+                    g = self._gender_from_path(e['url_path'])
+                    g2[g] = g2.get(g, 0) + 1
+                print(f'  Gender breakdown: {dict(list(g2.items())[:6])}')
+        except Exception as e:
+            print(f'  Error: {e}')
+
         # Test price fetch on first product
         if footwear:
-            print('Testing price fetch on first product …')
+            print('\nTesting price fetch on first product …')
             try:
                 r = requests.get(footwear[0]['url'], headers=_HEADERS, timeout=12)
                 price, was = self._extract_price(r.text)
