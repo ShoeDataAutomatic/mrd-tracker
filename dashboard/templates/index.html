@@ -276,8 +276,10 @@
     .date-input { border: 1.5px solid #e0e0e0; border-radius: 24px; padding: 5px 14px; font-size: 10px; font-weight: 600; font-family: 'Montserrat', sans-serif; color: #222; outline: none; background: #fff; cursor: pointer; }
     .date-input:focus { border-color: #000; }
     .date-sep { font-size: 11px; color: #bbb; font-weight: 600; }
-    .date-removed-btn { margin-left: auto; background: #000; color: #fff; border: none; border-radius: 24px; padding: 7px 20px; font-size: 10px; font-weight: 700; letter-spacing: 2px; text-transform: uppercase; font-family: 'Montserrat', sans-serif; cursor: pointer; }
+    .date-removed-btn { background: #000; color: #fff; border: none; border-radius: 24px; padding: 7px 20px; font-size: 10px; font-weight: 700; letter-spacing: 2px; text-transform: uppercase; font-family: 'Montserrat', sans-serif; cursor: pointer; transition: background .15s; }
     .date-removed-btn:hover { background: #333; }
+    .date-removed-btn.active { background: #ff0066; }
+    .date-removed-btn.active:hover { background: #cc0052; }
     /* ── Image lightbox ── */
     .img-lb { display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.78); z-index:9999; align-items:center; justify-content:center; cursor:pointer; }
     .img-lb.open { display:flex; }
@@ -334,7 +336,10 @@
   <input type="date" id="date-start" class="date-input" onchange="onCustomDate()">
   <span class="date-sep">→</span>
   <input type="date" id="date-end" class="date-input" onchange="onCustomDate()">
-  <button class="date-removed-btn" onclick="switchTab('markdown')">Removed products</button>
+  <div style="margin-left:auto;display:flex;align-items:center;gap:8px">
+    <span style="font-size:9px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:#bbb">Filter</span>
+    <button class="date-removed-btn" id="btn-show-removed" onclick="toggleShowRemoved()">Removed products</button>
+  </div>
 </div>
 
 <!-- ═══════════════════════ RANKINGS TAB ═══════════════════════ -->
@@ -1000,6 +1005,14 @@ function switchTab(name) {
 // ═══════════════════════════════════════════════════
 let allProducts = [], maxScore = 1, activeCategory = '';
 let sortCol = 'total_score', sortDir = 'desc';
+let showRemoved = false;
+
+function toggleShowRemoved() {
+  showRemoved = !showRemoved;
+  const btn = document.getElementById('btn-show-removed');
+  if (btn) btn.classList.toggle('active', showRemoved);
+  renderTable();
+}
 
 const TAG_CLASSES = {
   'New arrival':'tag-new','Long runner':'tag-runner','Featured':'tag-featured',
@@ -1085,6 +1098,9 @@ function renderTable() {
     const sub = (p.subcategory || '').toLowerCase();
     const nm  = (p.name        || '').toLowerCase();
     const ret = (p.retailer    || '').toLowerCase();
+
+    // Removed products filter
+    if (!showRemoved && (p.signal_tags || []).includes('Removed')) return false;
 
     // Category pills (top-bar quick filter)
     if (activeCategory && !cat.split('/').includes(activeCategory)) return false;
