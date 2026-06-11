@@ -175,11 +175,17 @@ class NewLookScraper(BaseScraper):
             with sync_playwright() as p:
                 browser = p.chromium.launch(
                     headless=True,
-                    args=['--disable-blink-features=AutomationControlled'],
+                    args=[
+                        '--disable-blink-features=AutomationControlled',
+                        '--no-sandbox',
+                        '--disable-dev-shm-usage',
+                    ],
                 )
                 ctx = browser.new_context(
                     user_agent=_HEADERS['User-Agent'],
                     viewport={'width': 1280, 'height': 900},
+                    locale='en-GB',
+                    timezone_id='Europe/London',
                 )
                 ctx.add_init_script(
                     'Object.defineProperty(navigator, "webdriver", {get: () => undefined})'
@@ -187,9 +193,14 @@ class NewLookScraper(BaseScraper):
                 page = ctx.new_page()
                 page.on('response', on_response)
                 try:
-                    page.goto(url, wait_until='networkidle', timeout=40000)
+                    page.goto(url, wait_until='domcontentloaded', timeout=40000)
                     self._dismiss_cookie_banner(page)
-                    page.wait_for_timeout(4000)
+                    # Scroll to trigger product loading
+                    page.wait_for_timeout(3000)
+                    page.evaluate('window.scrollTo(0, 600)')
+                    page.wait_for_timeout(2000)
+                    page.evaluate('window.scrollTo(0, 1200)')
+                    page.wait_for_timeout(3000)
                 except Exception as e:
                     self.warn(f'Browser load error: {e}')
                 finally:
@@ -505,7 +516,7 @@ class NewLookScraper(BaseScraper):
 
     def discover(self):
         """
-        Print all intercepted JSON responses from the first category page.
+        Print all intercepted network responses from the first category page.
         Run with: python run.py --discover newlook
         Reveals the exact API endpoint URL and response schema.
         """
@@ -521,38 +532,96 @@ class NewLookScraper(BaseScraper):
         captured = []
 
         def on_response(response):
+            # Skip obvious static assets by extension
             if any(response.url.endswith(ext) for ext in
-                   ('.js', '.css', '.png', '.jpg', '.svg', '.woff', '.ico')):
+                   ('.png', '.jpg', '.svg', '.woff', '.woff2', '.ico', '.gif', '.webp', '.ttf')):
+                return
+            # Skip tracking / analytics domains
+            skip_domains = ('google', 'facebook', 'doubleclick', 'analytics', 'hotjar',
+                            'optimizely', 'segment', 'adobe', 'omniture', 'qualtrics')
+            if any(d in response.url for d in skip_domains):
                 return
             try:
                 ct = response.headers.get('content-type', '')
-                if 'json' not in ct:
-                    return
                 body = response.text()
-                captured.append({'url': response.url, 'status': response.status, 'body': body[:3000]})
+                if not body or len(body) < 20:
+                    return
+                entry = {
+                    'url':    response.url,
+                    'status': response.status,
+                    'ct':     ct,
+                    'body':   body[:2000],
+                    'is_product': any(k in body for k in _PRODUCT_KEYS),
+                }
+                captured.append(entry)
             except Exception:
                 pass
 
         with sync_playwright() as p:
-            browser = p.chromium.launch(headless=True)
+            browser = p.chromium.launch(
+                headless=True,
+                args=[
+                    '--disable-blink-features=AutomationControlled',
+                    '--no-sandbox',
+                    '--disable-dev-shm-usage',
+                ],
+            )
             ctx = browser.new_context(
                 user_agent=_HEADERS['User-Agent'],
                 viewport={'width': 1280, 'height': 900},
+                locale='en-GB',
+                timezone_id='Europe/London',
+            )
+            ctx.add_init_script(
+                'Object.defineProperty(navigator, "webdriver", {get: () => undefined})'
             )
             page = ctx.new_page()
             page.on('response', on_response)
             try:
-                page.goto(url, wait_until='networkidle', timeout=40000)
+                page.goto(url, wait_until='domcontentloaded', timeout=40000)
                 self._dismiss_cookie_banner(page)
-                page.wait_for_timeout(4000)
+                # Scroll to trigger lazy-loading of products
+                page.wait_for_timeout(3000)
+                page.evaluate('window.scrollTo(0, 600)')
+                page.wait_for_timeout(2000)
+                page.evaluate('window.scrollTo(0, 1200)')
+                page.wait_for_timeout(3000)
+            except Exception as e:
+                print(f'Browser error: {e}')
             finally:
                 browser.close()
 
-        print(f'Captured {len(captured)} JSON responses:\n')
-        for r in captured:
-            print(f'\n[{r["status"]}] {r["url"]}')
-            # Highlight product responses
-            if any(k in r['body'] for k in _PRODUCT_KEYS):
-                print('  *** PRODUCT DATA DETECTED ***')
-            print(r['body'][:1000])
-            print()
+        print(f'Captured {len(captured)} responses total.\n')
+
+        # First show any product data
+        product_responses = [r for r in captured if r['is_product']]
+        other_json = [r for r in captured if not r['is_product'] and 'json' in r['ct'].lower()]
+        other = [r for r in captured if not r['is_product'] and 'json' not in r['ct'].lower()]
+
+        if product_responses:
+            print('=' * 60)
+            print(f'PRODUCT DATA FOUND in {len(product_responses)} response(s):')
+            print('=' * 60)
+            for r in product_responses:
+                print(f'\n[{r["status"]}] {r["url"]}')
+                print(f'Content-Type: {r["ct"]}')
+                print(r['body'][:2000])
+                print()
+        else:
+            print('NO PRODUCT DATA DETECTED in any response.\n')
+
+        if other_json:
+            print('-' * 60)
+            print(f'Other JSON responses ({len(other_json)}):')
+            print('-' * 60)
+            for r in other_json:
+                print(f'\n[{r["status"]}] {r["url"]}')
+                print(f'Content-Type: {r["ct"]}')
+                print(r['body'][:500])
+                print()
+
+        if other:
+            print('-' * 60)
+            print(f'Non-JSON responses ({len(other)}) — URLs only:')
+            for r in other:
+                print(f'  [{r["status"]}] {r["ct"][:40]:40s}  {r["url"][:100]}')
