@@ -272,21 +272,16 @@ class PrimarkScraper(BaseScraper):
         if not url_slug:
             return None
 
-        # price      = full/original price (RRP)
-        # sale_price = actual current selling price (lower than price when on sale)
-        # pricePrevious = previous price (for recent adjustments, not always present)
-        full_pence  = item.get('price')
-        sale_pence  = item.get('sale_price') or full_pence
+        # price / sale_price are always equal in the API (sale_price is not useful).
+        # pricePrevious = the was-price when pricePrevious > price; equals price otherwise.
+        # changePercent = positive integer (e.g. 56 = 56% off) when discounted, else null.
+        price_pence = item.get('price')
         prev_pence  = item.get('pricePrevious')
 
-        # Current price is the actual selling price
-        price = round(sale_pence / 100.0, 2) if sale_pence else None
+        price = round(price_pence / 100.0, 2) if price_pence else None
 
-        # Was-price: if sale_price < price (original), the full price is the was-price.
-        # Otherwise fall back to pricePrevious for recent price drops.
-        if full_pence and sale_pence and sale_pence < full_pence:
-            was_price = round(full_pence / 100.0, 2)
-        elif prev_pence and sale_pence and prev_pence > sale_pence:
+        # A product is on markdown when pricePrevious > price (the was-price is higher).
+        if prev_pence and price_pence and prev_pence > price_pence:
             was_price = round(prev_pence / 100.0, 2)
         else:
             was_price = None
