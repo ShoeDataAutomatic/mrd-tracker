@@ -101,23 +101,6 @@ class PrimarkScraper(BaseScraper):
                 }
             route.continue_()
 
-        def on_response(response):
-            if 'getPlpProducts' not in response.url:
-                return
-            try:
-                data = response.json()
-                docs, num = self._extract_docs(data)
-                if num and total[0] is None:
-                    total[0] = num
-                if docs:
-                    new_docs = [d for d in docs if d.get('pid') not in seen_pids]
-                    for d in new_docs:
-                        seen_pids.add(d.get('pid'))
-                    all_docs.extend(new_docs)
-                    self.log(f'Batch +{len(new_docs)} products ({len(all_docs)}/{total[0]})')
-            except Exception as e:
-                self.warn(f'Response parse error: {e}')
-
         # ── Phase 1: browser ──────────────────────────────────────────────
         with sync_playwright() as p:
             browser = p.chromium.launch(
@@ -137,11 +120,33 @@ class PrimarkScraper(BaseScraper):
             )
             page = ctx.new_page()
             page.route('https://api001-arh.primark.com/*', on_route)
-            page.on('response', on_response)
             try:
-                page.goto(url, wait_until='networkidle', timeout=40000)
-                self._dismiss_cookie_banner(page)
-                page.wait_for_timeout(2000)
+                # expect_response BLOCKS until the matching response arrives,
+                # so the browser won't close before we've read the payload.
+                with page.expect_response(
+                    lambda r: 'getPlpProducts' in r.url,
+                    timeout=35000,
+                ) as resp_info:
+                    page.goto(url, wait_until='domcontentloaded', timeout=40000)
+                    try:
+                        self._dismiss_cookie_banner(page)
+                    except Exception:
+                        pass
+                    page.wait_for_timeout(500)
+                # Context-manager exit WAITS here until response is received
+                try:
+                    data = resp_info.value.json()
+                    docs, num = self._extract_docs(data)
+                    if num:
+                        total[0] = num
+                    if docs:
+                        new_docs = [d for d in docs if d.get('pid') not in seen_pids]
+                        for d in new_docs:
+                            seen_pids.add(d.get('pid'))
+                        all_docs.extend(new_docs)
+                        self.log(f'Browser response: +{len(new_docs)} products (total={total[0]})')
+                except Exception as e:
+                    self.warn(f'Response parse error: {e}')
             except Exception as e:
                 self.warn(f'Browser load error: {e}')
             finally:
