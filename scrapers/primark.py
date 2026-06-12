@@ -125,14 +125,33 @@ class PrimarkScraper(BaseScraper):
                 self._dismiss_cookie_banner(page)
                 page.wait_for_timeout(2000)
 
-                # Scroll to bottom repeatedly until all products are loaded
+                # Scroll down repeatedly using mouse wheel (triggers Primark's
+                # intersection-observer lazy loader more reliably than scrollTo).
+                # After each scroll we wait for an actual getPlpProducts response
+                # rather than a fixed delay — much more reliable.
                 no_new_streak = 0
                 for _ in range(60):  # safety cap: max 60 scroll attempts
                     if total[0] and len(all_docs) >= total[0]:
                         break
                     prev = len(all_docs)
+
+                    # Scroll incrementally with mouse wheel, then jump to bottom
+                    for _ in range(4):
+                        page.mouse.wheel(0, 3000)
+                        page.wait_for_timeout(300)
                     page.evaluate('window.scrollTo(0, document.body.scrollHeight)')
-                    page.wait_for_timeout(1800)
+                    page.keyboard.press('End')
+
+                    # Wait for a new API response (up to 4 s), then settle
+                    try:
+                        page.wait_for_response(
+                            lambda r: 'getPlpProducts' in r.url,
+                            timeout=4000,
+                        )
+                        page.wait_for_timeout(500)
+                    except Exception:
+                        page.wait_for_timeout(1000)
+
                     if len(all_docs) == prev:
                         no_new_streak += 1
                         if no_new_streak >= 3:
