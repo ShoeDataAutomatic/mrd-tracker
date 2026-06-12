@@ -69,6 +69,7 @@ def run_scrape():
                 sizes_available = p.get('sizes_available', []),
                 sizes_oos       = p.get('sizes_oos', []),
                 is_featured     = p.get('is_featured', False),
+                raw_data        = p.get('raw_data'),
             )
 
         logger.info(f'Saved {len(products)} products for {key}.')
