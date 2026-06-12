@@ -2,7 +2,7 @@
 buildCommand = "playwright install chromium && playwright install-deps chromium"
 
 [deploy]
-startCommand = "python wsgi.py"
+startCommand = "playwright install chromium --with-deps && python wsgi.py"
 
 [variables]
 MISE_PYTHON_GITHUB_ATTESTATIONS = "false"
