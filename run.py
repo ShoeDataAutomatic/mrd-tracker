@@ -30,12 +30,24 @@ logger = logging.getLogger(__name__)
 # Core operations
 # ---------------------------------------------------------------------------
 
+def _ensure_playwright():
+    """Ensure Playwright's chromium binary is present before scraping."""
+    import subprocess, sys
+    logger.info('Ensuring Playwright chromium is installed...')
+    result = subprocess.run(
+        [sys.executable, '-m', 'playwright', 'install', 'chromium', '--with-deps'],
+        capture_output=True, text=True
+    )
+    if result.returncode != 0:
+        logger.warning(f'playwright install had issues: {result.stderr[:200]}')
+
 def run_scrape():
     """Scrape all enabled retailers and save to the database."""
     from config import RETAILERS
     from scrapers import get_scraper
     import database as db
 
+    _ensure_playwright()
     db.init_db()
     logger.info('=== Scrape run started ===')
 
