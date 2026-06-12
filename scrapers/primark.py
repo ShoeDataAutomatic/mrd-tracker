@@ -1,18 +1,27 @@
 """
-scrapers/primark.py — Primark scraper using scroll-based product loading.
+scrapers/primark.py — Primark scraper using capture-and-replay pagination.
 
 Strategy:
-  Primark's React app loads products 24 at a time as the user scrolls.
-  We open the category page in a headless browser, capture each
-  getPlpProducts API response, then scroll to the bottom repeatedly until
-  all products are loaded.  This is more reliable than URL interception
-  because it works regardless of how Primark encodes its request parameters.
+  Phase 1 — Browser: load the category page once in a headless browser.
+    The browser fires a real getPlpProducts GET request to Primark's API.
+    We capture the request URL (which contains all auth/locale/query params)
+    and the first 24 products from the response.
+
+  Phase 2 — Direct HTTP: for every remaining page we decode the captured
+    URL, update the `start` offset in the JSON `variables` parameter, and
+    replay the GET request directly via the requests library.
+    No browser needed — each page is a single HTTP call (~200 ms).
+
+  This is reliable regardless of scroll mechanics or endpoint naming, and
+  automatically picks up any endpoint change (blue/green) without config edits.
 """
 
 import re
 import json
 import time
 import logging
+import requests as _http
+from urllib.parse import urlparse, parse_qs, urlencode
 
 from scrapers.base import BaseScraper
 
@@ -55,7 +64,7 @@ class PrimarkScraper(BaseScraper):
         subcategory = None if slug in _base_slugs else parts[-1].replace('-', ' ')
 
         all_docs = []
-        total    = self._load_all_by_scroll(slug, url, all_docs)
+        total    = self._load_all_by_capture_and_replay(slug, url, all_docs)
 
         self.log(f'Complete: {len(all_docs)} products for {slug}')
 
@@ -66,21 +75,31 @@ class PrimarkScraper(BaseScraper):
                 products.append(product)
         return products
 
-    def _load_all_by_scroll(self, slug, url, all_docs):
+    def _load_all_by_capture_and_replay(self, slug, url, all_docs):
         """
-        Open the category page once, capture every getPlpProducts response,
-        and scroll down until all products are loaded.
+        Phase 1: browser loads the page, captures the getPlpProducts request
+                 URL and returns the first 24 products.
+        Phase 2: direct HTTP GET calls (via requests) paginate through the
+                 remaining products by incrementing the `start` variable.
 
-        Returns the total product count reported by the API (or None on error).
-        No URL interception — works regardless of how Primark encodes its params.
+        Returns the total product count reported by the API.
         """
         try:
             from playwright.sync_api import sync_playwright
         except ImportError:
             return None
 
-        total    = [None]
+        captured  = [None]   # will hold {'url': ..., 'headers': ...}
+        total     = [None]
         seen_pids = set()
+
+        def on_route(route, request):
+            if 'getPlpProducts' in request.url and captured[0] is None:
+                captured[0] = {
+                    'url':     request.url,
+                    'headers': dict(request.headers),
+                }
+            route.continue_()
 
         def on_response(response):
             if 'getPlpProducts' not in response.url:
@@ -95,12 +114,11 @@ class PrimarkScraper(BaseScraper):
                     for d in new_docs:
                         seen_pids.add(d.get('pid'))
                     all_docs.extend(new_docs)
-                    self.log(
-                        f'Scroll batch: +{len(new_docs)} new products ({len(all_docs)}/{total[0]})'
-                    )
+                    self.log(f'Batch +{len(new_docs)} products ({len(all_docs)}/{total[0]})')
             except Exception as e:
                 self.warn(f'Response parse error: {e}')
 
+        # ── Phase 1: browser ──────────────────────────────────────────────
         with sync_playwright() as p:
             browser = p.chromium.launch(
                 headless=True,
@@ -118,53 +136,65 @@ class PrimarkScraper(BaseScraper):
                 'Object.defineProperty(navigator, "webdriver", {get: () => undefined})'
             )
             page = ctx.new_page()
+            page.route('https://api001-arh.primark.com/*', on_route)
             page.on('response', on_response)
-
             try:
                 page.goto(url, wait_until='networkidle', timeout=40000)
                 self._dismiss_cookie_banner(page)
                 page.wait_for_timeout(2000)
-
-                # Scroll down repeatedly using mouse wheel (triggers Primark's
-                # intersection-observer lazy loader more reliably than scrollTo).
-                # After each scroll we wait for an actual getPlpProducts response
-                # rather than a fixed delay — much more reliable.
-                no_new_streak = 0
-                for _ in range(60):  # safety cap: max 60 scroll attempts
-                    if total[0] and len(all_docs) >= total[0]:
-                        break
-                    prev = len(all_docs)
-
-                    # Scroll incrementally with mouse wheel, then jump to bottom
-                    for _ in range(4):
-                        page.mouse.wheel(0, 3000)
-                        page.wait_for_timeout(300)
-                    page.evaluate('window.scrollTo(0, document.body.scrollHeight)')
-                    page.keyboard.press('End')
-
-                    # Wait for a new API response (up to 4 s), then settle
-                    try:
-                        page.wait_for_response(
-                            lambda r: 'getPlpProducts' in r.url,
-                            timeout=4000,
-                        )
-                        page.wait_for_timeout(500)
-                    except Exception:
-                        page.wait_for_timeout(1000)
-
-                    if len(all_docs) == prev:
-                        no_new_streak += 1
-                        if no_new_streak >= 3:
-                            break
-                    else:
-                        no_new_streak = 0
-
             except Exception as e:
                 self.warn(f'Browser load error: {e}')
             finally:
                 browser.close()
 
+        if not captured[0] or not total[0]:
+            return total[0]
+
+        if len(all_docs) >= total[0]:
+            return total[0]
+
+        # ── Phase 2: direct HTTP for remaining pages ──────────────────────
+        base_url = captured[0]['url']
+        headers  = captured[0]['headers']
+
+        parsed = urlparse(base_url)
+        params = parse_qs(parsed.query, keep_blank_values=True)
+
+        if 'variables' not in params:
+            self.warn('Cannot find variables param in captured URL — skipping pagination')
+            return total[0]
+
+        while len(all_docs) < total[0]:
+            try:
+                variables = json.loads(params['variables'][0])
+                variables['start'] = len(all_docs)
+                variables['rows']  = min(100, total[0] - len(all_docs))
+
+                new_params = {k: v[0] for k, v in params.items()}
+                new_params['variables'] = json.dumps(variables, separators=(',', ':'))
+                page_url = parsed._replace(query=urlencode(new_params)).geturl()
+
+                resp = _http.get(page_url, headers=headers, timeout=20)
+                resp.raise_for_status()
+                data     = resp.json()
+                docs, _  = self._extract_docs(data)
+
+                new_docs = [d for d in (docs or []) if d.get('pid') not in seen_pids]
+                if not new_docs:
+                    self.warn(f'No new products at start={len(all_docs)} — stopping')
+                    break
+                for d in new_docs:
+                    seen_pids.add(d.get('pid'))
+                all_docs.extend(new_docs)
+                self.log(f'Direct API +{len(new_docs)} products ({len(all_docs)}/{total[0]})')
+                time.sleep(0.3)
+
+            except Exception as e:
+                self.warn(f'Direct API error at start={len(all_docs)}: {e}')
+                break
+
         return total[0]
+
 
     def scrape_product(self, product_url):
         return None
