@@ -352,38 +352,28 @@ class PrimarkScraper(BaseScraper):
         """
         Capture the real getPlpProducts API request format.
         Run with: python run.py --discover primark
-        Prints the method, URL, headers and body so we can replicate it directly.
+        Fetches ALL pages for a category and scans for markdown products.
         """
+        import json as _json
+        import requests as _http
+        from urllib.parse import urlparse, parse_qs, urlencode
         from playwright.sync_api import sync_playwright
 
         slug = 'women/shoes/heels'
         url  = f'https://www.primark.com/en-gb/c/{slug}'
 
-        print('\n=== Primark discovery: capturing API request ===\n')
+        print('\n=== Primark discovery: fetching ALL pages ===\n')
         print(f'URL: {url}\n')
 
-        captured = []
+        captured_req  = [None]
+        all_docs      = []
+        total         = [None]
 
         def on_route(route, request):
-            if 'getPlpProducts' in request.url:
-                captured.append({
-                    'method':    request.method,
-                    'url':       request.url,
-                    'headers':   dict(request.headers),
-                    'post_data': request.post_data,
-                })
-                print(f'--- Intercepted getPlpProducts ---')
-                print(f'Method: {request.method}')
-                print(f'URL: {request.url[:300]}')
-                if request.post_data:
-                    print(f'Body: {request.post_data[:1000]}')
-                else:
-                    print('Body: (none - GET request)')
-                print()
+            if 'getPlpProducts' in request.url and captured_req[0] is None:
+                captured_req[0] = {'url': request.url, 'headers': dict(request.headers)}
+                print(f'Captured: {request.url[:200]}\n')
             route.continue_()
-
-        all_docs = []
-        total    = [None]
 
         def on_response(response):
             if 'getPlpProducts' not in response.url:
@@ -391,11 +381,11 @@ class PrimarkScraper(BaseScraper):
             try:
                 data = response.json()
                 docs, num = self._extract_docs(data)
-                if num:
+                if num and total[0] is None:
                     total[0] = num
                 if docs:
                     all_docs.extend(docs)
-                    print(f'Response: got {len(docs)} products (total={num})')
+                    print(f'Browser page: {len(docs)} products (total={num})')
             except Exception as e:
                 print(f'Response parse error: {e}')
 
@@ -423,24 +413,56 @@ class PrimarkScraper(BaseScraper):
             finally:
                 browser.close()
 
-        print(f'\nProducts loaded on page: {len(all_docs)}/{total[0]}')
-        if captured:
-            print(f'\nTotal requests intercepted: {len(captured)}')
-        else:
-            print('WARNING: No getPlpProducts request was intercepted.')
-        if all_docs:
-            print(f'\n=== Raw fields in first product ===')
-            import json as _json
-            print(_json.dumps(all_docs[0], indent=2))
-            print(f'\n=== All distinct keys across {len(all_docs)} products ===')
-            all_keys = sorted(set(k for doc in all_docs for k in doc.keys()))
-            for k in all_keys:
-                sample = next((doc[k] for doc in all_docs if doc.get(k) not in (None, '', 0, [], {})), None)
-                tag = '[PRICE]' if any(t in k.lower() for t in ('price', 'discount', 'sale', 'promo', 'was', 'rrp', 'offer', 'saving', 'reduced', 'original', 'markdown')) else ''
-                print(f'  {tag or "      "} {k}: {sample!r}')
-            # Show any products where sale_price < price (markdown candidates)
-            marked = [d for d in all_docs if d.get('sale_price') and d.get('price') and d['sale_price'] < d['price']]
-            print(f'\nProducts with sale_price < price (markdown candidates): {len(marked)}/{len(all_docs)}')
-            if marked:
-                print('Sample markdown product:')
-                print(_json.dumps(marked[0], indent=2))
+        if not captured_req[0]:
+            print('WARNING: No API request captured.')
+            return
+
+        # Replay remaining pages via direct HTTP
+        base_url = captured_req[0]['url']
+        headers  = captured_req[0]['headers']
+        parsed   = urlparse(base_url)
+        params   = parse_qs(parsed.query, keep_blank_values=True)
+
+        while total[0] and len(all_docs) < total[0]:
+            variables = _json.loads(params['variables'][0])
+            variables['start'] = len(all_docs)
+            variables['rows']  = min(100, total[0] - len(all_docs))
+            new_params = {k: v[0] for k, v in params.items()}
+            new_params['variables'] = _json.dumps(variables, separators=(',', ':'))
+            page_url = parsed._replace(query=urlencode(new_params)).geturl()
+            # Try both blue/green endpoints
+            for ep in ('bff-cae-blue', 'bff-cae-green'):
+                page_url2 = page_url.replace('bff-cae-blue', ep).replace('bff-cae-green', ep)
+                try:
+                    resp = _http.get(page_url2, headers=headers, timeout=20)
+                    docs, num = self._extract_docs(resp.json())
+                    if docs:
+                        all_docs.extend(docs)
+                        print(f'HTTP page (start={variables["start"]}): {len(docs)} products via {ep}')
+                        break
+                except Exception as e:
+                    print(f'  {ep} failed: {e}')
+
+        print(f'\nTotal fetched: {len(all_docs)}/{total[0]}')
+
+        # Analyse price fields across all products
+        print(f'\n=== Price field analysis across {len(all_docs)} products ===')
+        for field in ('price', 'sale_price', 'pricePrevious', 'changePercent'):
+            values = [d.get(field) for d in all_docs]
+            non_null = [v for v in values if v not in (None, 0)]
+            unique   = sorted(set(non_null))[:10]
+            print(f'  {field}: {len(non_null)}/{len(all_docs)} non-null/zero — sample values: {unique}')
+
+        # Markdown candidates
+        marked_sp  = [d for d in all_docs if d.get('sale_price') and d.get('price') and d['sale_price'] < d['price']]
+        marked_pp  = [d for d in all_docs if d.get('pricePrevious') and d.get('price') and d['pricePrevious'] > d['price']]
+        marked_cp  = [d for d in all_docs if d.get('changePercent') and d['changePercent'] < 0]
+        print(f'\n  sale_price < price:     {len(marked_sp)} products')
+        print(f'  pricePrevious > price:  {len(marked_pp)} products')
+        print(f'  changePercent < 0:      {len(marked_cp)} products')
+
+        for label, group in [('sale_price<price', marked_sp), ('pricePrevious>price', marked_pp), ('changePercent<0', marked_cp)]:
+            if group:
+                d = group[0]
+                print(f'\nSample [{label}]: {d.get("title")}')
+                print(f'  price={d.get("price")}  sale_price={d.get("sale_price")}  pricePrevious={d.get("pricePrevious")}  changePercent={d.get("changePercent")}')
