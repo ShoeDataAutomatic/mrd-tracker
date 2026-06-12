@@ -147,7 +147,9 @@ class PrimarkScraper(BaseScraper):
             finally:
                 browser.close()
 
+        self.log(f'Browser phase done: captured={captured[0] is not None}, total={total[0]}, docs={len(all_docs)}')
         if not captured[0] or not total[0]:
+            self.warn(f'Aborting: captured={captured[0]}, total={total[0]}')
             return total[0]
 
         if len(all_docs) >= total[0]:
