@@ -64,11 +64,14 @@ class PrimarkScraper(BaseScraper):
         if not all_docs:
             return []
 
-        # Load remaining batches — one browser load per batch of rows_override
-        start = self.rows_override
-        while total and start < total:
-            self._load_batch(slug, url, start, all_docs)
-            start += self.rows_override
+        # Load remaining batches — step by actual count received, not rows_override,
+        # because the server may return fewer products than requested (e.g. 24 vs 100).
+        while total and len(all_docs) < total:
+            prev = len(all_docs)
+            self._load_batch(slug, url, len(all_docs), all_docs)
+            if len(all_docs) == prev:
+                self.warn(f'No progress at offset {prev} — stopping pagination')
+                break
             time.sleep(1)  # Brief pause between loads
 
         self.log(f'Complete: {len(all_docs)} products for {slug}')
