@@ -304,20 +304,82 @@ class PrimarkScraper(BaseScraper):
     # -----------------------------------------------------------------------
 
     def discover(self):
-        """Test the multi-batch loader. Run with: python run.py --discover primark"""
+        """
+        Capture the real getPlpProducts API request format.
+        Run with: python run.py --discover primark
+        Prints the method, URL, headers and body so we can replicate it directly.
+        """
+        from playwright.sync_api import sync_playwright
+
         slug = 'women/shoes/heels'
         url  = f'https://www.primark.com/en-gb/c/{slug}'
 
-        print('\n=== Primark discovery mode (scroll) ===\n')
-        print(f'Loading {slug} via scroll...\n')
+        print('\n=== Primark discovery: capturing API request ===\n')
+        print(f'URL: {url}\n')
+
+        captured = []
+
+        def on_route(route, request):
+            if 'getPlpProducts' in request.url:
+                captured.append({
+                    'method':    request.method,
+                    'url':       request.url,
+                    'headers':   dict(request.headers),
+                    'post_data': request.post_data,
+                })
+                print(f'--- Intercepted getPlpProducts ---')
+                print(f'Method: {request.method}')
+                print(f'URL: {request.url[:300]}')
+                if request.post_data:
+                    print(f'Body: {request.post_data[:1000]}')
+                else:
+                    print('Body: (none - GET request)')
+                print()
+            route.continue_()
 
         all_docs = []
-        total = self._load_all_by_scroll(slug, url, all_docs)
-        print(f'\nFinal result: {len(all_docs)}/{total} products loaded')
-        if total and len(all_docs) >= total:
-            print('SUCCESS — all products loaded.')
-        else:
-            print(f'WARNING — only got {len(all_docs)} of {total}.')
+        total    = [None]
 
-        if all_docs:
-            print(f'\nSample product:\n{json.dumps(all_docs[0], indent=2)}')
+        def on_response(response):
+            if 'getPlpProducts' not in response.url:
+                return
+            try:
+                data = response.json()
+                docs, num = self._extract_docs(data)
+                if num:
+                    total[0] = num
+                if docs:
+                    all_docs.extend(docs)
+                    print(f'Response: got {len(docs)} products (total={num})')
+            except Exception as e:
+                print(f'Response parse error: {e}')
+
+        with sync_playwright() as p:
+            browser = p.chromium.launch(headless=True,
+                                        args=['--disable-blink-features=AutomationControlled'])
+            ctx = browser.new_context(
+                user_agent=(
+                    'Mozilla/5.0 (Windows NT 10.0; Win64; x64) '
+                    'AppleWebKit/537.36 (KHTML, like Gecko) '
+                    'Chrome/124.0.0.0 Safari/537.36'
+                ),
+                viewport={'width': 1280, 'height': 900},
+            )
+            ctx.add_init_script(
+                'Object.defineProperty(navigator, "webdriver", {get: () => undefined})'
+            )
+            page = ctx.new_page()
+            page.route('https://api001-arh.primark.com/*', on_route)
+            page.on('response', on_response)
+            try:
+                page.goto(url, wait_until='networkidle', timeout=40000)
+                self._dismiss_cookie_banner(page)
+                page.wait_for_timeout(3000)
+            finally:
+                browser.close()
+
+        print(f'\nProducts loaded on page: {len(all_docs)}/{total[0]}')
+        if captured:
+            print(f'\nTotal requests intercepted: {len(captured)}')
+        else:
+            print('WARNING: No getPlpProducts request was intercepted.')
