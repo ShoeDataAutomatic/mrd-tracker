@@ -1,14 +1,12 @@
 """
-scrapers/primark.py — Primark scraper using route interception.
+scrapers/primark.py — Primark scraper using scroll-based product loading.
 
-Key insight: Primark's React app requests products 24 at a time (rows=24).
-By intercepting this outgoing request before it's sent and changing rows=24
-to rows=500, the server returns all products in a single response. This
-completely avoids the pagination problem — one intercepted request, one
-response, all products.
-
-If the server caps or rejects rows=500, we fall back to tall-viewport
-scrolling to load as many products as possible.
+Strategy:
+  Primark's React app loads products 24 at a time as the user scrolls.
+  We open the category page in a headless browser, capture each
+  getPlpProducts API response, then scroll to the bottom repeatedly until
+  all products are loaded.  This is more reliable than URL interception
+  because it works regardless of how Primark encodes its request parameters.
 """
 
 import re
@@ -57,22 +55,7 @@ class PrimarkScraper(BaseScraper):
         subcategory = None if slug in _base_slugs else parts[-1].replace('-', ' ')
 
         all_docs = []
-        total    = None
-
-        # First load to get total count and first batch
-        total = self._load_batch(slug, url, 0, all_docs)
-        if not all_docs:
-            return []
-
-        # Load remaining batches — step by actual count received, not rows_override,
-        # because the server may return fewer products than requested (e.g. 24 vs 100).
-        while total and len(all_docs) < total:
-            prev = len(all_docs)
-            self._load_batch(slug, url, len(all_docs), all_docs)
-            if len(all_docs) == prev:
-                self.warn(f'No progress at offset {prev} — stopping pagination')
-                break
-            time.sleep(1)  # Brief pause between loads
+        total    = self._load_all_by_scroll(slug, url, all_docs)
 
         self.log(f'Complete: {len(all_docs)} products for {slug}')
 
@@ -83,11 +66,13 @@ class PrimarkScraper(BaseScraper):
                 products.append(product)
         return products
 
-    def _load_batch(self, slug, url, start, all_docs):
+    def _load_all_by_scroll(self, slug, url, all_docs):
         """
-        Load the category page once in a fresh browser, intercept the first
-        getPlpProducts request and force start=N, rows=rows_override.
-        Appends results to all_docs. Returns total product count or None.
+        Open the category page once, capture every getPlpProducts response,
+        and scroll down until all products are loaded.
+
+        Returns the total product count reported by the API (or None on error).
+        No URL interception — works regardless of how Primark encodes its params.
         """
         try:
             from playwright.sync_api import sync_playwright
@@ -95,34 +80,26 @@ class PrimarkScraper(BaseScraper):
             return None
 
         total    = [None]
-        fired    = [False]
-
-        def on_route(route, request):
-            if 'getPlpProducts' in request.url and not fired[0]:
-                fired[0] = True
-                new_url = re.sub(r'(%22rows%22%3A)\d+',  lambda m: f'{m.group(1)}{self.rows_override}', request.url)
-                new_url = re.sub(r'(%22start%22%3A)\d+', lambda m: f'{m.group(1)}{start}',               new_url)
-                self.log(f'Batch load: start={start}, rows={self.rows_override}')
-                route.continue_(url=new_url)
-            else:
-                route.continue_()
+        seen_pids = set()
 
         def on_response(response):
             if 'getPlpProducts' not in response.url:
                 return
             try:
-                data  = response.json()
+                data = response.json()
                 docs, num = self._extract_docs(data)
-                if num:
+                if num and total[0] is None:
                     total[0] = num
                 if docs:
-                    all_docs.extend(docs)
-                    self.log(f'Batch start={start}: got {len(docs)} products ({len(all_docs)}/{total[0]})')
-                else:
-                    if 'errors' in data:
-                        self.warn(f'API errors for start={start}: {data["errors"]}')
+                    new_docs = [d for d in docs if d.get('pid') not in seen_pids]
+                    for d in new_docs:
+                        seen_pids.add(d.get('pid'))
+                    all_docs.extend(new_docs)
+                    self.log(
+                        f'Scroll batch: +{len(new_docs)} new products ({len(all_docs)}/{total[0]})'
+                    )
             except Exception as e:
-                self.warn(f'Response parse error at start={start}: {e}')
+                self.warn(f'Response parse error: {e}')
 
         with sync_playwright() as p:
             browser = p.chromium.launch(
@@ -135,22 +112,36 @@ class PrimarkScraper(BaseScraper):
                     'AppleWebKit/537.36 (KHTML, like Gecko) '
                     'Chrome/124.0.0.0 Safari/537.36'
                 ),
-                viewport={'width': 1280, 'height': 800},
+                viewport={'width': 1280, 'height': 900},
             )
             ctx.add_init_script(
                 'Object.defineProperty(navigator, "webdriver", {get: () => undefined})'
             )
             page = ctx.new_page()
-            page.route('https://api001-arh.primark.com/bff-cae-green*', on_route)
             page.on('response', on_response)
 
             try:
                 page.goto(url, wait_until='networkidle', timeout=40000)
-                if start == 0:
-                    self._dismiss_cookie_banner(page)
-                page.wait_for_timeout(3000)
+                self._dismiss_cookie_banner(page)
+                page.wait_for_timeout(2000)
+
+                # Scroll to bottom repeatedly until all products are loaded
+                no_new_streak = 0
+                for _ in range(60):  # safety cap: max 60 scroll attempts
+                    if total[0] and len(all_docs) >= total[0]:
+                        break
+                    prev = len(all_docs)
+                    page.evaluate('window.scrollTo(0, document.body.scrollHeight)')
+                    page.wait_for_timeout(1800)
+                    if len(all_docs) == prev:
+                        no_new_streak += 1
+                        if no_new_streak >= 3:
+                            break
+                    else:
+                        no_new_streak = 0
+
             except Exception as e:
-                self.warn(f'Browser load error at start={start}: {e}')
+                self.warn(f'Browser load error: {e}')
             finally:
                 browser.close()
 
@@ -298,31 +289,13 @@ class PrimarkScraper(BaseScraper):
         slug = 'women/shoes/heels'
         url  = f'https://www.primark.com/en-gb/c/{slug}'
 
-        print('\n=== Primark discovery mode (multi-batch) ===\n')
-        print(f'Loading {slug} in batches of {self.rows_override}...\n')
+        print('\n=== Primark discovery mode (scroll) ===\n')
+        print(f'Loading {slug} via scroll...\n')
 
         all_docs = []
-
-        # Batch 1 — also gets the total count
-        total = self._load_batch(slug, url, 0, all_docs)
-        print(f'Batch 1 done: {len(all_docs)}/{total} products')
-
-        if not all_docs:
-            print('No products returned — check the scraper.')
-            return
-
-        # Remaining batches
-        start = self.rows_override
-        batch = 2
-        while total and start < total:
-            self._load_batch(slug, url, start, all_docs)
-            print(f'Batch {batch} done: {len(all_docs)}/{total} products')
-            start += self.rows_override
-            batch += 1
-            time.sleep(1)
-
+        total = self._load_all_by_scroll(slug, url, all_docs)
         print(f'\nFinal result: {len(all_docs)}/{total} products loaded')
-        if len(all_docs) >= total:
+        if total and len(all_docs) >= total:
             print('SUCCESS — all products loaded.')
         else:
             print(f'WARNING — only got {len(all_docs)} of {total}.')
