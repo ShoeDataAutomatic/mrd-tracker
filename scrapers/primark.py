@@ -272,10 +272,25 @@ class PrimarkScraper(BaseScraper):
         if not url_slug:
             return None
 
-        price_pence = item.get('price')
-        price       = round(price_pence / 100.0, 2) if price_pence else None
+        # price      = full/original price (RRP)
+        # sale_price = actual current selling price (lower than price when on sale)
+        # pricePrevious = previous price (for recent adjustments, not always present)
+        full_pence  = item.get('price')
+        sale_pence  = item.get('sale_price') or full_pence
         prev_pence  = item.get('pricePrevious')
-        was_price   = round(prev_pence / 100.0, 2) if prev_pence else None
+
+        # Current price is the actual selling price
+        price = round(sale_pence / 100.0, 2) if sale_pence else None
+
+        # Was-price: if sale_price < price (original), the full price is the was-price.
+        # Otherwise fall back to pricePrevious for recent price drops.
+        if full_pence and sale_pence and sale_pence < full_pence:
+            was_price = round(full_pence / 100.0, 2)
+        elif prev_pence and sale_pence and prev_pence > sale_pence:
+            was_price = round(prev_pence / 100.0, 2)
+        else:
+            was_price = None
+
         is_markdown = bool(was_price and price and was_price > price)
         thumb       = item.get('thumb_image', '').strip()
         image_url   = f'{thumb}?w=600&fmt=auto' if thumb else None
@@ -418,8 +433,14 @@ class PrimarkScraper(BaseScraper):
             import json as _json
             print(_json.dumps(all_docs[0], indent=2))
             print(f'\n=== All distinct keys across {len(all_docs)} products ===')
-            all_keys = sorted({{k for doc in all_docs for k in doc.keys()}})
+            all_keys = sorted(set(k for doc in all_docs for k in doc.keys()))
             for k in all_keys:
-                sample = next((doc[k] for doc in all_docs if doc.get(k) not in (None, '', 0, [], {{}})), None)
+                sample = next((doc[k] for doc in all_docs if doc.get(k) not in (None, '', 0, [], {})), None)
                 tag = '[PRICE]' if any(t in k.lower() for t in ('price', 'discount', 'sale', 'promo', 'was', 'rrp', 'offer', 'saving', 'reduced', 'original', 'markdown')) else ''
-                print(f'  {{tag or "      "}} {{k}}: {{sample!r}}')
+                print(f'  {tag or "      "} {k}: {sample!r}')
+            # Show any products where sale_price < price (markdown candidates)
+            marked = [d for d in all_docs if d.get('sale_price') and d.get('price') and d['sale_price'] < d['price']]
+            print(f'\nProducts with sale_price < price (markdown candidates): {len(marked)}/{len(all_docs)}')
+            if marked:
+                print('Sample markdown product:')
+                print(_json.dumps(marked[0], indent=2))
