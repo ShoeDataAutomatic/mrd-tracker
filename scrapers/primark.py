@@ -413,3 +413,13 @@ class PrimarkScraper(BaseScraper):
             print(f'\nTotal requests intercepted: {len(captured)}')
         else:
             print('WARNING: No getPlpProducts request was intercepted.')
+        if all_docs:
+            print(f'\n=== Raw fields in first product ===')
+            import json as _json
+            print(_json.dumps(all_docs[0], indent=2))
+            print(f'\n=== All distinct keys across {len(all_docs)} products ===')
+            all_keys = sorted({{k for doc in all_docs for k in doc.keys()}})
+            for k in all_keys:
+                sample = next((doc[k] for doc in all_docs if doc.get(k) not in (None, '', 0, [], {{}})), None)
+                tag = '[PRICE]' if any(t in k.lower() for t in ('price', 'discount', 'sale', 'promo', 'was', 'rrp', 'offer', 'saving', 'reduced', 'original', 'markdown')) else ''
+                print(f'  {{tag or "      "}} {{k}}: {{sample!r}}')
