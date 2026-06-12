@@ -41,6 +41,7 @@ logger = logging.getLogger(__name__)
 
 # Sitemap URL for UK products
 _SITEMAP_URL = 'https://www.newlook.com/uk/sitemap/maps/sitemap_uk_product_en_1.xml'
+_CATEGORY_SITEMAP_URL = 'https://www.newlook.com/uk/sitemap/maps/sitemap_uk_category_en_1.xml'
 
 # Image CDN template — override w= for quality
 _IMAGE_BASE = 'https://media2.newlookassets.com/i/newlook/{sku}.jpg?strip=true&qlt=80&w=600'
@@ -66,6 +67,10 @@ _RE_CAPTION    = re.compile(r'<image:caption>([^<]+)</image:caption>')
 
 
 class NewLookScraper(BaseScraper):
+
+    # Cached list of (url_prefix, style_name) from the category sitemap.
+    # Populated once per process by _fetch_style_categories().
+    _style_prefix_cache = None
 
     def __init__(self, config):
         super().__init__(config)
@@ -195,6 +200,9 @@ class NewLookScraper(BaseScraper):
         Convert sitemap entries into standard product dicts.
         Optionally batch-fetches product pages for prices.
         """
+        # Fetch New Look style categories from category sitemap (source 2)
+        style_prefixes = self._fetch_style_categories()
+
         # Group by gender for rank assignment
         by_gender = {}
         for e in entries:
@@ -205,6 +213,12 @@ class NewLookScraper(BaseScraper):
         for gender, group in by_gender.items():
             for rank, entry in enumerate(group, start=1):
                 subcategory = self._subcategory_from_path(entry['url_path'])
+                if not subcategory:
+                    subcategory = self._style_from_category_prefix(
+                        entry['url_path'], style_prefixes
+                    )
+                if not subcategory:
+                    subcategory = self._style_from_name(entry['name'])
                 products.append({
                     'sku':             entry['sku'],
                     'name':            entry['name'],
@@ -341,6 +355,111 @@ class NewLookScraper(BaseScraper):
         m = re.search(r'/shoes-for-girls/([^/]+)/[^/]+/p/', url_path)
         if m:
             return m.group(1).replace('-', ' ')
+        return None
+
+
+    @classmethod
+    def _fetch_style_categories(cls):
+        """
+        Fetch New Look's category sitemap and extract footwear style URL prefixes.
+        Returns a list of (url_prefix, style_name) tuples sorted longest-first so
+        the most specific match wins.  Result is cached after first call.
+
+        Example output:
+          ('/uk/womens/footwear/heeled-sandals/', 'heeled sandals')
+          ('/uk/womens/footwear/block-heels/',    'block heels')
+          ('/uk/mens/mens-footwear/trainers/',    'trainers')
+        """
+        if cls._style_prefix_cache is not None:
+            return cls._style_prefix_cache
+
+        prefixes = []
+        try:
+            resp = requests.get(_CATEGORY_SITEMAP_URL, headers=_HEADERS, timeout=20)
+            if resp.status_code == 200:
+                locs = re.findall(r'<[^>]*loc[^>]*>([^<]+)</[^>]*loc>', resp.text)
+                for loc in locs:
+                    path = loc.replace('https://www.newlook.com', '')
+                    # Match style-level paths: /uk/<gender>/<footwear-root>/<style>/c/<id>
+                    # Excludes the top-level category URL which has no style slug before /c/
+                    m = re.search(
+                        r'(/uk/[^/]+/[^/]*footwear[^/]*/([^/]+))/c/',
+                        path
+                    )
+                    if not m:
+                        continue
+                    url_prefix = m.group(1) + '/'
+                    style_name = m.group(2).replace('-', ' ')
+                    if (url_prefix, style_name) not in prefixes:
+                        prefixes.append((url_prefix, style_name))
+        except Exception as e:
+            logger.warning(f'[newlook] Could not fetch category sitemap: {e}')
+
+        # Longest prefix first → most specific wins
+        prefixes.sort(key=lambda x: -len(x[0]))
+        cls._style_prefix_cache = prefixes
+        logger.info(f'[newlook] Loaded {len(prefixes)} style prefixes from category sitemap')
+        return prefixes
+
+    @staticmethod
+    def _style_from_category_prefix(url_path, style_prefixes):
+        """
+        Match a product URL path against known New Look style prefixes.
+        Returns the style name for the longest matching prefix, or None.
+        """
+        for prefix, style in style_prefixes:
+            if url_path.startswith(prefix):
+                return style
+        return None
+
+    @staticmethod
+    def _style_from_name(name):
+        """
+        Detect footwear style from product name when URL has no style segment.
+        New Look's website calls this the 'Styles' filter.
+        Returns a normalised style string or None.
+        """
+        if not name:
+            return None
+        n = name.lower()
+
+        # Order matters — check more specific terms first
+        if any(t in n for t in ('knee high boot', 'knee-high boot', 'thigh high', 'thigh-high')):
+            return 'boots'
+        if any(t in n for t in ('ankle boot', 'ankle-boot', 'chelsea boot', 'biker boot',
+                                 'western boot', 'cowboy boot', 'block heel boot',
+                                 'lace up boot', 'lace-up boot')):
+            return 'boots'
+        if 'boot' in n:
+            return 'boots'
+        if any(t in n for t in ('trainer', 'sneaker', 'running shoe', 'athletic')):
+            return 'trainers'
+        if any(t in n for t in ('mule', 'clog', 'backless')):
+            return 'mules'
+        if any(t in n for t in ('court shoe', 'kitten heel', 'stiletto', 'block heel',
+                                 'cone heel', 'mid heel', 'high heel', 'pointed heel')):
+            return 'heels'
+        if 'heel' in n and 'wedge' not in n:
+            return 'heels'
+        if any(t in n for t in ('wedge', 'espadrille')):
+            return 'wedges'
+        if any(t in n for t in ('loafer', 'brogue', 'oxford', 'moccasin')):
+            return 'loafers'
+        if any(t in n for t in ('ballet pump', 'ballet flat', 'pump')):
+            return 'flats'
+        if any(t in n for t in ('sandal', 'gladiator')):
+            return 'sandals'
+        if any(t in n for t in ('slider', 'flip flop', 'flip-flop', 'thong')):
+            return 'sliders'
+        if any(t in n for t in ('slipper', 'moccasin slipper')):
+            return 'slippers'
+        if any(t in n for t in ('flat shoe', 'flat boot', 'ballerina', 'pointed flat',
+                                 'round toe flat', 'mary jane')):
+            return 'flats'
+        if 'flat' in n:
+            return 'flats'
+        if 'shoe' in n:
+            return 'shoes'
         return None
 
     # -----------------------------------------------------------------------
