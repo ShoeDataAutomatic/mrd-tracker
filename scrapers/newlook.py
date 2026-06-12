@@ -212,11 +212,11 @@ class NewLookScraper(BaseScraper):
         products = []
         for gender, group in by_gender.items():
             for rank, entry in enumerate(group, start=1):
-                subcategory = self._subcategory_from_path(entry['url_path'])
-                if not subcategory:
-                    subcategory = self._style_from_category_prefix(
+                subcategory = self._style_from_category_prefix(
                         entry['url_path'], style_prefixes
                     )
+                if not subcategory:
+                    subcategory = self._subcategory_from_path(entry['url_path'])
                 if not subcategory:
                     subcategory = self._style_from_name(entry['name'])
                 products.append({
