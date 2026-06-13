@@ -661,15 +661,97 @@ class NewLookScraper(BaseScraper):
         except Exception as e:
             print(f'  Error: {e}')
 
-        # Test price fetch on several products to check price + was_price extraction
-        if footwear:
-            print('\nTesting price fetch on first 5 products …')
-            for entry in footwear[:5]:
-                try:
-                    r = requests.get(entry['url'], headers=_HEADERS, timeout=12)
-                    price, was = self._extract_price(r.text)
-                    markdown = '← MARKDOWN' if was and price and was > price else ''
-                    print(f'  HTTP {r.status_code}  price=£{price}  was_price=£{was}  {markdown}')
-                    print(f'    {entry["url"][:80]}')
-                except Exception as e:
-                    print(f'  Price fetch error: {e}')
+        # Test price fetch via Playwright (direct HTTP returns 403 from Railway IPs)
+        print('\nTesting Playwright-based price fetch …')
+        try:
+            from playwright.sync_api import sync_playwright
+        except ImportError:
+            print('  Playwright not installed — run: playwright install chromium')
+            return
+
+        category_url = 'https://www.newlook.com/uk/womens/footwear/c/uk-womens-footwear'
+        print(f'  Loading category page: {category_url}')
+        print('  Capturing all JSON API responses …\n')
+
+        api_hits = []
+
+        def on_resp(response):
+            if response.status != 200:
+                return
+            ct = response.headers.get('content-type', '')
+            if 'json' not in ct:
+                return
+            try:
+                data = response.json()
+                # Only log responses that look like product listings
+                keys = list(data.keys()) if isinstance(data, dict) else []
+                total = (data.get('total') or data.get('count') or
+                         data.get('totalProducts') or data.get('numProducts'))
+                products = (data.get('products') or data.get('hits') or
+                            data.get('items') or data.get('results') or [])
+                if products or total:
+                    sample_keys = list(products[0].keys())[:6] if products else []
+                    print(f'  >>> PRODUCT API: {response.url[:100]}')
+                    print(f'      top-level keys: {keys[:8]}')
+                    print(f'      total={total}  products={len(products)}')
+                    print(f'      first product keys: {sample_keys}')
+                    if products:
+                        p0 = products[0]
+                        # Try to show pricing
+                        price_raw = (p0.get('price') or p0.get('pricing') or
+                                     p0.get('priceData') or p0.get('prices'))
+                        print(f'      first product price field: {price_raw}')
+                    api_hits.append({'url': response.url, 'total': total, 'count': len(products)})
+                else:
+                    print(f'  json ({",".join(keys[:4])}): {response.url[:80]}')
+            except Exception:
+                pass
+
+        with sync_playwright() as p:
+            browser = p.chromium.launch(
+                headless=True,
+                args=['--disable-blink-features=AutomationControlled'],
+            )
+            ctx = browser.new_context(
+                user_agent=(
+                    'Mozilla/5.0 (Windows NT 10.0; Win64; x64) '
+                    'AppleWebKit/537.36 (KHTML, like Gecko) '
+                    'Chrome/124.0.0.0 Safari/537.36'
+                ),
+                viewport={'width': 1280, 'height': 900},
+            )
+            ctx.add_init_script(
+                'Object.defineProperty(navigator, "webdriver", {get: () => undefined})'
+            )
+            page = ctx.new_page()
+            page.on('response', on_resp)
+            try:
+                page.goto(category_url, wait_until='networkidle', timeout=45000)
+                page.wait_for_timeout(3000)
+
+                # Also check the rendered page source for __NEXT_DATA__
+                html = page.content()
+                nd_m = re.search(r'id="__NEXT_DATA__"[^>]*>(\{)', html)
+                print(f'\n  __NEXT_DATA__ present: {bool(nd_m)}')
+
+                # Try extracting price from first product page via browser
+                if footwear:
+                    print(f'\n  Fetching first product page via browser: {footwear[0]["url"][:80]}')
+                    page.goto(footwear[0]['url'], wait_until='networkidle', timeout=30000)
+                    page.wait_for_timeout(2000)
+                    html2 = page.content()
+                    price, was = self._extract_price(html2)
+                    print(f'  price=£{price}  was_price=£{was}')
+                    nd2 = re.search(r'id="__NEXT_DATA__"[^>]*>(.*?)</script>', html2, re.DOTALL)
+                    if nd2:
+                        snippet = nd2.group(1)[:500]
+                        print(f'  __NEXT_DATA__ snippet: {snippet}')
+
+            except Exception as e:
+                print(f'  Playwright error: {e}')
+            finally:
+                browser.close()
+
+        print(f'\n  Summary: {len(api_hits)} product API endpoints captured')
+        for h in api_hits:
+            print(f'    total={h["total"]}  count={h["count"]}  url={h["url"][:100]}')
