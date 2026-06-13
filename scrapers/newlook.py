@@ -278,29 +278,156 @@ class NewLookScraper(BaseScraper):
     def _extract_price(self, html):
         """
         Extract current and was-price from product page HTML.
-        Tries LD+JSON Product schema first, then regex fallback.
+
+        Strategy (in order):
+          1. __NEXT_DATA__ JSON blob — Next.js server-side props, most complete.
+          2. LD+JSON Product schema — checks highPrice for sale items.
+          3. Inline JSON regex — wasPrice / rrp / originalPrice patterns.
+
         Returns (price_float, was_price_float) — either may be None.
         """
-        # LD+JSON approach (most reliable)
+        # ── 1. __NEXT_DATA__ ─────────────────────────────────────────────
+        nd_m = re.search(
+            r'<script[^>]+id="__NEXT_DATA__"[^>]*>(.*?)</script>', html, re.DOTALL
+        )
+        if nd_m:
+            try:
+                nd = json.loads(nd_m.group(1))
+                price, was = self._price_from_next_data(nd)
+                if price:
+                    return price, was
+            except Exception:
+                pass
+
+        # ── 2. LD+JSON Product schema ─────────────────────────────────────
         for block in re.findall(
             r'<script[^>]+application/ld\+json[^>]*>(.*?)</script>', html, re.DOTALL
         ):
             try:
                 data = json.loads(block)
-                if isinstance(data, dict) and data.get('@type') == 'Product':
-                    offers = data.get('offers', {})
-                    if isinstance(offers, list):
-                        offers = offers[0] if offers else {}
-                    price = offers.get('price')
-                    if price is not None:
-                        return float(price), None
+                if not isinstance(data, dict) or data.get('@type') != 'Product':
+                    continue
+                offers = data.get('offers', {})
+                if isinstance(offers, list):
+                    offers = offers[0] if offers else {}
+                price_raw = offers.get('price') or offers.get('lowPrice')
+                if price_raw is None:
+                    continue
+                price = float(price_raw)
+                high  = offers.get('highPrice')
+                was   = float(high) if high and float(high) > price else None
+                return price, was
             except Exception:
                 pass
 
-        # Regex fallback — look for "price":"17.99" patterns
+        # ── 3. Inline JSON patterns ───────────────────────────────────────
+        # Try was/rrp keys first, then pair with a selling price
+        for was_key in (r'"wasPrice"', r'"rrp"', r'"originalPrice"',
+                        r'"listPrice"', r'"compareAtPrice"', r'"regularPrice"'):
+            wm = re.search(was_key + r'\s*:\s*"?([\d.]+)"?', html)
+            if not wm:
+                continue
+            was = float(wm.group(1))
+            pm = re.search(
+                r'"(?:price|sellingPrice|salePrice|currentPrice|now)"'
+                r'\s*:\s*"?([\d.]+)"?', html
+            )
+            if pm:
+                price = float(pm.group(1))
+                return price, (was if was > price else None)
+
+        # Plain price fallback
         m = re.search(r'"price"\s*:\s*"?([\d.]+)"?', html)
         if m:
             return float(m.group(1)), None
+
+        return None, None
+
+    def _price_from_next_data(self, nd):
+        """
+        Walk the __NEXT_DATA__ structure looking for product price fields.
+        New Look embeds data in pageProps; exact nesting varies by page version.
+        Returns (price, was_price) or (None, None).
+        """
+        page_props = nd.get('props', {}).get('pageProps', {})
+
+        # Common path: pageProps.product.price
+        product = page_props.get('product') or {}
+        result = self._price_from_obj(product)
+        if result[0]:
+            return result
+
+        # Broader recursive search through all of pageProps
+        return self._deep_price_search(page_props, depth=0)
+
+    @staticmethod
+    def _price_from_obj(obj):
+        """
+        Extract price/was from a single dict that may contain price keys.
+        Returns (price, was_price) or (None, None).
+        """
+        if not isinstance(obj, dict):
+            return None, None
+
+        price_keys = ('price', 'sellingPrice', 'salePrice', 'currentPrice',
+                      'now', 'selling', 'current')
+        was_keys   = ('rrp', 'wasPrice', 'was', 'originalPrice',
+                      'listPrice', 'highPrice', 'compareAtPrice', 'regularPrice')
+
+        price = None
+        for k in price_keys:
+            v = obj.get(k)
+            if isinstance(v, (int, float)) and v > 0:
+                price = float(v); break
+            if isinstance(v, str):
+                try: price = float(v); break
+                except ValueError: pass
+            # price might itself be a nested dict like {"amount": 17.99}
+            if isinstance(v, dict):
+                amt = v.get('amount') or v.get('value') or v.get('price')
+                if isinstance(amt, (int, float)) and amt > 0:
+                    price = float(amt); break
+
+        if not price:
+            return None, None
+
+        was = None
+        for k in was_keys:
+            v = obj.get(k)
+            if isinstance(v, (int, float)) and float(v) > price:
+                was = float(v); break
+            if isinstance(v, str):
+                try:
+                    w = float(v)
+                    if w > price: was = w; break
+                except ValueError: pass
+            if isinstance(v, dict):
+                amt = v.get('amount') or v.get('value') or v.get('price')
+                if isinstance(amt, (int, float)) and float(amt) > price:
+                    was = float(amt); break
+
+        return price, was
+
+    def _deep_price_search(self, obj, depth):
+        """Recursively search nested JSON for price + was-price fields."""
+        if depth > 7 or not isinstance(obj, dict):
+            return None, None
+
+        p, w = self._price_from_obj(obj)
+        if p:
+            return p, w
+
+        for val in obj.values():
+            if isinstance(val, dict):
+                p, w = self._deep_price_search(val, depth + 1)
+                if p:
+                    return p, w
+            elif isinstance(val, list):
+                for item in val:
+                    if isinstance(item, dict):
+                        p, w = self._deep_price_search(item, depth + 1)
+                        if p:
+                            return p, w
 
         return None, None
 
@@ -534,12 +661,15 @@ class NewLookScraper(BaseScraper):
         except Exception as e:
             print(f'  Error: {e}')
 
-        # Test price fetch on first product
+        # Test price fetch on several products to check price + was_price extraction
         if footwear:
-            print('\nTesting price fetch on first product …')
-            try:
-                r = requests.get(footwear[0]['url'], headers=_HEADERS, timeout=12)
-                price, was = self._extract_price(r.text)
-                print(f'  HTTP {r.status_code}  price={price}  was_price={was}')
-            except Exception as e:
-                print(f'  Price fetch error: {e}')
+            print('\nTesting price fetch on first 5 products …')
+            for entry in footwear[:5]:
+                try:
+                    r = requests.get(entry['url'], headers=_HEADERS, timeout=12)
+                    price, was = self._extract_price(r.text)
+                    markdown = '← MARKDOWN' if was and price and was > price else ''
+                    print(f'  HTTP {r.status_code}  price=£{price}  was_price=£{was}  {markdown}')
+                    print(f'    {entry["url"][:80]}')
+                except Exception as e:
+                    print(f'  Price fetch error: {e}')

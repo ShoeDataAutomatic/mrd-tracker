@@ -60,9 +60,10 @@ RETAILERS = {
         },
     },
     'newlook': {
-        'name':     'New Look',
-        'base_url': 'https://www.newlook.com',
-        'region':   'uk',
+        'name':         'New Look',
+        'base_url':     'https://www.newlook.com',
+        'region':       'uk',
+        'fetch_prices': True,   # Fetch each product page for price + was-price (~3-5 min with 8 workers)
         'categories': [
             # Women's footwear — ~1,389 products in sitemap
             '/uk/womens/footwear/c/uk-womens-footwear',
