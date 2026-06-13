@@ -707,6 +707,14 @@ class NewLookScraper(BaseScraper):
             except Exception:
                 pass
 
+        try:
+            from playwright_stealth import stealth_sync
+            _stealth_available = True
+            print('  playwright-stealth: available ✓')
+        except ImportError:
+            _stealth_available = False
+            print('  playwright-stealth: NOT installed (pip install playwright-stealth)')
+
         with sync_playwright() as p:
             browser = p.chromium.launch(
                 headless=True,
@@ -719,20 +727,25 @@ class NewLookScraper(BaseScraper):
                     'Chrome/124.0.0.0 Safari/537.36'
                 ),
                 viewport={'width': 1280, 'height': 900},
+                locale='en-GB',
             )
             ctx.add_init_script(
                 'Object.defineProperty(navigator, "webdriver", {get: () => undefined})'
             )
             page = ctx.new_page()
+            if _stealth_available:
+                stealth_sync(page)
             page.on('response', on_resp)
             try:
                 page.goto(category_url, wait_until='networkidle', timeout=45000)
-                page.wait_for_timeout(3000)
+                page.wait_for_timeout(5000)  # Extra wait for React to render
 
-                # Also check the rendered page source for __NEXT_DATA__
                 html = page.content()
+                title = page.title()
+                print(f'\n  Page title: "{title}"')
+                print(f'  HTML length: {len(html):,} chars')
                 nd_m = re.search(r'id="__NEXT_DATA__"[^>]*>(\{)', html)
-                print(f'\n  __NEXT_DATA__ present: {bool(nd_m)}')
+                print(f'  __NEXT_DATA__ present: {bool(nd_m)}')
 
                 # Try extracting price from first product page via browser
                 if footwear:
