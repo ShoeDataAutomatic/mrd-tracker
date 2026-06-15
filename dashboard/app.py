@@ -169,20 +169,20 @@ def api_stats():
 @app.route('/api/keywords')
 def api_keywords():
     from datetime import date, timedelta
-    comparison  = request.args.get('comparison', 'week')
-    retailer    = request.args.get('retailer') or None
-    category    = (request.args.get('category')    or '').lower() or None
-    subcategory = (request.args.get('subcategory') or '').lower() or None
+    def _split(v): return [x.strip() for x in v.split(',') if x.strip()]
+
+    comparison  = request.args.get('comparison', 'month')
+    retailers   = _split((request.args.get('retailer')    or '').lower())
+    categories  = _split((request.args.get('category')    or '').lower())
+    subcats     = _split((request.args.get('subcategory') or '').lower())
     max_age     = request.args.get('max_age') or None
     start_date  = request.args.get('start_date') or None
     end_date    = request.args.get('end_date')   or None
 
     spans = {'week': 7, 'month': 30, 'quarter': 90}
-    n     = spans.get(comparison, 7)
+    n     = spans.get(comparison, 30)
     today = date.today()
 
-    # If a date range is supplied, use it as the "current" window; the
-    # equally-long period before it becomes the comparison "previous" window.
     if start_date and end_date:
         from datetime import date as date_cls
         d1 = date_cls.fromisoformat(start_date)
@@ -200,18 +200,20 @@ def api_keywords():
 
     age_cutoff = (today - timedelta(days=int(max_age))).isoformat() if max_age else None
 
-    products     = db.get_all_products(retailer=retailer)
+    products     = db.get_all_products(retailer=None)
     curr_counter = Counter()
     prev_counter = Counter()
     curr_total   = 0
     prev_total   = 0
 
     for p in products:
-        if category and not (p.get('category') or '').lower().startswith(category):
+        if retailers and p.get('retailer', '').lower() not in retailers:
             continue
-        if subcategory:
+        if categories and not any((p.get('category') or '').lower().startswith(c) for c in categories):
+            continue
+        if subcats:
             prod_sub = (p.get('subcategory') or '').lower().replace('-', ' ')
-            if subcategory not in prod_sub:
+            if not any(s in prod_sub for s in subcats):
                 continue
         if age_cutoff and (p.get('first_seen') or '') < age_cutoff:
             continue
@@ -253,26 +255,30 @@ def api_keywords():
 
 @app.route('/api/keywords/products')
 def api_keyword_products():
+    def _split(v): return [x.strip() for x in v.split(',') if x.strip()]
+
     include_raw = (request.args.get('include') or '').lower().strip()
     exclude_raw = (request.args.get('exclude') or '').lower().strip()
     single_q    = (request.args.get('q') or '').lower().strip()
-    retailer    = request.args.get('retailer') or None
-    category    = (request.args.get('category') or '').lower() or None
-    subcategory = (request.args.get('subcategory') or '').lower() or None
-    included = [k.strip() for k in include_raw.split(',') if k.strip()] if include_raw else []
-    excluded = [k.strip() for k in exclude_raw.split(',') if k.strip()] if exclude_raw else []
+    retailers   = _split((request.args.get('retailer')    or '').lower())
+    categories  = _split((request.args.get('category')    or '').lower())
+    subcats     = _split((request.args.get('subcategory') or '').lower())
+    included = _split(include_raw) if include_raw else []
+    excluded = _split(exclude_raw) if exclude_raw else []
     if single_q and not included:
         included = [single_q]
     if not included and not excluded:
         return jsonify([])
-    products = db.get_top_products(limit=9999, days=30, retailer=retailer)
+    products = db.get_top_products(limit=9999, days=30, retailer=None)
     def matches(p):
         name = (p.get('name') or '').lower()
-        cat  = (p.get('category') or '').lower()    # e.g. "women", "men"
-        sub  = (p.get('subcategory') or '').lower() # e.g. "flats", "trainers"
-        if category and not cat.startswith(category):
+        cat  = (p.get('category') or '').lower()
+        sub  = (p.get('subcategory') or '').lower()
+        if retailers and p.get('retailer', '').lower() not in retailers:
             return False
-        if subcategory and subcategory not in sub:
+        if categories and not any(cat.startswith(c) for c in categories):
+            return False
+        if subcats and not any(s in sub for s in subcats):
             return False
         if included and not all(kw in name for kw in included):
             return False
