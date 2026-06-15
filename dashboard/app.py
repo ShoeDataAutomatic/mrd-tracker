@@ -77,6 +77,114 @@ def _tokenise(name):
         tokens.append(f'{words[i]} {words[i+1]}')
     return tokens
 
+# ---------------------------------------------------------------------------
+# Smart attribute term sets  (colour / material / detail filters)
+# ---------------------------------------------------------------------------
+
+_COLOUR_TERMS = frozenset([
+    # Neutrals
+    'black','white','grey','gray','cream','beige','ivory','nude','natural',
+    'stone','oatmeal','ecru','off white',
+    # Browns
+    'brown','tan','camel','chocolate','cognac','chestnut','tobacco',
+    # Pinks / Reds
+    'pink','red','burgundy','wine','berry','blush','rose','coral','fuchsia',
+    'hot pink','pale pink','dusty pink','bright red','deep red','dark red','dark burgundy',
+    # Blues / Greens
+    'navy','blue','teal','mint','green','khaki','olive','sage',
+    'royal blue','light blue','dark blue','army green','forest green',
+    'olive green','sage green','light green','mint green','dark khaki','light khaki',
+    # Yellows / Oranges
+    'yellow','orange','mustard','rust','amber','copper',
+    # Purples
+    'purple','lilac','lavender','mauve','violet',
+    # Metallics
+    'silver','gold','bronze','metallic','rose gold','gunmetal',
+    # Prints / Patterns
+    'leopard','zebra','snake','animal','floral','tropical','camo','camouflage',
+    'tortoiseshell','printed','print','animal print','leopard print','snake print',
+    'gingham','polka dot','striped','stripe','abstract','multicolour','multicolor','multi',
+    # Misc
+    'clear','transparent','neon','pastel','mink',
+    'light grey','dark grey','light brown','dark brown','light pink','bright white','dark navy',
+])
+
+_MATERIAL_TERMS = frozenset([
+    # Leather
+    'leather','suede','nubuck','patent',
+    'faux leather','faux suede','real leather','real suede',
+    'genuine leather','vegan leather','patent leather','faux patent','suedette','faux nubuck',
+    # Fabric
+    'canvas','denim','fabric','textile','woven','linen','cotton',
+    'jersey','knit','knitted','crochet','grosgrain','broderie anglaise','tapestry','corduroy',
+    # Synthetic / tech
+    'mesh','neoprene','rubber','synthetic','lycra','elastic',
+    'foam','eva','memory foam','plush','perspex',
+    # Luxury / evening
+    'satin','velvet','silk','lace','sequin','glitter','shimmer',
+    # Natural / textured
+    'raffia','jute','cork','wood','wooden','macrame','seagrass','wicker','straw',
+    # Fur / fluffy
+    'fur','faux fur','fluffy','shearling','teddy','borg',
+    # Animal-effect
+    'faux snakeskin','snakeskin','croc','crocodile','faux croc',
+    # Misc
+    'tulle',
+])
+
+_DETAIL_TERMS = frozenset([
+    # Toe shape
+    'pointed toe','round toe','square toe','open toe','closed toe','almond toe',
+    'pointed','almond','peep toe',
+    # Heel type
+    'block heel','kitten heel','cone heel','stiletto','wedge heel',
+    'block','kitten','cone','platform','flatform','wedge',
+    'chunky','stacked','tapered','low heel','high heel','mid heel','heel',
+    # Fastening
+    'lace up','slip on','ankle strap','t bar','mary jane',
+    'buckle','velcro','zip','elasticated','crossover','strappy','slingback',
+    'strap','buckled','slip',
+    # Height / cut
+    'ankle','knee high','thigh high','high top','low top',
+    # Style / silhouette
+    'ballet','ballerina','court','espadrille','espadrilles',
+    'flat','heeled','mule','mules','dorsay','fisherman','vamp',
+    # Sole
+    'platform sole','chunky sole','lug sole','cleated','ridged','gum sole','gum',
+    # Embellishment
+    'bow','tassel','stud','studded','embellished','embroidered',
+    'quilted','perforated','cutout','cut out','fringed','fringe',
+    'chain','ring','crystal','rhinestone','hardware',
+    'beaded','ruched','knotted','twisted','twist','braided','embossed',
+    'scalloped','scallop','textured','panelled','lattice','eyelet',
+    'snaffle','horsebit','toggle','whipstitch','whipstitched',
+    # Fit
+    'wide fit','extra wide','narrow',
+    # Other
+    'backless','caged','cage','gladiator','western','cowboy','chelsea',
+    'combat','hiking','running',
+    'open back','low cut','double strap','post','toe post',
+    'laser cut','lasercut','crossband','multistrap','sock',
+    'asymmetric','wrap','thong','flip flop','flip flops',
+])
+
+
+def _classify_name(name):
+    """Return (colours, materials, details) — sets of matching attribute terms."""
+    name_l = name.lower().replace('-', ' ').replace("'", '')
+    tokens = set(_tokenise(name))   # unigrams + bigrams, stop-words removed
+    colours, materials, details = set(), set(), set()
+    for terms, bucket in ((_COLOUR_TERMS, colours), (_MATERIAL_TERMS, materials), (_DETAIL_TERMS, details)):
+        for t in terms:
+            if ' ' in t:
+                if t in name_l:
+                    bucket.add(t)
+            else:
+                if t in tokens:
+                    bucket.add(t)
+    return colours, materials, details
+
+
 app = Flask(__name__)
 
 
@@ -271,6 +379,8 @@ def api_keywords():
     for kw, curr in curr_counter.items():
         if curr < 2:
             continue
+        if ' ' in kw:          # skip bigrams — single words only
+            continue
         prev  = prev_counter.get(kw, 0)
         delta = round(((curr - prev) / prev) * 100) if prev > 0 else None
         result.append({'keyword': kw, 'count': curr, 'prev_count': prev, 'delta': delta})
@@ -300,8 +410,11 @@ def api_keyword_products():
     retailers   = _split((request.args.get('retailer')    or '').lower())
     categories  = _split((request.args.get('category')    or '').lower())
     subcats     = _split((request.args.get('subcategory') or '').lower())
-    included = _split(include_raw) if include_raw else []
-    excluded = _split(exclude_raw) if exclude_raw else []
+    included   = _split(include_raw) if include_raw else []
+    excluded   = _split(exclude_raw) if exclude_raw else []
+    colours_f  = _split((request.args.get('colours')   or '').lower())
+    materials_f = _split((request.args.get('materials') or '').lower())
+    details_f  = _split((request.args.get('details')   or '').lower())
     if single_q and not included:
         included = [single_q]
     products = db.get_top_products(limit=9999, days=30, retailer=None)
@@ -319,12 +432,79 @@ def api_keyword_products():
             return False
         if excluded and any(kw in name for kw in excluded):
             return False
+        if colours_f or materials_f or details_f:
+            c, m, d = _classify_name(name)
+            if colours_f   and not any(t in c for t in colours_f):   return False
+            if materials_f and not any(t in m for t in materials_f): return False
+            if details_f   and not any(t in d for t in details_f):   return False
         return True
     matching = [p for p in products if matches(p)]
     for p in matching:
         p.pop('latest_raw_data', None)
     matching.sort(key=lambda p: p.get('last_seen') or '', reverse=True)
     return jsonify(matching)
+
+
+
+@app.route('/api/keywords/attributes')
+def api_keyword_attributes():
+    def _split(v): return [x.strip() for x in v.split(',') if x.strip()]
+    include_raw = (request.args.get('include') or '').lower().strip()
+    retailers   = _split((request.args.get('retailer')    or '').lower())
+    categories  = _split((request.args.get('category')    or '').lower())
+    subcats     = _split((request.args.get('subcategory') or '').lower())
+    included    = _split(include_raw) if include_raw else []
+    products    = db.get_top_products(limit=9999, days=30, retailer=None)
+    colour_counts   = Counter()
+    material_counts = Counter()
+    detail_counts   = Counter()
+    for p in products:
+        name = (p.get('name') or '').lower()
+        if retailers and p.get('retailer', '').lower() not in retailers:
+            continue
+        cat = (p.get('category') or '').lower()
+        if categories and not any(cat.startswith(c) for c in categories):
+            continue
+        sub = (p.get('subcategory') or '').lower()
+        if subcats and not any(_subcat_match(s, sub) for s in subcats):
+            continue
+        if included and not all(kw in name for kw in included):
+            continue
+        c, m, d = _classify_name(name)
+        colour_counts.update(c)
+        material_counts.update(m)
+        detail_counts.update(d)
+    def to_list(counter):
+        return [{'term': k, 'count': v} for k, v in counter.most_common()]
+    return jsonify({
+        'colours':   to_list(colour_counts),
+        'materials': to_list(material_counts),
+        'details':   to_list(detail_counts),
+    })
+
+@app.route('/export/keyword-classifications')
+def export_keyword_classifications():
+    import csv, io
+    products = db.get_all_products(retailer=None)
+    all_tokens = Counter()
+    for p in products:
+        name = (p.get('name') or '').strip()
+        if name:
+            all_tokens.update(_tokenise(name))
+
+    output = io.StringIO()
+    writer = csv.writer(output)
+    writer.writerow(['Keyword', 'Count', 'Colour', 'Material', 'Detail'])
+    for kw, cnt in sorted(all_tokens.items(), key=lambda x: -x[1]):
+        c, m, d = _classify_name(kw)
+        writer.writerow([kw, cnt, 'Y' if c else '', 'Y' if m else '', 'Y' if d else ''])
+
+    output.seek(0)
+    return Response(
+        output.getvalue(),
+        mimetype='text/csv',
+        headers={'Content-Disposition': 'attachment; filename="keyword_classifications.csv"'}
+    )
 
 
 @app.route('/api/success')
