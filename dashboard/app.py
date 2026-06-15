@@ -285,8 +285,6 @@ def api_keyword_products():
     excluded = _split(exclude_raw) if exclude_raw else []
     if single_q and not included:
         included = [single_q]
-    if not included and not excluded:
-        return jsonify([])
     products = db.get_top_products(limit=9999, days=30, retailer=None)
     def matches(p):
         name = (p.get('name') or '').lower()
