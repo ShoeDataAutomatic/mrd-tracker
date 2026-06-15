@@ -268,10 +268,11 @@ def api_keyword_products():
     products = db.get_top_products(limit=9999, days=30, retailer=retailer)
     def matches(p):
         name = (p.get('name') or '').lower()
-        cat  = (p.get('category') or '').lower()
+        cat  = (p.get('category') or '').lower()    # e.g. "women", "men"
+        sub  = (p.get('subcategory') or '').lower() # e.g. "flats", "trainers"
         if category and not cat.startswith(category):
             return False
-        if subcategory and subcategory not in cat:
+        if subcategory and subcategory not in sub:
             return False
         if included and not all(kw in name for kw in included):
             return False
