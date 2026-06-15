@@ -486,6 +486,145 @@ def api_markdown():
 
 
 # ---------------------------------------------------------------------------
+# Test: New Look markdown detection
+# Hit /test/newlook-markdown to run a live fetch from this server's IP.
+# Remove this route once the test is done.
+# ---------------------------------------------------------------------------
+
+@app.route('/test/newlook-markdown')
+def test_newlook_markdown():
+    import re as _re, json as _json
+    import requests as _requests
+    from concurrent.futures import ThreadPoolExecutor
+
+    _HEADERS = {
+        'User-Agent': (
+            'Mozilla/5.0 (Windows NT 10.0; Win64; x64) '
+            'AppleWebKit/537.36 (KHTML, like Gecko) '
+            'Chrome/124.0.0.0 Safari/537.36'
+        ),
+        'Accept':          'text/html,application/xhtml+xml,*/*',
+        'Accept-Language': 'en-GB,en;q=0.9',
+        'Referer':         'https://www.newlook.com/',
+    }
+    SITEMAP = 'https://www.newlook.com/uk/sitemap/maps/sitemap_uk_product_en_1.xml'
+    N = 10  # products to test
+
+    def extract_price(html):
+        # 1. __NEXT_DATA__
+        nd_m = _re.search(r'<script[^>]+id="__NEXT_DATA__"[^>]*>(.*?)</script>', html, _re.DOTALL)
+        if nd_m:
+            try:
+                nd = _json.loads(nd_m.group(1))
+                product = nd.get('props', {}).get('pageProps', {}).get('product') or {}
+                result = _price_from_obj(product)
+                if result[0]: return result
+            except Exception:
+                pass
+        # 2. LD+JSON
+        for block in _re.findall(r'<script[^>]+application/ld\+json[^>]*>(.*?)</script>', html, _re.DOTALL):
+            try:
+                data = _json.loads(block)
+                if not isinstance(data, dict) or data.get('@type') != 'Product': continue
+                offers = data.get('offers', {})
+                if isinstance(offers, list): offers = offers[0] if offers else {}
+                price_raw = offers.get('price') or offers.get('lowPrice')
+                if price_raw is None: continue
+                price = float(price_raw)
+                high  = offers.get('highPrice')
+                was   = float(high) if high and float(high) > price else None
+                return price, was
+            except Exception:
+                pass
+        # 3. Regex fallback
+        for was_key in (r'"wasPrice"', r'"rrp"', r'"originalPrice"', r'"listPrice"'):
+            wm = _re.search(was_key + r'\s*:\s*"?([\d.]+)"?', html)
+            if not wm: continue
+            was = float(wm.group(1))
+            pm  = _re.search(r'"(?:price|sellingPrice|salePrice|currentPrice|now)"\s*:\s*"?([\d.]+)"?', html)
+            if pm:
+                price = float(pm.group(1))
+                return price, (was if was > price else None)
+        m = _re.search(r'"price"\s*:\s*"?([\d.]+)"?', html)
+        if m: return float(m.group(1)), None
+        return None, None
+
+    def _price_from_obj(obj):
+        if not isinstance(obj, dict): return None, None
+        for k in ('price', 'sellingPrice', 'salePrice', 'currentPrice', 'now'):
+            v = obj.get(k)
+            if isinstance(v, (int, float)) and v > 0: price = float(v); break
+            if isinstance(v, str):
+                try: price = float(v); break
+                except ValueError: pass
+            if isinstance(v, dict):
+                amt = v.get('amount') or v.get('value') or v.get('price')
+                if isinstance(amt, (int, float)) and amt > 0: price = float(amt); break
+        else:
+            return None, None
+        was = None
+        for k in ('rrp', 'wasPrice', 'was', 'originalPrice', 'listPrice', 'highPrice'):
+            v = obj.get(k)
+            if isinstance(v, (int, float)) and float(v) > price: was = float(v); break
+            if isinstance(v, str):
+                try:
+                    w = float(v)
+                    if w > price: was = w; break
+                except ValueError: pass
+        return price, was
+
+    def fetch_one(url):
+        try:
+            r = _requests.get(url, headers=_HEADERS, timeout=12)
+            status = r.status_code
+            if status == 200:
+                price, was = extract_price(r.text)
+                is_sale = bool(was and price and was > price)
+                has_nd  = '__NEXT_DATA__' in r.text
+                html_len = len(r.text)
+                return {'url': url, 'status': status, 'price': price, 'was_price': was,
+                        'is_markdown': is_sale, 'has_next_data': has_nd, 'html_len': html_len}
+            else:
+                snippet = r.text[:300].replace('\n', ' ')
+                return {'url': url, 'status': status, 'price': None, 'was_price': None,
+                        'is_markdown': False, 'has_next_data': False, 'html_len': len(r.text),
+                        'snippet': snippet}
+        except Exception as e:
+            return {'url': url, 'status': 'error', 'error': str(e)}
+
+    # Fetch sitemap
+    try:
+        sm = _requests.get(SITEMAP, headers=_HEADERS, timeout=30)
+        sitemap_status = sm.status_code
+        if sm.status_code != 200:
+            return jsonify({'error': f'Sitemap returned {sm.status_code}'}), 500
+        urls = _re.findall(
+            r'<ns\d+:loc[^>]*>(https://www\.newlook\.com/uk/footwear/[^<]+/p/\d+)</ns\d+:loc>',
+            sm.text
+        )[:N]
+    except Exception as e:
+        return jsonify({'error': f'Sitemap fetch failed: {e}'}), 500
+
+    results = []
+    with ThreadPoolExecutor(max_workers=5) as ex:
+        for res in ex.map(fetch_one, urls):
+            results.append(res)
+
+    ok         = [r for r in results if r.get('status') == 200]
+    with_price = [r for r in ok if r.get('price')]
+    on_sale    = [r for r in ok if r.get('is_markdown')]
+
+    return jsonify({
+        'sitemap_status':   sitemap_status,
+        'urls_found':       len(urls),
+        'pages_accessible': len(ok),
+        'prices_found':     len(with_price),
+        'on_sale':          len(on_sale),
+        'results':          results,
+    })
+
+
+# ---------------------------------------------------------------------------
 # Run
 # ---------------------------------------------------------------------------
 
