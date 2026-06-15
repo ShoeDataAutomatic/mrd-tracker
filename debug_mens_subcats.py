@@ -34,18 +34,24 @@ for p in mens:
     name     = p.get('name', '')
     url_path = url.replace('https://www.newlook.com', '')
 
-    s1 = NewLookScraper._style_from_category_prefix(url_path, style_prefixes)
-    method = 'sitemap'
-    new_sub = s1
+    gender  = NewLookScraper._gender_from_path(url_path)
+    _generic = {'shoes', 'mens shoes', 'womens shoes', 'girls shoes', 'boys shoes'}
 
-    if not new_sub or new_sub == 'shoes':
-        s2 = NewLookScraper._subcategory_from_path(url_path)
-        if s2 and s2 != 'shoes':
-            new_sub = s2
-            method = 'url_path'
-        else:
+    new_sub = NewLookScraper._style_from_category_prefix(url_path, style_prefixes)
+    if new_sub and new_sub.endswith(' boots'):
+        new_sub = 'boots'
+    method = 'sitemap'
+
+    if not new_sub or new_sub in _generic:
+        new_sub = NewLookScraper._subcategory_from_path(url_path)
+        method = 'url_path'
+
+    if not new_sub or new_sub in _generic:
+        if gender == 'men':
             new_sub = NewLookScraper._style_from_name_mens(name)
-            method = 'name'
+        else:
+            new_sub = NewLookScraper._style_from_name(name)
+        method = 'name'
 
     new_subs[new_sub or 'None'] += 1
     method_used[method] += 1
