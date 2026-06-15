@@ -561,8 +561,8 @@ class NewLookScraper(BaseScraper):
             return 'boots'
         if any(t in n for t in ('trainer', 'sneaker', 'running shoe', 'athletic')):
             return 'trainers'
-        if any(t in n for t in ('mule', 'clog', 'backless')):
-            return 'mules'
+        if 'clog' in n:
+            return 'clogs'
         if any(t in n for t in ('court shoe', 'kitten heel', 'stiletto', 'block heel',
                                  'cone heel', 'mid heel', 'high heel', 'pointed heel')):
             return 'heels'
@@ -570,21 +570,29 @@ class NewLookScraper(BaseScraper):
             return 'heels'
         if any(t in n for t in ('wedge', 'espadrille')):
             return 'wedges'
-        if any(t in n for t in ('loafer', 'brogue', 'oxford', 'moccasin')):
+        if 'loafer' in n:
             return 'loafers'
-        if any(t in n for t in ('ballet pump', 'ballet flat', 'pump')):
+        if any(t in n for t in ('brogue', 'oxford')):
+            return 'loafers and brogues'
+        if any(t in n for t in ('ballet pump', 'ballet flat')):
             return 'flats'
+        if 'pump' in n:
+            return 'heels'
         if any(t in n for t in ('sandal', 'gladiator')):
             return 'sandals'
         if any(t in n for t in ('slider', 'flip flop', 'flip-flop', 'thong')):
-            return 'sliders'
-        if any(t in n for t in ('slipper', 'moccasin slipper')):
+            return 'sandals, sliders and flip-flops'
+        if 'moccasin slipper' in n:
+            return 'slippers'
+        if any(t in n for t in ('slipper', 'moccasin')):
             return 'slippers'
         if any(t in n for t in ('flat shoe', 'flat boot', 'ballerina', 'pointed flat',
                                  'round toe flat', 'mary jane')):
             return 'flats'
         if 'flat' in n:
             return 'flats'
+        if any(t in n for t in ('mule', 'backless')):
+            return 'mules'
         if 'shoe' in n:
             return 'shoes'
         return None
