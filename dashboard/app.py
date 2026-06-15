@@ -19,6 +19,24 @@ from config import DASHBOARD_HOST, DASHBOARD_PORT, DASHBOARD_DEBUG, RETAILERS
 import scorer
 import database as db
 
+# Subcategory filter → terms that should match in the product's subcategory field.
+# Handles plural/singular and common variant names across retailers.
+_SUBCAT_ALIASES = {
+    'trainers':  ['trainers', 'trainer', 'sneaker'],
+    'boots':     ['boots', 'boot'],
+    'sandals':   ['sandals', 'sandal'],
+    'heels':     ['heels', 'heel'],
+    'flats':     ['flats', 'flat'],
+    'loafers':   ['loafers', 'loafer'],
+    'slippers':  ['slippers', 'slipper'],
+    'clogs':     ['clogs', 'clog'],
+}
+
+def _subcat_match(filter_val, product_sub):
+    """Return True if any alias for filter_val appears in product_sub."""
+    aliases = _SUBCAT_ALIASES.get(filter_val, [filter_val])
+    return any(a in product_sub for a in aliases)
+
 # ---------------------------------------------------------------------------
 # Keyword helpers
 # ---------------------------------------------------------------------------
@@ -213,7 +231,7 @@ def api_keywords():
             continue
         if subcats:
             prod_sub = (p.get('subcategory') or '').lower().replace('-', ' ')
-            if not any(s in prod_sub for s in subcats):
+            if not any(_subcat_match(s, prod_sub) for s in subcats):
                 continue
         if age_cutoff and (p.get('first_seen') or '') < age_cutoff:
             continue
@@ -278,7 +296,7 @@ def api_keyword_products():
             return False
         if categories and not any(cat.startswith(c) for c in categories):
             return False
-        if subcats and not any(s in sub for s in subcats):
+        if subcats and not any(_subcat_match(s, sub) for s in subcats):
             return False
         if included and not all(kw in name for kw in included):
             return False
