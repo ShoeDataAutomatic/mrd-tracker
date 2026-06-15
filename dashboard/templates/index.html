@@ -1289,13 +1289,11 @@ async function loadKeywords() {
     document.getElementById('kw-stat-rising').textContent       = cap(data.fastest_rising.keyword);
     document.getElementById('kw-stat-rising-delta').textContent = `+${data.fastest_rising.delta}% vs prev period`;
   } else { document.getElementById('kw-stat-rising').textContent='—'; }
-  kwIncluded.clear(); kwExcluded.clear();
-  renderKwFilterChips();
-  document.getElementById('kw-result-meta-row').style.display='none';
-  document.getElementById('kw-products-grid').innerHTML=
-    '<div class="kw-placeholder" style="grid-column:1/-1"><p>Include a keyword to see products</p></div>';
   checkKwClearBtn();
   renderKeywords();
+  if (kwIncluded.size > 0 || kwExcluded.size > 0) {
+    loadKwProducts();
+  }
 }
 
 function checkKwClearBtn() {
@@ -1402,11 +1400,13 @@ async function loadKwProducts() {
   grid.innerHTML='<div class="kw-placeholder" style="grid-column:1/-1"><p>Loading…</p></div>';
   const retailer=document.getElementById('kw-filter-retailer').value;
   const category=document.getElementById('kw-filter-category').value;
+  const subcategory=document.getElementById('kw-filter-subcategory').value;
   const params=new URLSearchParams();
   if (kwIncluded.size) params.set('include', [...kwIncluded].join(','));
   if (kwExcluded.size) params.set('exclude', [...kwExcluded].join(','));
-  if (retailer) params.set('retailer',retailer);
-  if (category) params.set('category',category);
+  if (retailer)    params.set('retailer',    retailer);
+  if (category)    params.set('category',    category);
+  if (subcategory) params.set('subcategory', subcategory);
   const res=await fetch('/api/keywords/products?'+params);
   kwProducts=await res.json();
   const metaRow=document.getElementById('kw-result-meta-row');

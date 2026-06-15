@@ -258,6 +258,7 @@ def api_keyword_products():
     single_q    = (request.args.get('q') or '').lower().strip()
     retailer    = request.args.get('retailer') or None
     category    = (request.args.get('category') or '').lower() or None
+    subcategory = (request.args.get('subcategory') or '').lower() or None
     included = [k.strip() for k in include_raw.split(',') if k.strip()] if include_raw else []
     excluded = [k.strip() for k in exclude_raw.split(',') if k.strip()] if exclude_raw else []
     if single_q and not included:
@@ -267,7 +268,10 @@ def api_keyword_products():
     products = db.get_top_products(limit=9999, days=30, retailer=retailer)
     def matches(p):
         name = (p.get('name') or '').lower()
-        if category and not (p.get('category') or '').lower().startswith(category):
+        cat  = (p.get('category') or '').lower()
+        if category and not cat.startswith(category):
+            return False
+        if subcategory and subcategory not in cat:
             return False
         if included and not all(kw in name for kw in included):
             return False
