@@ -541,10 +541,14 @@
       <div class="kw-msd-panel" id="msd-subcategory-panel" style="display:none">
         <div class="kw-msd-item" onclick="toggleMsdItem('subcategory','trainers')"><span class="kw-msd-check" id="msd-check-subcategory-trainers"></span>Trainers</div>
         <div class="kw-msd-item" onclick="toggleMsdItem('subcategory','boots')"><span class="kw-msd-check" id="msd-check-subcategory-boots"></span>Boots</div>
-        <div class="kw-msd-item" onclick="toggleMsdItem('subcategory','sandals')"><span class="kw-msd-check" id="msd-check-subcategory-sandals"></span>Sandals &amp; sliders</div>
+        <div class="kw-msd-item" onclick="toggleMsdItem('subcategory','sandals')"><span class="kw-msd-check" id="msd-check-subcategory-sandals"></span>Sandals</div>
         <div class="kw-msd-item" onclick="toggleMsdItem('subcategory','heels')"><span class="kw-msd-check" id="msd-check-subcategory-heels"></span>Heels</div>
         <div class="kw-msd-item" onclick="toggleMsdItem('subcategory','flats')"><span class="kw-msd-check" id="msd-check-subcategory-flats"></span>Flats</div>
         <div class="kw-msd-item" onclick="toggleMsdItem('subcategory','loafers')"><span class="kw-msd-check" id="msd-check-subcategory-loafers"></span>Loafers</div>
+        <div class="kw-msd-item" onclick="toggleMsdItem('subcategory','mules')"><span class="kw-msd-check" id="msd-check-subcategory-mules"></span>Mules</div>
+        <div class="kw-msd-item" onclick="toggleMsdItem('subcategory','wedges')"><span class="kw-msd-check" id="msd-check-subcategory-wedges"></span>Wedges</div>
+        <div class="kw-msd-item" onclick="toggleMsdItem('subcategory','sliders')"><span class="kw-msd-check" id="msd-check-subcategory-sliders"></span>Sliders</div>
+        <div class="kw-msd-item" onclick="toggleMsdItem('subcategory','platforms')"><span class="kw-msd-check" id="msd-check-subcategory-platforms"></span>Platforms</div>
         <div class="kw-msd-item" onclick="toggleMsdItem('subcategory','slippers')"><span class="kw-msd-check" id="msd-check-subcategory-slippers"></span>Slippers</div>
         <div class="kw-msd-item" onclick="toggleMsdItem('subcategory','clogs')"><span class="kw-msd-check" id="msd-check-subcategory-clogs"></span>Clogs</div>
       </div>
@@ -842,11 +846,30 @@ const cap = s => s ? s.replace(/(?:^|\s|-)\S/g, c => c.toUpperCase()) : s;
 
 // ── Subcategory normalisation (display-only, DB unchanged) ───────────────────
 const SUB_NORM_MAP = {
-  'sandals and flipflops':  'Sandals, sliders and flip-flops',
-  'sandals and flip flops': 'Sandals, sliders and flip-flops',
-  'sandals and sliders':    'Sandals, sliders and flip-flops',
-  'flip flops and sliders': 'Sandals, sliders and flip-flops',
-  'sliders':                'Sandals, sliders and flip-flops',
+  // Primark / generic groupings
+  'sandals and flipflops':  'Sandals',
+  'sandals and flip flops': 'Sandals',
+  'sandals and sliders':    'Sandals',
+  'flip flops and sliders': 'Sliders',
+  // New Look category-sitemap multi-word subcategories
+  'heeled sandals':  'Sandals',
+  'flat sandals':    'Sandals',
+  'strappy sandals': 'Sandals',
+  'block heels':     'Heels',
+  'kitten heels':    'Heels',
+  'cone heels':      'Heels',
+  'stilettos':       'Heels',
+  'court shoes':     'Heels',
+  'wedge heels':     'Wedges',
+  'ballet flats':    'Flats',
+  'flat shoes':      'Flats',
+  'ballet pumps':    'Flats',
+  'ankle boots':     'Boots',
+  'knee high boots': 'Boots',
+  'chelsea boots':   'Boots',
+  'wide fit':        'Wide Fit',
+  'flip flops':      'Sliders',
+  'flip flop':       'Sliders',
 };
 function normSub(s) {
   if (!s) return s;

@@ -22,20 +22,37 @@ import database as db
 # Subcategory filter → terms that should match in the product's subcategory field.
 # Handles plural/singular and common variant names across retailers.
 _SUBCAT_ALIASES = {
-    'trainers':  ['trainers', 'trainer', 'sneaker'],
-    'boots':     ['boots', 'boot'],
-    'sandals':   ['sandals', 'sandal'],
-    'heels':     ['heels', 'heel'],
-    'flats':     ['flats', 'flat'],
-    'loafers':   ['loafers', 'loafer'],
-    'slippers':  ['slippers', 'slipper'],
-    'clogs':     ['clogs', 'clog'],
+    'trainers':  ['trainers', 'trainer', 'sneaker', 'sneakers'],
+    'boots':     ['boot', 'boots'],
+    'sandals':   ['sandal', 'sandals'],
+    'heels':     ['heels', 'block heels', 'kitten heels', 'cone heels',
+                  'court shoes', 'stilettos', 'wedge heels'],
+    'flats':     ['flats', 'pumps', 'ballet flats', 'flat shoes', 'ballet pumps'],
+    'loafers':   ['loafer', 'loafers', 'brogue', 'brogues'],
+    'slippers':  ['slipper', 'slippers'],
+    'clogs':     ['clog', 'clogs'],
+    'mules':     ['mule', 'mules'],
+    'wedges':    ['wedge', 'wedges', 'espadrille', 'espadrilles'],
+    'sliders':   ['slider', 'sliders', 'flip flops', 'flip flop'],
+    'platforms': ['platform', 'platforms'],
 }
 
 def _subcat_match(filter_val, product_sub):
-    """Return True if any alias for filter_val appears in product_sub."""
+    """Return True if any alias for filter_val matches product_sub.
+    Single-word aliases use whole-word matching to avoid false positives
+    (e.g. 'heel' matching 'heeled sandals', 'flat' matching 'platform').
+    Multi-word phrase aliases use substring matching.
+    """
     aliases = _SUBCAT_ALIASES.get(filter_val, [filter_val])
-    return any(a in product_sub for a in aliases)
+    sub_words = set(product_sub.split())
+    for a in aliases:
+        if ' ' in a:               # multi-word phrase
+            if a in product_sub:
+                return True
+        else:                      # single word — whole-word only
+            if a in sub_words:
+                return True
+    return False
 
 # ---------------------------------------------------------------------------
 # Keyword helpers
