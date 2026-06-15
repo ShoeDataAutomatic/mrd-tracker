@@ -253,20 +253,30 @@ def api_keywords():
 
 @app.route('/api/keywords/products')
 def api_keyword_products():
-    keyword  = (request.args.get('q') or '').lower().strip()
-    retailer = request.args.get('retailer') or None
-    category = (request.args.get('category') or '').lower() or None
-    if not keyword:
+    include_raw = (request.args.get('include') or '').lower().strip()
+    exclude_raw = (request.args.get('exclude') or '').lower().strip()
+    single_q    = (request.args.get('q') or '').lower().strip()
+    retailer    = request.args.get('retailer') or None
+    category    = (request.args.get('category') or '').lower() or None
+    included = [k.strip() for k in include_raw.split(',') if k.strip()] if include_raw else []
+    excluded = [k.strip() for k in exclude_raw.split(',') if k.strip()] if exclude_raw else []
+    if single_q and not included:
+        included = [single_q]
+    if not included and not excluded:
         return jsonify([])
-    # Use get_top_products so each product includes total_score and latest_price
     products = db.get_top_products(limit=9999, days=30, retailer=retailer)
-    matching = [
-        p for p in products
-        if keyword in (p.get('name') or '').lower()
-        and (not category or (p.get('category') or '').lower().startswith(category))
-    ]
+    def matches(p):
+        name = (p.get('name') or '').lower()
+        if category and not (p.get('category') or '').lower().startswith(category):
+            return False
+        if included and not all(kw in name for kw in included):
+            return False
+        if excluded and any(kw in name for kw in excluded):
+            return False
+        return True
+    matching = [p for p in products if matches(p)]
     for p in matching:
-        p.pop('latest_raw_data', None)  # strip heavy field
+        p.pop('latest_raw_data', None)
     matching.sort(key=lambda p: p.get('last_seen') or '', reverse=True)
     return jsonify(matching)
 
