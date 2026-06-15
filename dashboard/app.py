@@ -598,10 +598,12 @@ def test_newlook_markdown():
         sitemap_status = sm.status_code
         if sm.status_code != 200:
             return jsonify({'error': f'Sitemap returned {sm.status_code}'}), 500
-        urls = _re.findall(
-            r'<ns\d+:loc[^>]*>(https://www\.newlook\.com/uk/footwear/[^<]+/p/\d+)</ns\d+:loc>',
+        # Use the same pattern as the working scraper (ns[0-9]+ not \d+, filter after)
+        all_urls = _re.findall(
+            r'<ns[0-9]+:loc[^>]*>(https://www\.newlook\.com[^<]+)</ns[0-9]+:loc>',
             sm.text
-        )[:N]
+        )
+        urls = [u for u in all_urls if '/footwear/' in u and '/p/' in u][:N]
     except Exception as e:
         return jsonify({'error': f'Sitemap fetch failed: {e}'}), 500
 
