@@ -483,11 +483,6 @@
       <div class="value sm" id="kw-stat-top">—</div>
       <div class="sub pink" id="kw-stat-top-count"></div>
     </div>
-    <div class="stat-card">
-      <div class="label">Fastest rising</div>
-      <div class="value sm" id="kw-stat-rising" style="color:#00a651">—</div>
-      <div class="sub up" id="kw-stat-rising-delta"></div>
-    </div>
   </div>
 
   <div class="controls">
@@ -531,13 +526,6 @@
       </select>
     </div>
     <div>
-      <select id="kw-filter-comparison" onchange="loadKeywords()">
-        <option value="week">Week vs week</option>
-        <option value="month" selected>Month vs month</option>
-        <option value="quarter">Quarter vs quarter</option>
-      </select>
-    </div>
-    <div>
       <button id="kw-btn-clear" onclick="clearKwFilters()" style="display:none;background:#000;color:#fff;border:none;border-radius:24px;padding:6px 18px;font-size:10px;font-weight:700;letter-spacing:1px;text-transform:uppercase;font-family:'Montserrat',sans-serif;cursor:pointer">Clear filters</button>
     </div>
   </div>
@@ -551,13 +539,12 @@
         <thead>
           <tr>
             <th data-kwcol="keyword" onclick="kwSort(this)">Keyword<span class="sort-icon"></span></th>
-            <th data-kwcol="count" class="kw-sort-desc" onclick="kwSort(this)" style="width:38%">Frequency<span class="sort-icon"></span></th>
-            <th data-kwcol="delta" onclick="kwSort(this)" style="width:60px">Trend<span class="sort-icon"></span></th>
+            <th data-kwcol="count" class="kw-sort-desc" onclick="kwSort(this)" style="width:45%">Frequency<span class="sort-icon"></span></th>
             <th style="width:170px;cursor:default">Filter product listing</th>
           </tr>
         </thead>
         <tbody id="kw-table-body">
-          <tr><td colspan="4"><div class="empty-state" style="padding:40px 20px">Loading…</div></td></tr>
+          <tr><td colspan="3"><div class="empty-state" style="padding:40px 20px">Loading…</div></td></tr>
         </tbody>
       </table>
     </div>
@@ -1266,15 +1253,14 @@ async function loadKeywords() {
   const category    = document.getElementById('kw-filter-category').value;
   const subcategory = document.getElementById('kw-filter-subcategory').value;
   const age         = document.getElementById('kw-filter-age').value;
-  const comparison  = document.getElementById('kw-filter-comparison').value;
   const dr = getDateRange();
-  const params = new URLSearchParams({comparison, ...dr});
+  const params = new URLSearchParams({...dr});
   if (retailer)    params.set('retailer',    retailer);
   if (category)    params.set('category',    category);
   if (subcategory) params.set('subcategory', subcategory);
   if (age)         params.set('max_age',     age);
   document.getElementById('kw-table-body').innerHTML =
-    '<tr><td colspan="4"><div class="empty-state" style="padding:40px 20px">Loading…</div></td></tr>';
+    '<tr><td colspan="3"><div class="empty-state" style="padding:40px 20px">Loading…</div></td></tr>';
   const res  = await fetch('/api/keywords?' + params);
   const data = await res.json();
   allKeywords = data.keywords || [];
@@ -1285,10 +1271,6 @@ async function loadKeywords() {
     document.getElementById('kw-stat-top').textContent       = cap(data.top_keyword.keyword);
     document.getElementById('kw-stat-top-count').textContent = `${data.top_keyword.count} products`;
   } else { document.getElementById('kw-stat-top').textContent='—'; }
-  if (data.fastest_rising) {
-    document.getElementById('kw-stat-rising').textContent       = cap(data.fastest_rising.keyword);
-    document.getElementById('kw-stat-rising-delta').textContent = `+${data.fastest_rising.delta}% vs prev period`;
-  } else { document.getElementById('kw-stat-rising').textContent='—'; }
   checkKwClearBtn();
   renderKeywords();
   if (kwIncluded.size > 0 || kwExcluded.size > 0) {
@@ -1355,7 +1337,7 @@ function renderKeywords() {
   });
   const tbody = document.getElementById('kw-table-body');
   if (!data.length) {
-    tbody.innerHTML='<tr><td colspan="4"><div class="empty-state" style="padding:40px 20px">No keywords found.</div></td></tr>';
+    tbody.innerHTML='<tr><td colspan="3"><div class="empty-state" style="padding:40px 20px">No keywords found.</div></td></tr>';
     return;
   }
   tbody.innerHTML = data.map((k,i) => {
@@ -1363,10 +1345,6 @@ function renderKeywords() {
     const isInc  = kwIncluded.has(k.keyword);
     const isExc  = kwExcluded.has(k.keyword);
     const rowCls = isInc ? 'kw-row-included' : isExc ? 'kw-row-excluded' : '';
-    const dHtml  = k.delta==null ? `<span class="kw-delta-new">new</span>`
-      : k.delta>0 ? `<span class="kw-delta-up">+${k.delta}%</span>`
-      : k.delta<0 ? `<span class="kw-delta-dn">${k.delta}%</span>`
-      : `<span style="font-size:10px;color:#ccc">—</span>`;
     const kw = k.keyword.replace(/'/g,"\\'");
     return `<tr class="${rowCls}">
       <td><span class="kw-word">${k.keyword}</span></td>
@@ -1374,7 +1352,6 @@ function renderKeywords() {
         <div class="kw-bar-bg"><div class="kw-bar-fill" style="width:${barPct}%"></div></div>
         <span class="kw-count">${k.count}</span>
       </div></td>
-      <td>${dHtml}</td>
       <td><div class="kw-btn-group">
         <button class="kw-btn-inc${isInc?' kw-btn-inc-active':''}" onclick="toggleKwKeyword('${kw}','include')">Include</button>
         <button class="kw-btn-exc${isExc?' kw-btn-exc-active':''}" onclick="toggleKwKeyword('${kw}','exclude')">Exclude</button>
