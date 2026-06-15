@@ -604,7 +604,7 @@
       </div>
       <div class="kw-products-body">
         <div id="kw-products-grid" class="kw-products-grid">
-          <div class="kw-placeholder" style="grid-column:1/-1"><p>Include a keyword to see products</p></div>
+          <div class="kw-placeholder" style="grid-column:1/-1"><p>Loading…</p></div>
         </div>
       </div>
     </div>
@@ -1350,7 +1350,7 @@ async function loadKeywords() {
   } else { document.getElementById('kw-stat-top').textContent='—'; }
   checkKwClearBtn();
   renderKeywords();
-  if (kwIncluded.size > 0 || kwExcluded.size > 0) loadKwProducts();
+  loadKwProducts();
 }
 
 function checkKwClearBtn() {
@@ -1377,12 +1377,7 @@ function toggleKwKeyword(keyword, action) {
   }
   renderKwFilterChips();
   renderKeywords();
-  if (kwIncluded.size > 0 || kwExcluded.size > 0) loadKwProducts();
-  else {
-    document.getElementById('kw-result-meta-row').style.display='none';
-    document.getElementById('kw-products-grid').innerHTML=
-      '<div class="kw-placeholder" style="grid-column:1/-1"><p>Include a keyword to see products</p></div>';
-  }
+  loadKwProducts();
 }
 
 function renderKwFilterChips() {
