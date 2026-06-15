@@ -10,18 +10,17 @@ using the updated logic:
 Run from the mrd-tracker directory:
     python backfill_newlook_subcategories.py
 
-Prints a before/after summary and writes changes to the DB.
 Add --dry-run to preview without writing.
 """
 
 import sys
-import sqlite3
 import os
-
 sys.path.insert(0, os.path.dirname(__file__))
 
 from scrapers.newlook import NewLookScraper
+from config import DATABASE_PATH
 import database as db
+import sqlite3
 
 DRY_RUN = '--dry-run' in sys.argv
 
@@ -37,7 +36,6 @@ print(f'Found {len(products)} New Look products in DB\n')
 # ── Re-derive subcategories ───────────────────────────────────────────────────
 changes   = []
 unchanged = []
-no_better = []
 
 for p in products:
     url      = p.get('url', '')
@@ -62,8 +60,6 @@ for p in products:
             'old_sub': old_sub,
             'new_sub': new_sub,
         })
-    elif not new_sub and old_sub == 'shoes':
-        no_better.append(name)
     else:
         unchanged.append(name)
 
@@ -71,31 +67,22 @@ for p in products:
 print(f'=== Results {"(DRY RUN) " if DRY_RUN else ""}===')
 print(f'  Will update : {len(changes)}')
 print(f'  Unchanged   : {len(unchanged)}')
-print(f'  No improvement found (stays as-is): {len(no_better)}')
 
 if changes:
-    # Show sample of changes
     print(f'\nSample changes (first 20):')
     for c in changes[:20]:
-        print(f'  [{c["sku"]}] {c["name"][:60]:<60}  {repr(c["old_sub"])} → {repr(c["new_sub"])}')
+        print(f'  [{c["sku"]}] {c["name"][:55]:<55}  {repr(c["old_sub"])} → {repr(c["new_sub"])}')
     if len(changes) > 20:
         print(f'  … and {len(changes) - 20} more')
-
-if no_better:
-    print(f'\nProducts with no better subcategory than "shoes" (first 10):')
-    for n in no_better[:10]:
-        print(f'  {n}')
 
 # ── Write to DB ───────────────────────────────────────────────────────────────
 if not DRY_RUN and changes:
     print(f'\nWriting {len(changes)} updates to DB…')
-    conn = sqlite3.connect(db.DB_PATH)
+    conn = sqlite3.connect(DATABASE_PATH)
     c = conn.cursor()
     for row in changes:
-        c.execute(
-            'UPDATE products SET subcategory=? WHERE id=?',
-            (row['new_sub'], row['id'])
-        )
+        c.execute('UPDATE products SET subcategory=? WHERE id=?',
+                  (row['new_sub'], row['id']))
     conn.commit()
     conn.close()
     print('Done.')
