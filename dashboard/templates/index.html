@@ -598,6 +598,29 @@
           <div id="kw-chips-exc" class="kw-chips"><span class="kw-no-filter">None selected</span></div>
         </div>
       </div>
+      <div class="kw-attr-filters" id="kw-attr-filters" style="display:none;flex-wrap:wrap;gap:6px;padding:8px 0 4px">
+        <div class="kw-msd" id="kw-attr-colour">
+          <button class="kw-msd-btn" id="kw-attr-colour-btn" onclick="toggleAttr('colour',event)">
+            <span id="kw-attr-colour-label">Colour</span>
+            <span class="kw-msd-badge" id="kw-attr-colour-badge" style="display:none"></span>
+          </button>
+          <div class="kw-msd-panel" id="kw-attr-colour-panel" style="display:none;max-height:260px;overflow-y:auto"></div>
+        </div>
+        <div class="kw-msd" id="kw-attr-material">
+          <button class="kw-msd-btn" id="kw-attr-material-btn" onclick="toggleAttr('material',event)">
+            <span id="kw-attr-material-label">Material</span>
+            <span class="kw-msd-badge" id="kw-attr-material-badge" style="display:none"></span>
+          </button>
+          <div class="kw-msd-panel" id="kw-attr-material-panel" style="display:none;max-height:260px;overflow-y:auto"></div>
+        </div>
+        <div class="kw-msd" id="kw-attr-detail">
+          <button class="kw-msd-btn" id="kw-attr-detail-btn" onclick="toggleAttr('detail',event)">
+            <span id="kw-attr-detail-label">Detail</span>
+            <span class="kw-msd-badge" id="kw-attr-detail-badge" style="display:none"></span>
+          </button>
+          <div class="kw-msd-panel" id="kw-attr-detail-panel" style="display:none;max-height:260px;overflow-y:auto"></div>
+        </div>
+      </div>
       <div class="kw-result-meta-row" id="kw-result-meta-row" style="display:none">
         <span id="kw-result-meta"></span>
         <select id="kw-products-sort" onchange="renderKwProducts()" style="border:1.5px solid #e0e0e0;border-radius:24px;padding:4px 12px;font-size:10px;font-weight:700;color:#000;font-family:'Montserrat',sans-serif;appearance:none;-webkit-appearance:none;outline:none;background:#fff;cursor:pointer">
@@ -1461,6 +1484,157 @@ function kwSort(th) {
 
 let kwProducts = [];
 
+
+// ─── Smart attribute filters ────────────────────────────────────────────────
+const _KW_COLOUR_TERMS = new Set([
+  'black','white','grey','gray','cream','beige','ivory','nude','natural',
+  'stone','oatmeal','ecru','off white',
+  'brown','tan','camel','chocolate','cognac','chestnut','tobacco',
+  'pink','red','burgundy','wine','berry','blush','rose','coral','fuchsia',
+  'hot pink','pale pink','dusty pink','bright red','deep red','dark red','dark burgundy',
+  'navy','blue','teal','mint','green','khaki','olive','sage',
+  'royal blue','light blue','dark blue','army green','forest green',
+  'olive green','sage green','light green','mint green','dark khaki','light khaki',
+  'yellow','orange','mustard','rust','amber','copper',
+  'purple','lilac','lavender','mauve','violet',
+  'silver','gold','bronze','metallic','rose gold','gunmetal',
+  'leopard','zebra','snake','animal','floral','tropical','camo','camouflage',
+  'tortoiseshell','printed','print','animal print','leopard print','snake print',
+  'gingham','polka dot','striped','stripe','abstract','multicolour','multicolor','multi',
+  'clear','transparent','neon','pastel','mink',
+  'light grey','dark grey','light brown','dark brown','light pink','bright white','dark navy',
+]);
+const _KW_MATERIAL_TERMS = new Set([
+  'leather','suede','nubuck','patent',
+  'faux leather','faux suede','real leather','real suede',
+  'genuine leather','vegan leather','patent leather','faux patent','suedette','faux nubuck',
+  'canvas','denim','fabric','textile','woven','linen','cotton',
+  'jersey','knit','knitted','crochet','grosgrain','broderie anglaise','tapestry','corduroy',
+  'mesh','neoprene','rubber','synthetic','lycra','elastic',
+  'foam','eva','memory foam','plush','perspex',
+  'satin','velvet','silk','lace','sequin','glitter','shimmer',
+  'raffia','jute','cork','wood','wooden','macrame','seagrass','wicker','straw',
+  'fur','faux fur','fluffy','shearling','teddy','borg',
+  'faux snakeskin','snakeskin','croc','crocodile','faux croc',
+  'tulle',
+]);
+const _KW_DETAIL_TERMS = new Set([
+  'pointed toe','round toe','square toe','open toe','closed toe','almond toe',
+  'pointed','almond','peep toe',
+  'block heel','kitten heel','cone heel','stiletto','wedge heel',
+  'block','kitten','cone','platform','flatform','wedge',
+  'chunky','stacked','tapered','low heel','high heel','mid heel','heel',
+  'lace up','slip on','ankle strap','t bar','mary jane',
+  'buckle','velcro','zip','elasticated','crossover','strappy','slingback',
+  'strap','buckled','slip',
+  'ankle','knee high','thigh high','high top','low top',
+  'ballet','ballerina','court','espadrille','espadrilles',
+  'flat','heeled','mule','mules','dorsay','fisherman','vamp',
+  'platform sole','chunky sole','lug sole','cleated','ridged','gum sole','gum',
+  'bow','tassel','stud','studded','embellished','embroidered',
+  'quilted','perforated','cutout','cut out','fringed','fringe',
+  'chain','ring','crystal','rhinestone','hardware',
+  'beaded','ruched','knotted','twisted','twist','braided','embossed',
+  'scalloped','scallop','textured','panelled','lattice','eyelet',
+  'snaffle','horsebit','toggle','whipstitch','whipstitched',
+  'wide fit','extra wide','narrow',
+  'backless','caged','cage','gladiator','western','cowboy','chelsea',
+  'combat','hiking','running',
+  'open back','low cut','double strap','post','toe post',
+  'laser cut','lasercut','crossband','multistrap','sock',
+  'asymmetric','wrap','thong','flip flop','flip flops',
+]);
+
+const _KW_STOP = new Set(['a','an','the','and','or','in','on','with','for','to','of',
+  'at','by','from','up','as','is','it','its','be','are','was','were','has','have',
+  'had','do','does','did','but','not','no','so','if','this','that','these','those','s','amp']);
+
+function _kwTokenise(name) {
+  const text = name.toLowerCase().replace(/-/g,' ').replace(/'/g,'');
+  const raw  = (text.match(/[a-z]+/g)||[]).filter(w=>!_KW_STOP.has(w)&&w.length>2);
+  const toks = new Set(raw);
+  for (let i=0;i<raw.length-1;i++) toks.add(raw[i]+' '+raw[i+1]);
+  return {toks, full: text};
+}
+
+function _kwClassify(name) {
+  const {toks, full} = _kwTokenise(name);
+  const colours=[], materials=[], details=[];
+  for (const t of _KW_COLOUR_TERMS)   { if(t.includes(' ')?full.includes(t):toks.has(t)) colours.push(t); }
+  for (const t of _KW_MATERIAL_TERMS) { if(t.includes(' ')?full.includes(t):toks.has(t)) materials.push(t); }
+  for (const t of _KW_DETAIL_TERMS)   { if(t.includes(' ')?full.includes(t):toks.has(t)) details.push(t); }
+  return {colours, materials, details};
+}
+
+const kwAttr = { colour: new Set(), material: new Set(), detail: new Set() };
+const _attrKeys = ['colour','material','detail'];
+
+function toggleAttr(key, e) {
+  e && e.stopPropagation();
+  const panel = document.getElementById(`kw-attr-${key}-panel`);
+  const isOpen = panel.style.display !== 'none';
+  // close all attr panels + msd panels
+  _attrKeys.forEach(k => { document.getElementById(`kw-attr-${k}-panel`).style.display='none'; });
+  kwMsdKeys.forEach(k => { const p=document.getElementById(`msd-${k}-panel`); if(p) p.style.display='none'; });
+  if (!isOpen) panel.style.display = 'block';
+}
+
+document.addEventListener('click', () => {
+  _attrKeys.forEach(k => { const p=document.getElementById(`kw-attr-${k}-panel`); if(p) p.style.display='none'; });
+});
+
+function toggleAttrItem(key, value) {
+  if (kwAttr[key].has(value)) kwAttr[key].delete(value);
+  else kwAttr[key].add(value);
+  _updateAttrUi(key);
+  renderKwProducts();
+}
+
+function _updateAttrUi(key) {
+  const set    = kwAttr[key];
+  const badge  = document.getElementById(`kw-attr-${key}-badge`);
+  const btn    = document.getElementById(`kw-attr-${key}-btn`);
+  document.querySelectorAll(`[data-attr-key="${key}"]`).forEach(el => {
+    const val = el.dataset.attrVal;
+    el.classList.toggle('checked', set.has(val));
+  });
+  if (set.size) {
+    badge.textContent=set.size; badge.style.display='inline-block'; btn.classList.add('active');
+  } else {
+    badge.style.display='none'; btn.classList.remove('active');
+  }
+}
+
+function buildKwAttrFilters(products) {
+  const cMap={}, mMap={}, dMap={};
+  for (const p of products) {
+    if (!p._attrs) p._attrs = _kwClassify(p.name||'');
+    for (const c of p._attrs.colours)   cMap[c]=(cMap[c]||0)+1;
+    for (const m of p._attrs.materials) mMap[m]=(mMap[m]||0)+1;
+    for (const d of p._attrs.details)   dMap[d]=(dMap[d]||0)+1;
+  }
+  function toSorted(map) {
+    return Object.entries(map).sort((a,b)=>b[1]-a[1]||a[0].localeCompare(b[0]));
+  }
+  function renderPanel(panelId, key, entries) {
+    const panel = document.getElementById(panelId);
+    if (!entries.length) { panel.innerHTML='<div class="kw-msd-item" style="color:#aaa">None found</div>'; return; }
+    panel.innerHTML = entries.map(([term,cnt])=>`
+      <div class="kw-msd-item ${kwAttr[key].has(term)?'checked':''}"
+           data-attr-key="${key}" data-attr-val="${term}"
+           onclick="toggleAttrItem('${key}','${term.replace(/'/g,"\\'")}')">
+        <span class="kw-msd-check ${kwAttr[key].has(term)?'checked':''}"></span>
+        <span style="flex:1;text-transform:capitalize">${term}</span>
+        <span style="color:#aaa;font-size:9px;margin-left:4px">${cnt}</span>
+      </div>`).join('');
+  }
+  renderPanel('kw-attr-colour-panel',   'colour',   toSorted(cMap));
+  renderPanel('kw-attr-material-panel', 'material', toSorted(mMap));
+  renderPanel('kw-attr-detail-panel',   'detail',   toSorted(dMap));
+  const hasAny = Object.keys(cMap).length||Object.keys(mMap).length||Object.keys(dMap).length;
+  document.getElementById('kw-attr-filters').style.display = hasAny ? 'flex' : 'none';
+}
+
 async function loadKwProducts() {
   const grid=document.getElementById('kw-products-grid');
   grid.innerHTML='<div class="kw-placeholder" style="grid-column:1/-1"><p>Loading…</p></div>';
@@ -1472,10 +1646,19 @@ async function loadKwProducts() {
   if (kwMsd.subcategory.size)    params.set('subcategory', [...kwMsd.subcategory].join(','));
   const res=await fetch('/api/keywords/products?'+params);
   kwProducts=await res.json();
+  buildKwAttrFilters(kwProducts);
   const metaRow=document.getElementById('kw-result-meta-row');
   const metaEl=document.getElementById('kw-result-meta');
   metaRow.style.display='flex';
-  metaEl.textContent=`${kwProducts.length} product${kwProducts.length!==1?'s':''}`;
+  const _displayCount = kwProducts.filter(p => {
+    if (!p._attrs) p._attrs = _kwClassify(p.name||'');
+    const {colours,materials,details} = p._attrs;
+    if (kwAttr.colour.size   && !colours.some(c=>kwAttr.colour.has(c)))     return false;
+    if (kwAttr.material.size && !materials.some(m=>kwAttr.material.has(m))) return false;
+    if (kwAttr.detail.size   && !details.some(d=>kwAttr.detail.has(d)))     return false;
+    return true;
+  }).length;
+  metaEl.textContent=`${_displayCount} product${_displayCount!==1?'s':''}`;
   renderKwProducts();
 }
 
@@ -1486,7 +1669,16 @@ function renderKwProducts() {
     return;
   }
   const sortBy=(document.getElementById('kw-products-sort')||{}).value||'default';
-  const sorted=[...kwProducts].sort((a,b)=>{
+  // Apply smart attribute filters
+  const _attrFiltered = kwProducts.filter(p => {
+    if (!p._attrs) p._attrs = _kwClassify(p.name||'');
+    const {colours,materials,details} = p._attrs;
+    if (kwAttr.colour.size   && !colours.some(c=>kwAttr.colour.has(c)))     return false;
+    if (kwAttr.material.size && !materials.some(m=>kwAttr.material.has(m))) return false;
+    if (kwAttr.detail.size   && !details.some(d=>kwAttr.detail.has(d)))     return false;
+    return true;
+  });
+  const sorted=[..._attrFiltered].sort((a,b)=>{
     if (sortBy==='name')        return (a.name||'').localeCompare(b.name||'');
     if (sortBy==='score')       return (b.total_score||0)-(a.total_score||0);
     if (sortBy==='subcategory') {
@@ -1496,9 +1688,12 @@ function renderKwProducts() {
     }
     return (b.last_seen||'').localeCompare(a.last_seen||'');
   });
+  // Update product count in meta bar
+  const metaEl2=document.getElementById('kw-result-meta');
+  if(metaEl2) metaEl2.textContent=`${_attrFiltered.length} product${_attrFiltered.length!==1?'s':''}`;
   grid.innerHTML=sorted.map(p=>{
     const price=(p.latest_price!=null)?`£${p.latest_price.toFixed(2)}`:'';
-    const cat=normSub((p.subcategory||p.category||'').replace(/-/g,' '));
+    const cat=normSub((p.subcategory||'').replace(/-/g,' '));
     const imgH=p.image_url
       ?`<img src="/api/image/${p.id}" alt="${p.name}" loading="lazy" style="cursor:pointer"
             onclick="event.preventDefault();event.stopPropagation();showImageLightbox(this.src,this.alt)"
