@@ -235,27 +235,39 @@
     .kw-table th.kw-sort-desc .sort-icon::after { content: ' ▼'; opacity: 1; color: #ff0066; }
     .kw-table th:not(.kw-sort-asc):not(.kw-sort-desc) .sort-icon::after { content: ' ⇅'; }
     .kw-table td { padding: 10px 14px; border-bottom: 1px solid #f5f5f5; vertical-align: middle; }
-    .kw-table tbody tr { cursor: pointer; }
     .kw-table tbody tr:hover { background: #fafafa; }
-    .kw-table tbody tr.kw-active { background: #000; }
+    .kw-row-included td { background: #f0fdf4 !important; }
+    .kw-row-excluded  td { background: #fff5f5 !important; }
     .kw-word { font-size: 12px; font-weight: 600; color: #000; text-transform: capitalize; }
-    .kw-active .kw-word { color: #fff; }
     .kw-bar-wrap { display: flex; align-items: center; gap: 6px; }
     .kw-bar-bg   { flex: 1; height: 4px; background: #f0f0f0; border-radius: 2px; min-width: 50px; }
     .kw-bar-fill { height: 100%; border-radius: 2px; background: #ff0066; }
-    .kw-active .kw-bar-bg { background: #333; }
     .kw-count    { font-size: 11px; color: #aaa; min-width: 22px; text-align: right; font-weight: 600; }
-    .kw-active .kw-count { color: #666; }
     .kw-delta-up  { font-size: 10px; color: #00a651; font-weight: 700; white-space: nowrap; }
     .kw-delta-dn  { font-size: 10px; color: #ff0066; font-weight: 700; white-space: nowrap; }
     .kw-delta-new { font-size: 10px; color: #bbb; font-weight: 500; }
-    .kw-active .kw-delta-up { color: #4ecf7f; }
-    .kw-active .kw-delta-dn { color: #ff6699; }
+    .kw-btn-group { display: flex; gap: 4px; }
+    .kw-btn-inc, .kw-btn-exc { border: none; border-radius: 20px; padding: 4px 10px; font-size: 10px; font-weight: 700; letter-spacing: .5px; font-family: 'Montserrat', sans-serif; cursor: pointer; transition: background .1s; }
+    .kw-btn-inc { background: #e6f4ea; color: #2d6a3f; }
+    .kw-btn-inc:hover { background: #c8e6c9; }
+    .kw-btn-inc.active { background: #2d6a3f; color: #fff; }
+    .kw-btn-exc { background: #fdecea; color: #a32d2d; }
+    .kw-btn-exc:hover { background: #f9c5c5; }
+    .kw-btn-exc.active { background: #c0392b; color: #fff; }
     .kw-products-panel { display: flex; flex-direction: column; overflow: hidden; max-height: calc(100vh - 260px); }
-    .kw-products-header { display: flex; align-items: center; justify-content: space-between; border-bottom: 1px solid #f0f0f0; background: #fff; padding: 14px 16px 10px 16px; flex-shrink: 0; }
+    .kw-active-filters { padding: 12px 16px; border-bottom: 1px solid #f0f0f0; flex-shrink: 0; background: #fafafa; }
+    .kw-filter-row { display: flex; align-items: flex-start; gap: 10px; min-height: 26px; }
+    .kw-filter-row + .kw-filter-row { margin-top: 8px; }
+    .kw-filter-label { font-size: 9px; font-weight: 700; letter-spacing: 1.5px; text-transform: uppercase; color: #999; white-space: nowrap; padding-top: 4px; min-width: 46px; }
+    .kw-chips { display: flex; flex-wrap: wrap; gap: 5px; }
+    .kw-chip { display: inline-flex; align-items: center; gap: 5px; padding: 3px 10px; border-radius: 20px; font-size: 10px; font-weight: 700; font-family: 'Montserrat', sans-serif; letter-spacing: .3px; }
+    .kw-chip-inc { background: #2d6a3f; color: #fff; }
+    .kw-chip-exc { background: #c0392b; color: #fff; }
+    .kw-chip-x { cursor: pointer; opacity: .7; font-size: 13px; line-height: 1; }
+    .kw-chip-x:hover { opacity: 1; }
+    .kw-no-filter { font-size: 10px; color: #ccc; font-style: italic; padding-top: 3px; }
+    .kw-result-meta-row { display: flex; align-items: center; justify-content: space-between; padding: 8px 16px; border-bottom: 1px solid #f0f0f0; flex-shrink: 0; font-size: 11px; color: #888; }
     .kw-products-body { flex: 1; overflow-y: auto; padding: 16px; }
-    .kw-products-title  { font-size: 9px; font-weight: 700; letter-spacing: 2px; text-transform: uppercase; color: #bbb; }
-    .kw-products-count  { font-size: 9px; font-weight: 700; letter-spacing: 1px; text-transform: uppercase; padding: 3px 12px; border-radius: 24px; background: #ff0066; color: #fff; }
     .kw-products-grid   { display: grid; grid-template-columns: repeat(auto-fill,minmax(160px,1fr)); gap: 16px; }
     .kw-product-card    { display: flex; flex-direction: column; align-items: center; gap: 6px; text-decoration: none; }
     .kw-product-thumb   { width: 160px; height: 160px; border-radius: 2px; overflow: hidden; background: #f5f5f5; border: 1px solid #eee; }
@@ -539,31 +551,39 @@
         <thead>
           <tr>
             <th data-kwcol="keyword" onclick="kwSort(this)">Keyword<span class="sort-icon"></span></th>
-            <th data-kwcol="count" class="kw-sort-desc" onclick="kwSort(this)" style="width:45%">Frequency<span class="sort-icon"></span></th>
-            <th data-kwcol="delta" onclick="kwSort(this)" style="width:80px">Trend<span class="sort-icon"></span></th>
+            <th data-kwcol="count" class="kw-sort-desc" onclick="kwSort(this)" style="width:38%">Frequency<span class="sort-icon"></span></th>
+            <th data-kwcol="delta" onclick="kwSort(this)" style="width:60px">Trend<span class="sort-icon"></span></th>
+            <th style="width:170px;cursor:default" onclick="">Filter product listing</th>
           </tr>
         </thead>
         <tbody id="kw-table-body">
-          <tr><td colspan="3"><div class="empty-state" style="padding:40px 20px">Loading…</div></td></tr>
+          <tr><td colspan="4"><div class="empty-state" style="padding:40px 20px">Loading…</div></td></tr>
         </tbody>
       </table>
     </div>
     <div class="kw-products-panel">
-      <div class="kw-products-header">
-        <div class="kw-products-title" id="kw-panel-title">Product examples</div>
-        <div style="display:flex;align-items:center;gap:8px">
-          <span class="kw-products-count" id="kw-panel-count" style="display:none"></span>
-          <select id="kw-products-sort" onchange="renderKwProducts()" style="display:none;border:1.5px solid #e0e0e0;border-radius:24px;padding:4px 12px;font-size:10px;font-weight:700;color:#000;font-family:'Montserrat',sans-serif;appearance:none;-webkit-appearance:none;outline:none;background:#fff;cursor:pointer">
-            <option value="default">Recent first</option>
-            <option value="name">A–Z</option>
-            <option value="score">Top score</option>
-            <option value="subcategory">Subcategory</option>
-          </select>
+      <div class="kw-active-filters">
+        <div class="kw-filter-row">
+          <span class="kw-filter-label">Include</span>
+          <div id="kw-chips-inc" class="kw-chips"><span class="kw-no-filter">None selected</span></div>
         </div>
+        <div class="kw-filter-row">
+          <span class="kw-filter-label">Exclude</span>
+          <div id="kw-chips-exc" class="kw-chips"><span class="kw-no-filter">None selected</span></div>
+        </div>
+      </div>
+      <div class="kw-result-meta-row" id="kw-result-meta-row" style="display:none">
+        <span id="kw-result-meta"></span>
+        <select id="kw-products-sort" onchange="renderKwProducts()" style="border:1.5px solid #e0e0e0;border-radius:24px;padding:4px 12px;font-size:10px;font-weight:700;color:#000;font-family:'Montserrat',sans-serif;appearance:none;-webkit-appearance:none;outline:none;background:#fff;cursor:pointer">
+          <option value="default">Recent first</option>
+          <option value="name">A–Z</option>
+          <option value="score">Top score</option>
+          <option value="subcategory">Subcategory</option>
+        </select>
       </div>
       <div class="kw-products-body">
         <div id="kw-products-grid" class="kw-products-grid">
-          <div class="kw-placeholder" style="grid-column:1/-1"><p>Select a keyword</p></div>
+          <div class="kw-placeholder" style="grid-column:1/-1"><p>Include a keyword to see products</p></div>
         </div>
       </div>
     </div>
@@ -1238,7 +1258,8 @@ initMultiSelects([], []);
 // ═══════════════════════════════════════════════════
 // KEYWORDS TAB
 // ═══════════════════════════════════════════════════
-let allKeywords=[], kwMaxCount=1, kwSortCol='count', kwSortDir='desc', activeKeyword=null;
+let allKeywords=[], kwMaxCount=1, kwSortCol='count', kwSortDir='desc';
+let kwIncluded=new Set(), kwExcluded=new Set();
 
 async function loadKeywords() {
   const retailer    = document.getElementById('kw-filter-retailer').value;
@@ -1253,7 +1274,7 @@ async function loadKeywords() {
   if (subcategory) params.set('subcategory', subcategory);
   if (age)         params.set('max_age',     age);
   document.getElementById('kw-table-body').innerHTML =
-    '<tr><td colspan="3"><div class="empty-state" style="padding:40px 20px">Loading…</div></td></tr>';
+    '<tr><td colspan="4"><div class="empty-state" style="padding:40px 20px">Loading…</div></td></tr>';
   const res  = await fetch('/api/keywords?' + params);
   const data = await res.json();
   allKeywords = data.keywords || [];
@@ -1268,11 +1289,12 @@ async function loadKeywords() {
     document.getElementById('kw-stat-rising').textContent       = cap(data.fastest_rising.keyword);
     document.getElementById('kw-stat-rising-delta').textContent = `+${data.fastest_rising.delta}% vs prev period`;
   } else { document.getElementById('kw-stat-rising').textContent='—'; }
-  activeKeyword=null;
-  document.getElementById('kw-panel-title').textContent='Product examples';
-  document.getElementById('kw-panel-count').style.display='none';
+  // Reset include/exclude state when filters change
+  kwIncluded.clear(); kwExcluded.clear();
+  renderKwFilterChips();
+  document.getElementById('kw-result-meta-row').style.display='none';
   document.getElementById('kw-products-grid').innerHTML=
-    '<div class="kw-placeholder" style="grid-column:1/-1"><p>Select a keyword</p></div>';
+    '<div class="kw-placeholder" style="grid-column:1/-1"><p>Include a keyword to see products</p></div>';
   checkKwClearBtn();
   renderKeywords();
 }
@@ -1295,6 +1317,35 @@ function clearKwFilters() {
   loadKeywords();
 }
 
+function toggleKwKeyword(keyword, action) {
+  if (action === 'include') {
+    if (kwIncluded.has(keyword)) { kwIncluded.delete(keyword); }
+    else { kwIncluded.add(keyword); kwExcluded.delete(keyword); }
+  } else {
+    if (kwExcluded.has(keyword)) { kwExcluded.delete(keyword); }
+    else { kwExcluded.add(keyword); kwIncluded.delete(keyword); }
+  }
+  renderKwFilterChips();
+  renderKeywords();
+  if (kwIncluded.size > 0 || kwExcluded.size > 0) loadKwProducts();
+  else {
+    document.getElementById('kw-result-meta-row').style.display='none';
+    document.getElementById('kw-products-grid').innerHTML=
+      '<div class="kw-placeholder" style="grid-column:1/-1"><p>Include a keyword to see products</p></div>';
+  }
+}
+
+function renderKwFilterChips() {
+  const incEl = document.getElementById('kw-chips-inc');
+  const excEl = document.getElementById('kw-chips-exc');
+  incEl.innerHTML = kwIncluded.size
+    ? [...kwIncluded].map(k=>`<span class="kw-chip kw-chip-inc">${k}<span class="kw-chip-x" onclick="toggleKwKeyword('${k.replace(/'/g,"\\'")}','include')">×</span></span>`).join('')
+    : '<span class="kw-no-filter">None selected</span>';
+  excEl.innerHTML = kwExcluded.size
+    ? [...kwExcluded].map(k=>`<span class="kw-chip kw-chip-exc">${k}<span class="kw-chip-x" onclick="toggleKwKeyword('${k.replace(/'/g,"\\'")}','exclude')">×</span></span>`).join('')
+    : '<span class="kw-no-filter">None selected</span>';
+}
+
 function renderKeywords() {
   const search = document.getElementById('kw-search').value.toLowerCase();
   let data = allKeywords.filter(k => !search || k.keyword.includes(search));
@@ -1307,29 +1358,37 @@ function renderKeywords() {
   });
   const tbody = document.getElementById('kw-table-body');
   if (!data.length) {
-    tbody.innerHTML='<tr><td colspan="3"><div class="empty-state" style="padding:40px 20px">No keywords found.</div></td></tr>';
+    tbody.innerHTML='<tr><td colspan="4"><div class="empty-state" style="padding:40px 20px">No keywords found.</div></td></tr>';
     return;
   }
   tbody.innerHTML = data.map((k,i) => {
     const barPct = Math.round((k.count/kwMaxCount)*100);
-    const isAct  = activeKeyword===k.keyword;
+    const isInc  = kwIncluded.has(k.keyword);
+    const isExc  = kwExcluded.has(k.keyword);
+    const rowCls = isInc ? 'kw-row-included' : isExc ? 'kw-row-excluded' : '';
     const dHtml  = k.delta==null ? `<span class="kw-delta-new">new</span>`
       : k.delta>0 ? `<span class="kw-delta-up">+${k.delta}%</span>`
       : k.delta<0 ? `<span class="kw-delta-dn">${k.delta}%</span>`
       : `<span style="font-size:10px;color:#ccc">—</span>`;
-    return `<tr class="${isAct?'kw-active':''}" onclick="selectKeyword('${k.keyword.replace(/'/g,"\\'")}',${k.count})">
+    const kw = k.keyword.replace(/'/g,"\\'");
+    return `<tr class="${rowCls}">
       <td><span class="kw-word">${k.keyword}</span></td>
       <td><div class="kw-bar-wrap">
         <div class="kw-bar-bg"><div class="kw-bar-fill" style="width:${barPct}%"></div></div>
         <span class="kw-count">${k.count}</span>
       </div></td>
       <td>${dHtml}</td>
+      <td><div class="kw-btn-group">
+        <button class="kw-btn-inc${isInc?' kw-btn-inc-active':''}" onclick="toggleKwKeyword('${kw}','include')">Include</button>
+        <button class="kw-btn-exc${isExc?' kw-btn-exc-active':''}" onclick="toggleKwKeyword('${kw}','exclude')">Exclude</button>
+      </div></td>
     </tr>`;
   }).join('');
 }
 
 function kwSort(th) {
   const col=th.dataset.kwcol;
+  if (!col) return;
   if (kwSortCol===col) kwSortDir=kwSortDir==='asc'?'desc':'asc';
   else {kwSortCol=col; kwSortDir=col==='keyword'?'asc':'desc';}
   document.querySelectorAll('.kw-table th').forEach(h=>h.classList.remove('kw-sort-asc','kw-sort-desc'));
@@ -1339,30 +1398,29 @@ function kwSort(th) {
 
 let kwProducts = [];
 
-async function selectKeyword(keyword, count) {
-  activeKeyword=keyword;
-  renderKeywords();
-  document.getElementById('kw-panel-title').textContent=`"${cap(keyword)}"`;
-  const pill=document.getElementById('kw-panel-count');
-  pill.textContent=`${count} products`; pill.style.display='inline-block';
+async function loadKwProducts() {
   const grid=document.getElementById('kw-products-grid');
   grid.innerHTML='<div class="kw-placeholder" style="grid-column:1/-1"><p>Loading…</p></div>';
   const retailer=document.getElementById('kw-filter-retailer').value;
   const category=document.getElementById('kw-filter-category').value;
-  const params=new URLSearchParams({q:keyword});
+  const params=new URLSearchParams();
+  if (kwIncluded.size) params.set('include', [...kwIncluded].join(','));
+  if (kwExcluded.size) params.set('exclude', [...kwExcluded].join(','));
   if (retailer) params.set('retailer',retailer);
   if (category) params.set('category',category);
   const res=await fetch('/api/keywords/products?'+params);
   kwProducts=await res.json();
-  const sortEl=document.getElementById('kw-products-sort');
-  if (sortEl) sortEl.style.display=kwProducts.length?'':'none';
+  const metaRow=document.getElementById('kw-result-meta-row');
+  const metaEl=document.getElementById('kw-result-meta');
+  metaRow.style.display='flex';
+  metaEl.textContent=`${kwProducts.length} product${kwProducts.length!==1?'s':''}`;
   renderKwProducts();
 }
 
 function renderKwProducts() {
   const grid=document.getElementById('kw-products-grid');
   if (!kwProducts.length) {
-    grid.innerHTML='<div class="kw-placeholder" style="grid-column:1/-1"><p>No images available yet</p></div>';
+    grid.innerHTML='<div class="kw-placeholder" style="grid-column:1/-1"><p>No products match this filter</p></div>';
     return;
   }
   const sortBy=(document.getElementById('kw-products-sort')||{}).value||'default';
@@ -1647,86 +1705,4 @@ function renderSuccess() {
     return;
   }
 
-  list.innerHTML = vis.map(p => buildSuccessCard(p)).join('');
-}
-
-function buildSuccessCard(p) {
-  const traj     = TRAJ_STYLE[p.trajectory] || TRAJ_STYLE.mid_life_peak;
-  const trajLbl  = TRAJ_LABELS[p.trajectory] || '';
-  const sub      = normSub((p.subcategory || p.category || '').replace(/-/g, ' ')) || '—';
-  const cumFmt   = p.cumulative.toLocaleString();
-
-  const img = p.image_url
-    ? `<img src="/api/image/${p.id}" alt="${p.name}" loading="lazy" style="cursor:pointer"
-           onclick="showImageLightbox(this.src,this.alt)"
-           onerror="this.parentElement.innerHTML='<div style=\\'color:#ccc;font-size:48px;display:flex;align-items:center;justify-content:center;width:100%;height:100%\\'>&#128094;</div>'">`
-    : `<div style="color:#ccc;font-size:48px;display:flex;align-items:center;justify-content:center;width:100%;height:100%">&#128094;</div>`;
-
-  const tags = (p.signal_tags || [])
-    .filter(t => t !== 'Removed' && t !== 'Marked down')
-    .map(t => `<span class="tag ${TAG_CLASSES[t] || 'tag-markdown'}">${t}</span>`)
-    .join('');
-
-  const spark = buildSuccessSparkline(p.score_series || [], traj.stroke);
-
-  return `<div class="sc-card">
-    <div class="sc-img">${img}</div>
-    <div class="sc-info">
-      <a class="sc-product-name" href="${p.url}" target="_blank">${cap(p.name)}</a>
-      <div class="sc-product-meta">${sub}</div>
-      <div class="tags">${tags}</div>
-    </div>
-    <div class="sc-chart-col">
-      <div class="sc-scores-row">
-        <div>
-          <div class="sc-score-lbl">Peak score</div>
-          <div class="sc-score-num">${p.peak_score}</div>
-          <div class="sc-score-sub">Day ${p.peak_day} of ${p.days_tracked}</div>
-        </div>
-        <div style="text-align:right">
-          <div class="sc-score-lbl">Cumulative</div>
-          <div class="sc-score-num">${cumFmt}</div>
-          <div class="sc-score-sub">Over ${p.days_tracked} days</div>
-        </div>
-      </div>
-      <div class="sc-chart-head">
-        <span>4-day avg score</span>
-        <span class="sc-traj-badge" style="background:${traj.bg};color:${traj.color}">${trajLbl}</span>
-      </div>
-      <div style="flex:1;min-height:70px">${spark}</div>
-    </div>
-  </div>`;
-}
-
-function buildSuccessSparkline(series, strokeColor) {
-  if (!series || series.length < 2) return '<svg style="width:100%;height:70px"></svg>';
-  const raw      = series.map(s => s.score);
-  const smoothed = raw.map((_, i) => {
-    const slice = raw.slice(Math.max(0, i - 3), i + 1);
-    return slice.reduce((a, b) => a + b, 0) / slice.length;
-  });
-  const maxV = Math.max(...smoothed, 1);
-  const w = 280, h = 70;
-  const pts = smoothed.map((v, i) => {
-    const x = (i / (smoothed.length - 1)) * w;
-    const y = h - (v / maxV) * (h - 6) - 3;
-    return x.toFixed(1) + ',' + y.toFixed(1);
-  });
-  const polyPts = pts.join(' ');
-  const fillPts = '0,' + h + ' ' + polyPts + ' ' + w + ',' + h;
-  return `<svg viewBox="0 0 ${w} ${h}" style="width:100%;height:70px;display:block" preserveAspectRatio="none">
-    <polygon points="${fillPts}" fill="${strokeColor}" fill-opacity="0.07"/>
-    <polyline points="${polyPts}" fill="none" stroke="${strokeColor}" stroke-width="1.5" stroke-linejoin="round" stroke-linecap="round"/>
-  </svg>`;
-}
-
-
-_initDateBar();
-loadAll();
-</script>
-
-<div class="img-lb" id="img-lb" onclick="closeLightbox()">
-  <img id="img-lb-img" src="" alt="" onclick="event.stopPropagation()">
-</div>
-</body>
-</html>
+  list.innerHTML = vis.map(p => buildSuccessCard(p)).j
