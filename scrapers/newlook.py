@@ -215,9 +215,9 @@ class NewLookScraper(BaseScraper):
                 subcategory = self._style_from_category_prefix(
                         entry['url_path'], style_prefixes
                     )
-                if not subcategory:
+                if not subcategory or subcategory == 'shoes':
                     subcategory = self._subcategory_from_path(entry['url_path'])
-                if not subcategory:
+                if not subcategory or subcategory == 'shoes':
                     subcategory = self._style_from_name(entry['name'])
                 products.append({
                     'sku':             entry['sku'],
