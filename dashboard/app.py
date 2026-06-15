@@ -253,31 +253,20 @@ def api_keywords():
 
 @app.route('/api/keywords/products')
 def api_keyword_products():
-    include_raw = (request.args.get('include') or '').lower().strip()
-    exclude_raw = (request.args.get('exclude') or '').lower().strip()
-    # Legacy single-keyword support
-    single_q    = (request.args.get('q') or '').lower().strip()
-    retailer    = request.args.get('retailer') or None
-    category    = (request.args.get('category') or '').lower() or None
-    included = [k.strip() for k in include_raw.split(',') if k.strip()] if include_raw else []
-    excluded = [k.strip() for k in exclude_raw.split(',') if k.strip()] if exclude_raw else []
-    if single_q and not included:
-        included = [single_q]
-    if not included and not excluded:
+    keyword  = (request.args.get('q') or '').lower().strip()
+    retailer = request.args.get('retailer') or None
+    category = (request.args.get('category') or '').lower() or None
+    if not keyword:
         return jsonify([])
+    # Use get_top_products so each product includes total_score and latest_price
     products = db.get_top_products(limit=9999, days=30, retailer=retailer)
-    def matches(p):
-        name = (p.get('name') or '').lower()
-        if category and not (p.get('category') or '').lower().startswith(category):
-            return False
-        if included and not all(kw in name for kw in included):
-            return False
-        if excluded and any(kw in name for kw in excluded):
-            return False
-        return True
-    matching = [p for p in products if matches(p)]
+    matching = [
+        p for p in products
+        if keyword in (p.get('name') or '').lower()
+        and (not category or (p.get('category') or '').lower().startswith(category))
+    ]
     for p in matching:
-        p.pop('latest_raw_data', None)
+        p.pop('latest_raw_data', None)  # strip heavy field
     matching.sort(key=lambda p: p.get('last_seen') or '', reverse=True)
     return jsonify(matching)
 
@@ -448,4 +437,18 @@ def api_markdown():
         insights.append(f"{top_sub.title()} has the most removals ({top_n} products)")
     high_completed = [p for p in products if p['reason'] == 'completed_run' and p['peak_score'] > 50]
     if high_completed:
-        insights.append(f"{len(high_completed)} high-scoring sty
+        insights.append(f"{len(high_completed)} high-scoring style{'s' if len(high_completed) != 1 else ''} removed after strong performance — confirmed strong consumer demand")
+
+    return jsonify({
+        'summary':  {'total': total, 'poor_seller': poor, 'end_of_season': season, 'completed_run': completed},
+        'insights': insights,
+        'products': products,
+    })
+
+
+# ---------------------------------------------------------------------------
+# Run
+# ---------------------------------------------------------------------------
+
+if __name__ == '__main__':
+    app.run(host=DASHBOARD_HOST, port=DASHBOARD_PORT, debug=DASHBOARD_DEBUG)
