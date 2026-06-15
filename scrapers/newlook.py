@@ -218,7 +218,10 @@ class NewLookScraper(BaseScraper):
                 if not subcategory or subcategory == 'shoes':
                     subcategory = self._subcategory_from_path(entry['url_path'])
                 if not subcategory or subcategory == 'shoes':
-                    subcategory = self._style_from_name(entry['name'])
+                    if gender == 'men':
+                        subcategory = self._style_from_name_mens(entry['name'])
+                    else:
+                        subcategory = self._style_from_name(entry['name'])
                 products.append({
                     'sku':             entry['sku'],
                     'name':            entry['name'],
@@ -593,6 +596,41 @@ class NewLookScraper(BaseScraper):
             return 'flats'
         if any(t in n for t in ('mule', 'backless')):
             return 'mules'
+        if 'shoe' in n:
+            return 'shoes'
+        return None
+
+    @staticmethod
+    def _style_from_name_mens(name):
+        """
+        Detect footwear style from product name for men's products.
+        Returns a normalised style string or None.
+        """
+        if not name:
+            return None
+        n = name.lower()
+
+        # Boots — specific terms first
+        if any(t in n for t in ('knee high boot', 'chukka boot', 'desert boot',
+                                 'work boot', 'chelsea boot', 'biker boot',
+                                 'western boot', 'cowboy boot', 'ankle boot',
+                                 'lace up boot', 'lace-up boot')):
+            return 'boots'
+        if 'boot' in n:
+            return 'boots'
+        if any(t in n for t in ('trainer', 'sneaker', 'running shoe', 'athletic')):
+            return 'trainers'
+        if 'clog' in n:
+            return 'clogs'
+        if any(t in n for t in ('loafer', 'driving shoe', 'boat shoe', 'deck shoe',
+                                 'moccasin', 'brogue', 'oxford', 'derby', 'monk')):
+            return 'loafers and brogues'
+        if any(t in n for t in ('sandal', 'gladiator')):
+            return 'sandals'
+        if any(t in n for t in ('slider', 'flip flop', 'flip-flop', 'thong')):
+            return 'sandals, sliders and flip-flops'
+        if 'slipper' in n:
+            return 'slippers'
         if 'shoe' in n:
             return 'shoes'
         return None

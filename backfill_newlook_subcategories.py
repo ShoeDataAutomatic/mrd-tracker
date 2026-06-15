@@ -43,14 +43,19 @@ for p in products:
     old_sub  = p.get('subcategory') or ''
     url_path = url.replace('https://www.newlook.com', '')
 
+    gender = NewLookScraper._gender_from_path(url_path)
+
     # Method 1: category sitemap
     new_sub = NewLookScraper._style_from_category_prefix(url_path, style_prefixes)
     if not new_sub or new_sub == 'shoes':
         # Method 2: URL path
         new_sub = NewLookScraper._subcategory_from_path(url_path)
     if not new_sub or new_sub == 'shoes':
-        # Method 3: product name
-        new_sub = NewLookScraper._style_from_name(name)
+        # Method 3: product name (gender-aware)
+        if gender == 'men':
+            new_sub = NewLookScraper._style_from_name_mens(name)
+        else:
+            new_sub = NewLookScraper._style_from_name(name)
 
     if new_sub and new_sub != old_sub:
         changes.append({
