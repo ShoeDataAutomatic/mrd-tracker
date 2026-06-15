@@ -215,9 +215,14 @@ class NewLookScraper(BaseScraper):
                 subcategory = self._style_from_category_prefix(
                         entry['url_path'], style_prefixes
                     )
-                if not subcategory or subcategory == 'shoes':
+                # Normalise gender-prefixed top-level sitemap values
+                if subcategory and subcategory.endswith(' boots'):
+                    subcategory = 'boots'
+                _generic = {'shoes', 'mens shoes', 'womens shoes',
+                            'girls shoes', 'boys shoes'}
+                if not subcategory or subcategory in _generic:
                     subcategory = self._subcategory_from_path(entry['url_path'])
-                if not subcategory or subcategory == 'shoes':
+                if not subcategory or subcategory in _generic:
                     if gender == 'men':
                         subcategory = self._style_from_name_mens(entry['name'])
                     else:

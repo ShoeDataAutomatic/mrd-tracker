@@ -45,12 +45,17 @@ for p in products:
 
     gender = NewLookScraper._gender_from_path(url_path)
 
+    _generic = {'shoes', 'mens shoes', 'womens shoes', 'girls shoes', 'boys shoes'}
+
     # Method 1: category sitemap
     new_sub = NewLookScraper._style_from_category_prefix(url_path, style_prefixes)
-    if not new_sub or new_sub == 'shoes':
+    # Normalise gender-prefixed boot values e.g. 'mens boots' → 'boots'
+    if new_sub and new_sub.endswith(' boots'):
+        new_sub = 'boots'
+    if not new_sub or new_sub in _generic:
         # Method 2: URL path
         new_sub = NewLookScraper._subcategory_from_path(url_path)
-    if not new_sub or new_sub == 'shoes':
+    if not new_sub or new_sub in _generic:
         # Method 3: product name (gender-aware)
         if gender == 'men':
             new_sub = NewLookScraper._style_from_name_mens(name)
