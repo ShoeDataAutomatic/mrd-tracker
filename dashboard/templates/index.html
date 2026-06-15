@@ -929,10 +929,6 @@ function buildMultiSelect(key, containerId, options, searchable = false) {
       <div class="ms-dropdown" id="ms-dd-${key}">
         ${searchHtml}
         <div class="ms-dd-list" id="ms-list-${key}">${itemsHtml}</div>
-        <div class="ms-footer">
-          <button class="ms-btn clear" onclick="msClear('${key}')">Clear</button>
-          <button class="ms-btn apply" onclick="msClose('${key}')">Apply</button>
-        </div>
       </div>
     </div>`;
 }
@@ -968,6 +964,7 @@ function msToggleItem(key, val, el) {
   if (idx === -1) { msSelections[key].push(val); el.classList.add('checked'); el.querySelector('.ms-cb').textContent = '✓'; }
   else            { msSelections[key].splice(idx,1); el.classList.remove('checked'); el.querySelector('.ms-cb').textContent = ''; }
   msUpdateTrigger(key);
+  renderTable();
 }
 
 function msRemove(key, val, e) {
