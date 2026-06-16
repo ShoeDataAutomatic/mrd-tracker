@@ -567,12 +567,66 @@
     <div>
       <button id="kw-btn-clear" onclick="clearKwFilters()" style="display:none;background:#111;color:#fff;border:none;border-radius:24px;padding:5px 16px;font-size:10px;font-weight:700;letter-spacing:1px;text-transform:uppercase;font-family:'Montserrat',sans-serif;cursor:pointer">Clear filters</button>
     </div>
+    <div style="margin-left:auto">
+      <input type="text" id="kw-search" placeholder="Search keywords…" oninput="renderKeywords()">
+    </div>
   </div>
 
   <div class="kw-layout">
     <div class="kw-list-panel">
-      <div class="kw-list-controls">
-        <input type="text" id="kw-search" placeholder="Search keywords…" oninput="renderKeywords()">
+      <div class="kw-list-controls" id="kw-attr-filters" style="display:none;align-items:flex-start;gap:10px">
+        <span style="font-size:9px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:#aaa;padding-top:6px;white-space:nowrap">Show only:</span>
+        <div style="display:flex;flex-wrap:wrap;gap:6px">
+          <div class="kw-msd" id="kw-attr-colour">
+            <button class="kw-msd-btn" id="kw-attr-colour-btn" onclick="toggleAttr('colour',event)">
+              <span id="kw-attr-colour-label">Colour</span>
+              <span class="kw-msd-badge" id="kw-attr-colour-badge" style="display:none"></span>
+            </button>
+            <div class="kw-msd-panel" id="kw-attr-colour-panel" style="display:none;max-height:260px;overflow-y:auto"></div>
+          </div>
+          <div class="kw-msd" id="kw-attr-material">
+            <button class="kw-msd-btn" id="kw-attr-material-btn" onclick="toggleAttr('material',event)">
+              <span id="kw-attr-material-label">Material</span>
+              <span class="kw-msd-badge" id="kw-attr-material-badge" style="display:none"></span>
+            </button>
+            <div class="kw-msd-panel" id="kw-attr-material-panel" style="display:none;max-height:260px;overflow-y:auto"></div>
+          </div>
+          <div class="kw-msd" id="kw-attr-trim">
+            <button class="kw-msd-btn" id="kw-attr-trim-btn" onclick="toggleAttr('trim',event)">
+              <span id="kw-attr-trim-label">Trim</span>
+              <span class="kw-msd-badge" id="kw-attr-trim-badge" style="display:none"></span>
+            </button>
+            <div class="kw-msd-panel" id="kw-attr-trim-panel" style="display:none;max-height:260px;overflow-y:auto"></div>
+          </div>
+          <div class="kw-msd" id="kw-attr-pattern">
+            <button class="kw-msd-btn" id="kw-attr-pattern-btn" onclick="toggleAttr('pattern',event)">
+              <span id="kw-attr-pattern-label">Pattern</span>
+              <span class="kw-msd-badge" id="kw-attr-pattern-badge" style="display:none"></span>
+            </button>
+            <div class="kw-msd-panel" id="kw-attr-pattern-panel" style="display:none;max-height:260px;overflow-y:auto"></div>
+          </div>
+          <div class="kw-msd" id="kw-attr-type">
+            <button class="kw-msd-btn" id="kw-attr-type-btn" onclick="toggleAttr('type',event)">
+              <span id="kw-attr-type-label">Type</span>
+              <span class="kw-msd-badge" id="kw-attr-type-badge" style="display:none"></span>
+            </button>
+            <div class="kw-msd-panel" id="kw-attr-type-panel" style="display:none;max-height:260px;overflow-y:auto"></div>
+          </div>
+          <div class="kw-msd" id="kw-attr-fit">
+            <button class="kw-msd-btn" id="kw-attr-fit-btn" onclick="toggleAttr('fit',event)">
+              <span id="kw-attr-fit-label">Fit</span>
+              <span class="kw-msd-badge" id="kw-attr-fit-badge" style="display:none"></span>
+            </button>
+            <div class="kw-msd-panel" id="kw-attr-fit-panel" style="display:none;max-height:260px;overflow-y:auto"></div>
+          </div>
+          <div class="kw-msd" id="kw-attr-brand">
+            <button class="kw-msd-btn" id="kw-attr-brand-btn" onclick="toggleAttr('brand',event)">
+              <span id="kw-attr-brand-label">Brand</span>
+              <span class="kw-msd-badge" id="kw-attr-brand-badge" style="display:none"></span>
+            </button>
+            <div class="kw-msd-panel" id="kw-attr-brand-panel" style="display:none;max-height:260px;overflow-y:auto"></div>
+          </div>
+        </div>
       </div>
       <table class="kw-table">
         <thead>
@@ -596,29 +650,6 @@
         <div class="kw-filter-row">
           <span class="kw-filter-label">Exclude</span>
           <div id="kw-chips-exc" class="kw-chips"><span class="kw-no-filter">None selected</span></div>
-        </div>
-      </div>
-      <div class="kw-attr-filters" id="kw-attr-filters" style="display:none;flex-wrap:wrap;gap:6px;padding:8px 0 4px">
-        <div class="kw-msd" id="kw-attr-colour">
-          <button class="kw-msd-btn" id="kw-attr-colour-btn" onclick="toggleAttr('colour',event)">
-            <span id="kw-attr-colour-label">Colour</span>
-            <span class="kw-msd-badge" id="kw-attr-colour-badge" style="display:none"></span>
-          </button>
-          <div class="kw-msd-panel" id="kw-attr-colour-panel" style="display:none;max-height:260px;overflow-y:auto"></div>
-        </div>
-        <div class="kw-msd" id="kw-attr-material">
-          <button class="kw-msd-btn" id="kw-attr-material-btn" onclick="toggleAttr('material',event)">
-            <span id="kw-attr-material-label">Material</span>
-            <span class="kw-msd-badge" id="kw-attr-material-badge" style="display:none"></span>
-          </button>
-          <div class="kw-msd-panel" id="kw-attr-material-panel" style="display:none;max-height:260px;overflow-y:auto"></div>
-        </div>
-        <div class="kw-msd" id="kw-attr-detail">
-          <button class="kw-msd-btn" id="kw-attr-detail-btn" onclick="toggleAttr('detail',event)">
-            <span id="kw-attr-detail-label">Detail</span>
-            <span class="kw-msd-badge" id="kw-attr-detail-badge" style="display:none"></span>
-          </button>
-          <div class="kw-msd-panel" id="kw-attr-detail-panel" style="display:none;max-height:260px;overflow-y:auto"></div>
         </div>
       </div>
       <div class="kw-result-meta-row" id="kw-result-meta-row" style="display:none">
@@ -1485,64 +1516,60 @@ function kwSort(th) {
 let kwProducts = [];
 
 
-// ─── Smart attribute filters ────────────────────────────────────────────────
+// ─── Smart attribute filters ──────────────────────────────────────
 const _KW_COLOUR_TERMS = new Set([
-  'black','white','grey','gray','cream','beige','ivory','nude','natural',
-  'stone','oatmeal','ecru','off white',
-  'brown','tan','camel','chocolate','cognac','chestnut','tobacco',
-  'pink','red','burgundy','wine','berry','blush','rose','coral','fuchsia',
-  'hot pink','pale pink','dusty pink','bright red','deep red','dark red','dark burgundy',
-  'navy','blue','teal','mint','green','khaki','olive','sage',
-  'royal blue','light blue','dark blue','army green','forest green',
-  'olive green','sage green','light green','mint green','dark khaki','light khaki',
-  'yellow','orange','mustard','rust','amber','copper',
-  'purple','lilac','lavender','mauve','violet',
-  'silver','gold','bronze','metallic','rose gold','gunmetal',
-  'leopard','zebra','snake','animal','floral','tropical','camo','camouflage',
-  'tortoiseshell','printed','print','animal print','leopard print','snake print',
-  'gingham','polka dot','striped','stripe','abstract','multicolour','multicolor','multi',
-  'clear','transparent','neon','pastel','mink',
-  'light grey','dark grey','light brown','dark brown','light pink','bright white','dark navy',
+  'abstract', 'animal', 'beige', 'black', 'blue', 'bright', 'brown', 'burgundy',
+  'camel', 'chocolate', 'clear', 'colour', 'contrast', 'coral', 'cream', 'dark', 'dot',
+  'floral', 'gingham', 'gold', 'green', 'grey', 'gum', 'khaki', 'leopard', 'light',
+  'lilac', 'metallic', 'mink', 'mint', 'multi', 'multicolour', 'navy', 'nude',
+  'oatmeal', 'off', 'orange', 'pale', 'pink', 'polka', 'print', 'printed', 'red',
+  'rose', 'rust', 'seagrass', 'silver', 'snake', 'stone', 'stripe', 'striped', 'tan',
+  'tone', 'tortoiseshell', 'white', 'yellow'
 ]);
 const _KW_MATERIAL_TERMS = new Set([
-  'leather','suede','nubuck','patent',
-  'faux leather','faux suede','real leather','real suede',
-  'genuine leather','vegan leather','patent leather','faux patent','suedette','faux nubuck',
-  'canvas','denim','fabric','textile','woven','linen','cotton',
-  'jersey','knit','knitted','crochet','grosgrain','broderie anglaise','tapestry','corduroy',
-  'mesh','neoprene','rubber','synthetic','lycra','elastic',
-  'foam','eva','memory foam','plush','perspex',
-  'satin','velvet','silk','lace','sequin','glitter','shimmer',
-  'raffia','jute','cork','wood','wooden','macrame','seagrass','wicker','straw',
-  'fur','faux fur','fluffy','shearling','teddy','borg',
-  'faux snakeskin','snakeskin','croc','crocodile','faux croc',
-  'tulle',
+  'anglaise', 'borg', 'broderie', 'brushed', 'canvas', 'corduroy', 'cork', 'cotton',
+  'croc', 'crochet', 'crocodile', 'cut', 'denim', 'effect', 'embossed', 'fabric',
+  'faux', 'fluffy', 'foam', 'fur', 'glitter', 'grosgrain', 'interwoven', 'jersey',
+  'jute', 'knit', 'knitted', 'lace', 'laser', 'lasercut', 'lattice', 'leather', 'lined',
+  'linen', 'lizard', 'look', 'macrame', 'mesh', 'nubuck', 'out', 'patent', 'perspex',
+  'plush', 'premium', 'raffia', 'real', 'rubber', 'satin', 'scalloped', 'shimmer',
+  'snakeskin', 'soft', 'suede', 'suedette', 'tapestry', 'textured', 'tulle', 'velvet',
+  'weave', 'woven'
 ]);
-const _KW_DETAIL_TERMS = new Set([
-  'pointed toe','round toe','square toe','open toe','closed toe','almond toe',
-  'pointed','almond','peep toe',
-  'block heel','kitten heel','cone heel','stiletto','wedge heel',
-  'block','kitten','cone','platform','flatform','wedge',
-  'chunky','stacked','tapered','low heel','high heel','mid heel','heel',
-  'lace up','slip on','ankle strap','t bar','mary jane',
-  'buckle','velcro','zip','elasticated','crossover','strappy','slingback',
-  'strap','buckled','slip',
-  'ankle','knee high','thigh high','high top','low top',
-  'ballet','ballerina','court','espadrille','espadrilles',
-  'flat','heeled','mule','mules','dorsay','fisherman','vamp',
-  'platform sole','chunky sole','lug sole','cleated','ridged','gum sole','gum',
-  'bow','tassel','stud','studded','embellished','embroidered',
-  'quilted','perforated','cutout','cut out','fringed','fringe',
-  'chain','ring','crystal','rhinestone','hardware',
-  'beaded','ruched','knotted','twisted','twist','braided','embossed',
-  'scalloped','scallop','textured','panelled','lattice','eyelet',
-  'snaffle','horsebit','toggle','whipstitch','whipstitched',
-  'wide fit','extra wide','narrow',
-  'backless','caged','cage','gladiator','western','cowboy','chelsea',
-  'combat','hiking','running',
-  'open back','low cut','double strap','post','toe post',
-  'laser cut','lasercut','crossband','multistrap','sock',
-  'asymmetric','wrap','thong','flip flop','flip flops',
+const _KW_TRIM_TERMS = new Set([
+  'applique', 'backless', 'bar', 'beaded', 'block', 'bow', 'braided', 'buckle',
+  'buckled', 'chain', 'charm', 'charms', 'cowboy', 'crystal', 'cutout', 'diamant',
+  'diamante', 'dorsay', 'elasticated', 'embellished', 'embroidered', 'eyelet',
+  'fisherman', 'flower', 'fringe', 'fringed', 'gem', 'hardware', 'heart', 'hiking',
+  'horsebit', 'knot', 'knotted', 'metal', 'multistrap', 'pearl', 'plaited', 'quilted',
+  'ring', 'ruched', 'running', 'scallop', 'shell', 'snaffle', 'stacked', 'starfish',
+  'stitch', 'studded', 'tassel', 'tie', 'toggle', 'trim', 'twist', 'twisted',
+  'whipstitch', 'whipstitched', 'wrap', 'zip'
+]);
+const _KW_PATTERN_TERMS = new Set([
+  'almond', 'ankle', 'asymmetric', 'back', 'ballerina', 'ballet', 'barely', 'cage',
+  'caged', 'calf', 'chelsea', 'chunky', 'classic', 'closed', 'court', 'cross',
+  'crossband', 'crossover', 'derby', 'double', 'espadrille', 'espadrilles', 'fastening',
+  'flatform', 'footbed', 'gladiator', 'heeled', 'high', 'jane', 'jelly', 'kitten',
+  'knee', 'loop', 'low', 'mary', 'mid', 'moulded', 'mule', 'mules', 'open', 'over',
+  'panel', 'panelled', 'peep', 'penny', 'platform', 'point', 'pointed', 'pool', 'post',
+  'pull', 'pumps', 'riding', 'round', 'side', 'single', 'slim', 'sling', 'slingback',
+  'sock', 'square', 'stiletto', 'strap', 'strappy', 'tab', 'thong', 'toe', 'top',
+  'touch', 'vamp', 'wedge', 'wedges', 'western'
+]);
+const _KW_TYPE_TERMS = new Set([
+  'active', 'beach', 'boot', 'boots', 'canvas', 'clog', 'clogs', 'essential', 'flat',
+  'flats', 'flip', 'flops', 'football', 'formal', 'heel', 'heels', 'leisure', 'loafer',
+  'loafers', 'sandals', 'shoe', 'shoes', 'slider', 'sliders', 'slides', 'slipers',
+  'slippers', 'sneakers', 'sports', 'sporty', 'trainer', 'trainers', 'trekker'
+]);
+const _KW_FIT_TERMS = new Set([
+  'fit', 'wide'
+]);
+const _KW_BRAND_TERMS = new Set([
+  'cars', 'coleen', 'desire', 'disney', 'echevarr', 'edit', 'foamflex', 'ipanema',
+  'jack', 'jones', 'london', 'man', 'marvel', 'mickey', 'minnie', 'mouse', 'ora',
+  'paula', 'pixar', 'public', 'rebel', 'rita', 'south', 'spider', 'truffle'
 ]);
 
 const _KW_STOP = new Set(['a','an','the','and','or','in','on','with','for','to','of',
@@ -1558,16 +1585,20 @@ function _kwTokenise(name) {
 }
 
 function _kwClassify(name) {
-  const {toks, full} = _kwTokenise(name);
-  const colours=[], materials=[], details=[];
-  for (const t of _KW_COLOUR_TERMS)   { if(t.includes(' ')?full.includes(t):toks.has(t)) colours.push(t); }
-  for (const t of _KW_MATERIAL_TERMS) { if(t.includes(' ')?full.includes(t):toks.has(t)) materials.push(t); }
-  for (const t of _KW_DETAIL_TERMS)   { if(t.includes(' ')?full.includes(t):toks.has(t)) details.push(t); }
-  return {colours, materials, details};
+  const {toks} = _kwTokenise(name);
+  const colours=[], materials=[], trims=[], patterns=[], types=[], fits=[], brands=[];
+  for (const t of _KW_COLOUR_TERMS)   { if(toks.has(t)) colours.push(t); }
+  for (const t of _KW_MATERIAL_TERMS) { if(toks.has(t)) materials.push(t); }
+  for (const t of _KW_TRIM_TERMS)     { if(toks.has(t)) trims.push(t); }
+  for (const t of _KW_PATTERN_TERMS)  { if(toks.has(t)) patterns.push(t); }
+  for (const t of _KW_TYPE_TERMS)     { if(toks.has(t)) types.push(t); }
+  for (const t of _KW_FIT_TERMS)      { if(toks.has(t)) fits.push(t); }
+  for (const t of _KW_BRAND_TERMS)    { if(toks.has(t)) brands.push(t); }
+  return {colours, materials, trims, patterns, types, fits, brands};
 }
 
-const kwAttr = { colour: new Set(), material: new Set(), detail: new Set() };
-const _attrKeys = ['colour','material','detail'];
+const kwAttr = { colour: new Set(), material: new Set(), trim: new Set(), pattern: new Set(), type: new Set(), fit: new Set(), brand: new Set() };
+const _attrKeys = ['colour','material','trim','pattern','type','fit','brand'];
 
 function toggleAttr(key, e) {
   e && e.stopPropagation();
@@ -1606,12 +1637,16 @@ function _updateAttrUi(key) {
 }
 
 function buildKwAttrFilters(products) {
-  const cMap={}, mMap={}, dMap={};
+  const maps = { colour:{}, material:{}, trim:{}, pattern:{}, type:{}, fit:{}, brand:{} };
   for (const p of products) {
     if (!p._attrs) p._attrs = _kwClassify(p.name||'');
-    for (const c of p._attrs.colours)   cMap[c]=(cMap[c]||0)+1;
-    for (const m of p._attrs.materials) mMap[m]=(mMap[m]||0)+1;
-    for (const d of p._attrs.details)   dMap[d]=(dMap[d]||0)+1;
+    for (const c of p._attrs.colours)   maps.colour[c]=(maps.colour[c]||0)+1;
+    for (const m of p._attrs.materials) maps.material[m]=(maps.material[m]||0)+1;
+    for (const t of p._attrs.trims)     maps.trim[t]=(maps.trim[t]||0)+1;
+    for (const pa of p._attrs.patterns) maps.pattern[pa]=(maps.pattern[pa]||0)+1;
+    for (const ty of p._attrs.types)    maps.type[ty]=(maps.type[ty]||0)+1;
+    for (const f of p._attrs.fits)      maps.fit[f]=(maps.fit[f]||0)+1;
+    for (const b of p._attrs.brands)    maps.brand[b]=(maps.brand[b]||0)+1;
   }
   function toSorted(map) {
     return Object.entries(map).sort((a,b)=>b[1]-a[1]||a[0].localeCompare(b[0]));
@@ -1628,11 +1663,28 @@ function buildKwAttrFilters(products) {
         <span style="color:#aaa;font-size:9px;margin-left:4px">${cnt}</span>
       </div>`).join('');
   }
-  renderPanel('kw-attr-colour-panel',   'colour',   toSorted(cMap));
-  renderPanel('kw-attr-material-panel', 'material', toSorted(mMap));
-  renderPanel('kw-attr-detail-panel',   'detail',   toSorted(dMap));
-  const hasAny = Object.keys(cMap).length||Object.keys(mMap).length||Object.keys(dMap).length;
+  renderPanel('kw-attr-colour-panel',   'colour',   toSorted(maps.colour));
+  renderPanel('kw-attr-material-panel', 'material', toSorted(maps.material));
+  renderPanel('kw-attr-trim-panel',     'trim',     toSorted(maps.trim));
+  renderPanel('kw-attr-pattern-panel',  'pattern',  toSorted(maps.pattern));
+  renderPanel('kw-attr-type-panel',     'type',     toSorted(maps.type));
+  renderPanel('kw-attr-fit-panel',      'fit',      toSorted(maps.fit));
+  renderPanel('kw-attr-brand-panel',    'brand',    toSorted(maps.brand));
+  const hasAny = Object.values(maps).some(m => Object.keys(m).length);
   document.getElementById('kw-attr-filters').style.display = hasAny ? 'flex' : 'none';
+}
+
+function _kwAttrPredicate(p) {
+  if (!p._attrs) p._attrs = _kwClassify(p.name||'');
+  const {colours,materials,trims,patterns,types,fits,brands} = p._attrs;
+  if (kwAttr.colour.size   && !colours.some(c=>kwAttr.colour.has(c)))     return false;
+  if (kwAttr.material.size && !materials.some(m=>kwAttr.material.has(m))) return false;
+  if (kwAttr.trim.size     && !trims.some(t=>kwAttr.trim.has(t)))         return false;
+  if (kwAttr.pattern.size  && !patterns.some(pa=>kwAttr.pattern.has(pa))) return false;
+  if (kwAttr.type.size     && !types.some(ty=>kwAttr.type.has(ty)))       return false;
+  if (kwAttr.fit.size      && !fits.some(f=>kwAttr.fit.has(f)))           return false;
+  if (kwAttr.brand.size    && !brands.some(b=>kwAttr.brand.has(b)))       return false;
+  return true;
 }
 
 async function loadKwProducts() {
@@ -1650,14 +1702,7 @@ async function loadKwProducts() {
   const metaRow=document.getElementById('kw-result-meta-row');
   const metaEl=document.getElementById('kw-result-meta');
   metaRow.style.display='flex';
-  const _displayCount = kwProducts.filter(p => {
-    if (!p._attrs) p._attrs = _kwClassify(p.name||'');
-    const {colours,materials,details} = p._attrs;
-    if (kwAttr.colour.size   && !colours.some(c=>kwAttr.colour.has(c)))     return false;
-    if (kwAttr.material.size && !materials.some(m=>kwAttr.material.has(m))) return false;
-    if (kwAttr.detail.size   && !details.some(d=>kwAttr.detail.has(d)))     return false;
-    return true;
-  }).length;
+  const _displayCount = kwProducts.filter(_kwAttrPredicate).length;
   metaEl.textContent=`${_displayCount} product${_displayCount!==1?'s':''}`;
   renderKwProducts();
 }
@@ -1670,14 +1715,7 @@ function renderKwProducts() {
   }
   const sortBy=(document.getElementById('kw-products-sort')||{}).value||'default';
   // Apply smart attribute filters
-  const _attrFiltered = kwProducts.filter(p => {
-    if (!p._attrs) p._attrs = _kwClassify(p.name||'');
-    const {colours,materials,details} = p._attrs;
-    if (kwAttr.colour.size   && !colours.some(c=>kwAttr.colour.has(c)))     return false;
-    if (kwAttr.material.size && !materials.some(m=>kwAttr.material.has(m))) return false;
-    if (kwAttr.detail.size   && !details.some(d=>kwAttr.detail.has(d)))     return false;
-    return true;
-  });
+  const _attrFiltered = kwProducts.filter(_kwAttrPredicate);
   const sorted=[..._attrFiltered].sort((a,b)=>{
     if (sortBy==='name')        return (a.name||'').localeCompare(b.name||'');
     if (sortBy==='score')       return (b.total_score||0)-(a.total_score||0);
