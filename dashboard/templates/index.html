@@ -338,20 +338,11 @@
     .sc-signal-bar { height: 6px; border-radius: 2px; }
 
     /* ── Keyword review queue ── */
-    .kw-review-btn { position: relative; background: #fff; color: #111; border: 1.5px solid #111; border-radius: 24px; padding: 5px 16px; font-size: 10px; font-weight: 700; letter-spacing: 1px; text-transform: uppercase; font-family: 'Montserrat', sans-serif; cursor: pointer; display: inline-flex; align-items: center; gap: 8px; }
-    .kw-review-btn:hover { background: #111; color: #fff; }
-    .kw-review-badge { background: #E8563A; color: #fff; border-radius: 12px; min-width: 18px; height: 18px; padding: 0 5px; font-size: 10px; font-weight: 700; display: inline-flex; align-items: center; justify-content: center; }
+    .kw-review-badge { background: #E8563A; color: #fff; border-radius: 12px; min-width: 18px; height: 18px; padding: 0 5px; font-size: 10px; font-weight: 700; display: inline-flex; align-items: center; justify-content: center; margin-left: 6px; }
     .kw-run-btn { background: #fff; color: #888; border: 1.5px solid #e0e0e0; border-radius: 24px; padding: 5px 16px; font-size: 10px; font-weight: 700; letter-spacing: 1px; text-transform: uppercase; font-family: 'Montserrat', sans-serif; cursor: pointer; }
     .kw-run-btn:hover { border-color: #aaa; color: #444; }
     .kw-run-btn:disabled { opacity: .5; cursor: default; }
-    .kw-modal-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.55); z-index: 9998; align-items: center; justify-content: center; }
-    .kw-modal-overlay.open { display: flex; }
-    .kw-modal { background: #fff; border-radius: 10px; width: 720px; max-width: 92vw; max-height: 86vh; display: flex; flex-direction: column; overflow: hidden; box-shadow: 0 12px 48px rgba(0,0,0,0.3); }
-    .kw-modal-head { padding: 18px 24px; border-bottom: 1px solid #eee; display: flex; align-items: center; justify-content: space-between; }
-    .kw-modal-head h3 { font-size: 14px; font-weight: 700; margin: 0; text-transform: uppercase; letter-spacing: 1px; }
-    .kw-modal-close { background: none; border: none; font-size: 20px; line-height: 1; cursor: pointer; color: #999; padding: 0 4px; }
-    .kw-modal-close:hover { color: #111; }
-    .kw-modal-body { padding: 8px 24px 20px; overflow-y: auto; flex: 1; }
+    .kw-review-page { max-width: 920px; }
     .kw-review-row { border-bottom: 1px solid #f0f0f0; padding: 14px 0; }
     .kw-review-row:last-child { border-bottom: none; }
     .kw-review-word { font-size: 13px; font-weight: 700; text-transform: capitalize; color: #000; }
@@ -384,6 +375,7 @@
   <button class="tab-btn" data-tab="keywords" onclick="switchTab('keywords')">Keyword analysis</button>
   <button class="tab-btn" data-tab="success" onclick="switchTab('success')">Success analysis</button>
   <button class="tab-btn" data-tab="markdown" onclick="switchTab('markdown')">Removed products</button>
+  <button class="tab-btn" data-tab="review" onclick="switchTab('review')">Review queue<span class="kw-review-badge" id="kw-review-badge" style="display:none">0</span></button>
 </div>
 
 <!-- ═══ UNIVERSAL DATE BAR ═══ -->
@@ -595,12 +587,6 @@
     <div>
       <button id="kw-btn-clear" onclick="clearKwFilters()" style="display:none;background:#111;color:#fff;border:none;border-radius:24px;padding:5px 16px;font-size:10px;font-weight:700;letter-spacing:1px;text-transform:uppercase;font-family:'Montserrat',sans-serif;cursor:pointer">Clear filters</button>
     </div>
-    <div>
-      <button id="kw-run-btn" class="kw-run-btn" onclick="runKeywordClassification()">Classify new keywords</button>
-    </div>
-    <div>
-      <button class="kw-review-btn" onclick="openReviewQueue()">Review queue<span class="kw-review-badge" id="kw-review-badge" style="display:none">0</span></button>
-    </div>
     <div style="margin-left:auto">
       <input type="text" id="kw-search" placeholder="Search keywords…" oninput="renderKeywords()">
     </div>
@@ -703,19 +689,18 @@
     </div>
   </div>
 
-  <div class="kw-modal-overlay" id="kw-review-overlay" onclick="if(event.target===this) closeReviewQueue()">
-    <div class="kw-modal">
-      <div class="kw-modal-head">
-        <h3>Keyword review queue</h3>
-        <button class="kw-modal-close" onclick="closeReviewQueue()">&times;</button>
-      </div>
-      <div class="kw-modal-body" id="kw-review-body">
-        <div class="empty-state" style="padding:40px 20px">Loading…</div>
-      </div>
-    </div>
-  </div>
-
 </div><!-- /tab-keywords -->
+
+<!-- ═══════════════════════ REVIEW QUEUE TAB ═══════════════════════ -->
+<div id="tab-review" style="display:none">
+  <div style="display:flex;align-items:center;justify-content:space-between;padding:20px 24px 0">
+    <div style="font-size:9px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:#bbb">New keywords awaiting classification review</div>
+    <button id="kw-run-btn" class="kw-run-btn" onclick="runKeywordClassification()">Classify new keywords</button>
+  </div>
+  <div class="kw-review-page" id="kw-review-body" style="padding:8px 24px 32px">
+    <div class="empty-state" style="padding:40px 20px">Loading…</div>
+  </div>
+</div><!-- /tab-review -->
 
 <!-- ═══════════════════════ REMOVED PRODUCTS TAB ═══════════════════════ -->
 <div id="tab-markdown" style="display:none">
@@ -1156,12 +1141,13 @@ function switchTab(name) {
   document.getElementById('tab-keywords').style.display = name === 'keywords' ? '' : 'none';
   document.getElementById('tab-success').style.display  = name === 'success'  ? '' : 'none';
   document.getElementById('tab-markdown').style.display = name === 'markdown' ? '' : 'none';
+  document.getElementById('tab-review').style.display   = name === 'review'   ? '' : 'none';
   document.querySelectorAll('.tab-btn').forEach(b =>
     b.classList.toggle('active', b.dataset.tab === name));
   if (name === 'keywords' && allKeywords.length === 0) loadKeywords();
-  if (name === 'keywords') loadReviewQueueBadge();
   if (name === 'markdown' && allMarkdown.length === 0) loadMarkdown();
   if (name === 'success'  && allSuccess.length  === 0) loadSuccess();
+  if (name === 'review') loadReviewQueueAndRender();
 }
 
 
@@ -1394,7 +1380,7 @@ function clearAllFilters() {
   renderTable();
 }
 
-function loadAll() { loadStats(); loadRankings(); }
+function loadAll() { loadStats(); loadRankings(); loadReviewQueueBadge(); }
 
 // Initialise with empty options — populated after data loads
 initMultiSelects([], []);
@@ -1577,15 +1563,6 @@ async function loadReviewQueueBadge() {
       badge.style.display = 'none';
     }
   } catch (e) { /* dashboard still works without the review queue */ }
-}
-
-function openReviewQueue() {
-  document.getElementById('kw-review-overlay').classList.add('open');
-  loadReviewQueueAndRender();
-}
-
-function closeReviewQueue() {
-  document.getElementById('kw-review-overlay').classList.remove('open');
 }
 
 async function loadReviewQueueAndRender() {
