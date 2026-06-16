@@ -496,6 +496,8 @@ def export_keyword_classifications():
     writer = csv.writer(output)
     writer.writerow(['Keyword', 'Count', 'Colour', 'Material', 'Detail'])
     for kw, cnt in sorted(all_tokens.items(), key=lambda x: -x[1]):
+        if ' ' in kw:          # skip bigrams — single words only, matches /api/keywords
+            continue
         c, m, d = _classify_name(kw)
         writer.writerow([kw, cnt, 'Y' if c else '', 'Y' if m else '', 'Y' if d else ''])
 
