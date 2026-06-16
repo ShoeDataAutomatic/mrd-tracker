@@ -296,13 +296,6 @@
     .kw-msd-check { width: 14px; height: 14px; border: 1.5px solid #ccc; border-radius: 3px; flex-shrink: 0; display: flex; align-items: center; justify-content: center; }
     .kw-msd-check.checked { background: #000; border-color: #000; }
     .kw-msd-check.checked::after { content: '✓'; color: #fff; font-size: 9px; font-weight: 700; }
-    .kw-class-panel { width: 280px; }
-    .kw-class-type-row { display: flex; flex-wrap: wrap; gap: 4px; padding: 10px 12px; border-bottom: 1px solid #eee; }
-    .kw-class-type-btn { border: 1.5px solid #e0e0e0; border-radius: 24px; padding: 4px 9px; font-size: 9px; font-weight: 700; letter-spacing: .5px; text-transform: uppercase; font-family: 'Montserrat', sans-serif; color: #888; background: #fff; cursor: pointer; white-space: nowrap; }
-    .kw-class-type-btn:hover { border-color: #aaa; color: #444; }
-    .kw-class-type-btn.active { background: #111; border-color: #111; color: #fff; }
-    .kw-class-type-btn.filtered:not(.active) { border-color: #E8563A; color: #E8563A; }
-    .kw-class-values { max-height: 240px; overflow-y: auto; }
 
     /* ── Date range bar ── */
     .date-bar { background: #fff; border-bottom: 1px solid #eee; padding: 8px 28px; display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
@@ -591,22 +584,19 @@
       </select>
     </div>
     <div class="kw-msd" id="msd-classification">
-      <button class="kw-msd-btn" id="msd-classification-btn" onclick="toggleClassPanel(event)">
+      <button class="kw-msd-btn" id="msd-classification-btn" onclick="toggleMsd('classification',event)">
         <span id="msd-classification-label">All classifications</span>
         <span class="kw-msd-badge" id="msd-classification-badge" style="display:none"></span>
         <i class="ti ti-chevron-down" style="font-size:11px;opacity:.5" aria-hidden="true"></i>
       </button>
-      <div class="kw-msd-panel kw-class-panel" id="msd-classification-panel" style="display:none">
-        <div class="kw-class-type-row">
-          <button class="kw-class-type-btn active" data-attr="colour" onclick="selectAttrType('colour',event)">Colour</button>
-          <button class="kw-class-type-btn" data-attr="material" onclick="selectAttrType('material',event)">Material</button>
-          <button class="kw-class-type-btn" data-attr="trim" onclick="selectAttrType('trim',event)">Trim</button>
-          <button class="kw-class-type-btn" data-attr="pattern" onclick="selectAttrType('pattern',event)">Pattern</button>
-          <button class="kw-class-type-btn" data-attr="type" onclick="selectAttrType('type',event)">Type</button>
-          <button class="kw-class-type-btn" data-attr="fit" onclick="selectAttrType('fit',event)">Fit</button>
-          <button class="kw-class-type-btn" data-attr="brand" onclick="selectAttrType('brand',event)">Brand</button>
-        </div>
-        <div class="kw-class-values" id="kw-class-values-panel"></div>
+      <div class="kw-msd-panel" id="msd-classification-panel" style="display:none">
+        <div class="kw-msd-item" onclick="toggleMsdItem('classification','colour')"><span class="kw-msd-check" id="msd-check-classification-colour"></span>Colour</div>
+        <div class="kw-msd-item" onclick="toggleMsdItem('classification','material')"><span class="kw-msd-check" id="msd-check-classification-material"></span>Material</div>
+        <div class="kw-msd-item" onclick="toggleMsdItem('classification','trim')"><span class="kw-msd-check" id="msd-check-classification-trim"></span>Trim</div>
+        <div class="kw-msd-item" onclick="toggleMsdItem('classification','pattern')"><span class="kw-msd-check" id="msd-check-classification-pattern"></span>Pattern</div>
+        <div class="kw-msd-item" onclick="toggleMsdItem('classification','type')"><span class="kw-msd-check" id="msd-check-classification-type"></span>Type</div>
+        <div class="kw-msd-item" onclick="toggleMsdItem('classification','fit')"><span class="kw-msd-check" id="msd-check-classification-fit"></span>Fit</div>
+        <div class="kw-msd-item" onclick="toggleMsdItem('classification','brand')"><span class="kw-msd-check" id="msd-check-classification-brand"></span>Brand</div>
       </div>
     </div>
     <div>
@@ -647,7 +637,7 @@
         <span id="kw-result-meta"></span>
         <div style="display:flex;align-items:center;gap:6px">
           <span style="font-size:10px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:#aaa">Sort by:</span>
-          <select id="kw-products-sort" onchange="renderKwProducts()" style="border:1.5px solid #e0e0e0;border-radius:24px;padding:4px 12px;font-size:10px;font-weight:700;color:#000;font-family:'Montserrat',sans-serif;appearance:none;-webkit-appearance:none;outline:none;background:#fff;cursor:pointer">
+          <select id="kw-products-sort" onchange="renderKwProducts()" style="border:1.5px solid #e0e0e0;border-radius:24px;padding:4px 12px;font-size:10px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:#888;font-family:'Montserrat',sans-serif;appearance:none;-webkit-appearance:none;outline:none;background:#fff;cursor:pointer">
             <option value="default">Recent first</option>
             <option value="name">A–Z</option>
             <option value="score">Top score</option>
@@ -1367,30 +1357,19 @@ let allKeywords=[], kwMaxCount=1, kwSortCol='count', kwSortDir='desc';
 let kwIncluded=new Set(), kwExcluded=new Set();
 
 // ── Multi-select dropdown state ──
-const kwMsd = { retailer: new Set(), category: new Set(), subcategory: new Set() };
-const kwMsdKeys = ['retailer','category','subcategory'];
+const kwMsd = { retailer: new Set(), category: new Set(), subcategory: new Set(), classification: new Set() };
+const kwMsdKeys = ['retailer','category','subcategory','classification'];
 
 function toggleMsd(key, e) {
   e && e.stopPropagation();
   const panel = document.getElementById(`msd-${key}-panel`);
   const isOpen = panel.style.display !== 'none';
   kwMsdKeys.forEach(k => { document.getElementById(`msd-${k}-panel`).style.display='none'; });
-  const cp = document.getElementById('msd-classification-panel'); if (cp) cp.style.display='none';
-  if (!isOpen) panel.style.display = 'block';
-}
-
-function toggleClassPanel(e) {
-  e && e.stopPropagation();
-  const panel = document.getElementById('msd-classification-panel');
-  const isOpen = panel.style.display !== 'none';
-  kwMsdKeys.forEach(k => { document.getElementById(`msd-${k}-panel`).style.display='none'; });
-  panel.style.display = 'none';
   if (!isOpen) panel.style.display = 'block';
 }
 
 document.addEventListener('click', () => {
   kwMsdKeys.forEach(k => { const p=document.getElementById(`msd-${k}-panel`); if(p) p.style.display='none'; });
-  const cp = document.getElementById('msd-classification-panel'); if (cp) cp.style.display='none';
 });
 
 function toggleMsdItem(key, value) {
@@ -1427,11 +1406,7 @@ function _kwParams() {
   if (categories.length) p.set('category',    categories.join(','));
   if (subcats.length)    p.set('subcategory', subcats.join(','));
   if (age)               p.set('max_age',     age);
-  _attrKeys.forEach(k => {
-    if (kwAttr[k].size) p.set(k === 'colour' ? 'colours' : k === 'material' ? 'materials' :
-      k === 'trim' ? 'trims' : k === 'pattern' ? 'patterns' : k === 'type' ? 'types' :
-      k === 'fit' ? 'fits' : 'brands', [...kwAttr[k]].join(','));
-  });
+  if (kwMsd.classification.size) p.set('class_types', [...kwMsd.classification].join(','));
   return p;
 }
 
@@ -1463,9 +1438,6 @@ function checkKwClearBtn() {
 function clearKwFilters() {
   kwMsdKeys.forEach(k => { kwMsd[k].clear(); _updateMsdUi(k); });
   document.getElementById('kw-filter-age').value = '';
-  _attrKeys.forEach(k => { kwAttr[k].clear(); _updateAttrUi(k); });
-  _updateClassificationPillUi();
-  _renderActiveAttrPanel();
   kwIncluded.clear();
   kwExcluded.clear();
   renderKwFilterChips();
@@ -1727,100 +1699,12 @@ function _kwClassify(name) {
   return {colours, materials, trims, patterns, types, fits, brands};
 }
 
-const kwAttr = { colour: new Set(), material: new Set(), trim: new Set(), pattern: new Set(), type: new Set(), fit: new Set(), brand: new Set() };
-const _attrKeys = ['colour','material','trim','pattern','type','fit','brand'];
-
-let kwAttrActiveType = 'colour';
-let kwAttrMaps = null;
-
-function selectAttrType(key, e) {
-  e && e.stopPropagation();
-  kwAttrActiveType = key;
-  document.querySelectorAll('.kw-class-type-btn').forEach(b => b.classList.toggle('active', b.dataset.attr === key));
-  _renderActiveAttrPanel();
-}
-
-function toggleAttrItem(key, value) {
-  _attrKeys.forEach(k => { if (k !== key) kwAttr[k].clear(); });
-  if (kwAttr[key].has(value)) kwAttr[key].delete(value);
-  else kwAttr[key].add(value);
-  _attrKeys.forEach(k => _updateAttrUi(k));
-  _updateClassificationPillUi();
-  _renderActiveAttrPanel();
-  renderKwProducts();
-  checkKwClearBtn();
-  loadKeywords();
-}
-
-function _updateAttrUi(key) {
-  const set = kwAttr[key];
-  document.querySelectorAll(`[data-attr-key="${key}"]`).forEach(el => {
-    const val = el.dataset.attrVal;
-    const checked = set.has(val);
-    el.classList.toggle('checked', checked);
-    const chk = el.querySelector('.kw-msd-check');
-    if (chk) chk.classList.toggle('checked', checked);
-  });
-}
-
-function _updateClassificationPillUi() {
-  const activeKey = _attrKeys.find(k => kwAttr[k].size > 0);
-  const badge = document.getElementById('msd-classification-badge');
-  const btn   = document.getElementById('msd-classification-btn');
-  const size  = activeKey ? kwAttr[activeKey].size : 0;
-  if (size) {
-    badge.textContent = size; badge.style.display = 'inline-block'; btn.classList.add('active');
-  } else {
-    badge.style.display = 'none'; btn.classList.remove('active');
-  }
-  document.querySelectorAll('.kw-class-type-btn').forEach(b => {
-    b.classList.toggle('filtered', b.dataset.attr === activeKey);
-  });
-}
-
-function _renderActiveAttrPanel() {
-  const panel = document.getElementById('kw-class-values-panel');
-  const key   = kwAttrActiveType;
-  const maps  = kwAttrMaps || { colour:{}, material:{}, trim:{}, pattern:{}, type:{}, fit:{}, brand:{} };
-  const entries = Object.entries(maps[key] || {}).sort((a,b)=>b[1]-a[1]||a[0].localeCompare(b[0]));
-  if (!entries.length) { panel.innerHTML = '<div class="kw-msd-item" style="color:#aaa">None found</div>'; return; }
-  panel.innerHTML = entries.map(([term,cnt]) => `
-    <div class="kw-msd-item ${kwAttr[key].has(term)?'checked':''}"
-         data-attr-key="${key}" data-attr-val="${term}"
-         onclick="toggleAttrItem('${key}','${term.replace(/'/g,"\\'")}')">
-      <span class="kw-msd-check ${kwAttr[key].has(term)?'checked':''}"></span>
-      <span style="flex:1;text-transform:capitalize">${term}</span>
-      <span style="color:#aaa;font-size:9px;margin-left:4px">${cnt}</span>
-    </div>`).join('');
-}
-
-function buildKwAttrFilters(products) {
-  const maps = { colour:{}, material:{}, trim:{}, pattern:{}, type:{}, fit:{}, brand:{} };
-  for (const p of products) {
-    if (!p._attrs) p._attrs = _kwClassify(p.name||'');
-    for (const c of p._attrs.colours)   maps.colour[c]=(maps.colour[c]||0)+1;
-    for (const m of p._attrs.materials) maps.material[m]=(maps.material[m]||0)+1;
-    for (const t of p._attrs.trims)     maps.trim[t]=(maps.trim[t]||0)+1;
-    for (const pa of p._attrs.patterns) maps.pattern[pa]=(maps.pattern[pa]||0)+1;
-    for (const ty of p._attrs.types)    maps.type[ty]=(maps.type[ty]||0)+1;
-    for (const f of p._attrs.fits)      maps.fit[f]=(maps.fit[f]||0)+1;
-    for (const b of p._attrs.brands)    maps.brand[b]=(maps.brand[b]||0)+1;
-  }
-  kwAttrMaps = maps;
-  _renderActiveAttrPanel();
-}
-
 function _kwAttrPredicate(p) {
+  if (!kwMsd.classification.size) return true;
   if (!p._attrs) p._attrs = _kwClassify(p.name||'');
   const {colours,materials,trims,patterns,types,fits,brands} = p._attrs;
-  if (kwAttr.colour.size   && !colours.some(c=>kwAttr.colour.has(c)))     return false;
-  if (kwAttr.material.size && !materials.some(m=>kwAttr.material.has(m))) return false;
-  if (kwAttr.trim.size     && !trims.some(t=>kwAttr.trim.has(t)))         return false;
-  if (kwAttr.pattern.size  && !patterns.some(pa=>kwAttr.pattern.has(pa))) return false;
-  if (kwAttr.type.size     && !types.some(ty=>kwAttr.type.has(ty)))       return false;
-  if (kwAttr.fit.size      && !fits.some(f=>kwAttr.fit.has(f)))           return false;
-  if (kwAttr.brand.size    && !brands.some(b=>kwAttr.brand.has(b)))       return false;
-  return true;
+  const buckets = { colour:colours, material:materials, trim:trims, pattern:patterns, type:types, fit:fits, brand:brands };
+  return [...kwMsd.classification].some(t => (buckets[t]||[]).length > 0);
 }
 
 async function loadKwProducts() {
@@ -1834,7 +1718,6 @@ async function loadKwProducts() {
   if (kwMsd.subcategory.size)    params.set('subcategory', [...kwMsd.subcategory].join(','));
   const res=await fetch('/api/keywords/products?'+params);
   kwProducts=await res.json();
-  buildKwAttrFilters(kwProducts);
   const metaRow=document.getElementById('kw-result-meta-row');
   const metaEl=document.getElementById('kw-result-meta');
   metaRow.style.display='flex';
