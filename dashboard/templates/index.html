@@ -65,6 +65,7 @@
       font-size: 11px; font-family: 'Montserrat', sans-serif; font-weight: 500;
       color: #444; outline: none; background: #fff; appearance: none; -webkit-appearance: none;
     }
+    .controls select { width: fit-content; }
     .controls select:focus, .controls input[type="text"]:focus { border-color: #999; }
     .btn-refresh {
       margin-left: auto; background: #E8563A; color: #fff; border: none;
@@ -227,14 +228,12 @@
     .empty-state p { margin-top: 8px; font-size: 12px; font-weight: 500; }
 
     /* ── Keywords tab ── */
-    .kw-layout { display: grid; grid-template-columns: minmax(0,55%) minmax(0,45%); background: #fff; border: 0.5px solid #e0e0e0; border-radius: 8px; overflow: hidden; margin: 0 28px 28px; }
+    .kw-layout { display: grid; grid-template-columns: minmax(0, min(55%, 560px)) minmax(0,1fr); background: #fff; border: 0.5px solid #e0e0e0; border-radius: 8px; overflow: hidden; margin: 0 28px 28px; }
     .kw-list-panel { border-right: 0.5px solid #eee; overflow-y: auto; max-height: calc(100vh - 260px); }
-    .kw-list-controls { padding: 10px 14px; border-bottom: 0.5px solid #eee; background: #f7f7f5; }
-    .kw-list-controls input { width: 100%; border: 1.5px solid #e0e0e0; border-radius: 24px; padding: 6px 14px; font-size: 11px; font-family: 'Montserrat', sans-serif; font-weight: 500; outline: none; background: #fff; }
-    .kw-list-controls input:focus { border-color: #000; }
     .kw-table { width: 100%; border-collapse: collapse; table-layout: fixed; }
     .kw-table th, .kw-table td { width: 33.33%; }
     .kw-table thead tr { background: #111; }
+    .kw-table thead th { position: sticky; top: 0; z-index: 5; background: #111; }
     .kw-table th { padding: 10px 14px; text-align: left; font-size: 9px; font-weight: 700; font-family: 'Montserrat', sans-serif; color: #fff; text-transform: uppercase; letter-spacing: 2px; cursor: pointer; user-select: none; border: none; }
     .kw-table th:hover { background: #222; }
     .kw-table th.kw-sort-asc  .sort-icon::after { content: ' ▲'; opacity: 1; color: #E8563A; }
@@ -286,7 +285,7 @@
     .kw-placeholder p { font-size: 10px; font-weight: 700; letter-spacing: 2px; text-transform: uppercase; }
     /* ── Multi-select dropdowns ── */
     .kw-msd { position: relative; display: inline-block; }
-    .kw-msd-btn { display: inline-flex; align-items: center; justify-content: center; gap: 6px; padding: 5px 12px; border: 1.5px solid #e0e0e0; border-radius: 24px; background: #fff; cursor: pointer; font-size: 10px; font-weight: 700; letter-spacing: 1px; text-transform: uppercase; font-family: 'Montserrat', sans-serif; color: #888; white-space: nowrap; transition: all .12s; }
+    .kw-msd-btn { display: inline-flex; align-items: center; justify-content: center; gap: 6px; padding: 5px 12px; border: 1.5px solid #e0e0e0; border-radius: 24px; background: #fff; cursor: pointer; font-size: 10px; font-weight: 700; letter-spacing: 1px; text-transform: uppercase; font-family: 'Montserrat', sans-serif; color: #888; white-space: nowrap; transition: all .12s; width: max-content; }
     .kw-msd-btn:hover { border-color: #aaa; color: #444; }
     .kw-msd-btn.active { background: #111; border-color: #111; color: #fff; }
     .kw-msd-badge { background: #E8563A; color: #fff; border-radius: 24px; font-size: 9px; font-weight: 700; padding: 0 5px; min-width: 16px; text-align: center; line-height: 16px; }
@@ -297,6 +296,13 @@
     .kw-msd-check { width: 14px; height: 14px; border: 1.5px solid #ccc; border-radius: 3px; flex-shrink: 0; display: flex; align-items: center; justify-content: center; }
     .kw-msd-check.checked { background: #000; border-color: #000; }
     .kw-msd-check.checked::after { content: '✓'; color: #fff; font-size: 9px; font-weight: 700; }
+    .kw-class-panel { width: 280px; }
+    .kw-class-type-row { display: flex; flex-wrap: wrap; gap: 4px; padding: 10px 12px; border-bottom: 1px solid #eee; }
+    .kw-class-type-btn { border: 1.5px solid #e0e0e0; border-radius: 24px; padding: 4px 9px; font-size: 9px; font-weight: 700; letter-spacing: .5px; text-transform: uppercase; font-family: 'Montserrat', sans-serif; color: #888; background: #fff; cursor: pointer; white-space: nowrap; }
+    .kw-class-type-btn:hover { border-color: #aaa; color: #444; }
+    .kw-class-type-btn.active { background: #111; border-color: #111; color: #fff; }
+    .kw-class-type-btn.filtered:not(.active) { border-color: #E8563A; color: #E8563A; }
+    .kw-class-values { max-height: 240px; overflow-y: auto; }
 
     /* ── Date range bar ── */
     .date-bar { background: #fff; border-bottom: 1px solid #eee; padding: 8px 28px; display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
@@ -575,7 +581,7 @@
       </div>
     </div>
     <div>
-      <select id="kw-filter-age" onchange="loadKeywords()" style="border:1.5px solid #e0e0e0;border-radius:24px;padding:5px 12px;font-size:10px;font-weight:700;letter-spacing:1px;text-transform:uppercase;font-family:'Montserrat',sans-serif;color:#888;background:#fff;appearance:none;-webkit-appearance:none;outline:none;cursor:pointer">
+      <select id="kw-filter-age" onchange="loadKeywords()" style="border:1.5px solid #e0e0e0;border-radius:24px;padding:5px 12px;font-size:10px;font-weight:700;letter-spacing:1px;text-transform:uppercase;font-family:'Montserrat',sans-serif;color:#888;background:#fff;appearance:none;-webkit-appearance:none;outline:none;cursor:pointer;width:fit-content">
         <option value="">Any age</option>
         <option value="14">Last 14 days</option>
         <option value="30">Last 30 days</option>
@@ -583,6 +589,25 @@
         <option value="90">Last 90 days</option>
         <option value="180">Last 180 days</option>
       </select>
+    </div>
+    <div class="kw-msd" id="msd-classification">
+      <button class="kw-msd-btn" id="msd-classification-btn" onclick="toggleClassPanel(event)">
+        <span id="msd-classification-label">Classification</span>
+        <span class="kw-msd-badge" id="msd-classification-badge" style="display:none"></span>
+        <i class="ti ti-chevron-down" style="font-size:11px;opacity:.5" aria-hidden="true"></i>
+      </button>
+      <div class="kw-msd-panel kw-class-panel" id="msd-classification-panel" style="display:none">
+        <div class="kw-class-type-row">
+          <button class="kw-class-type-btn active" data-attr="colour" onclick="selectAttrType('colour',event)">Colour</button>
+          <button class="kw-class-type-btn" data-attr="material" onclick="selectAttrType('material',event)">Material</button>
+          <button class="kw-class-type-btn" data-attr="trim" onclick="selectAttrType('trim',event)">Trim</button>
+          <button class="kw-class-type-btn" data-attr="pattern" onclick="selectAttrType('pattern',event)">Pattern</button>
+          <button class="kw-class-type-btn" data-attr="type" onclick="selectAttrType('type',event)">Type</button>
+          <button class="kw-class-type-btn" data-attr="fit" onclick="selectAttrType('fit',event)">Fit</button>
+          <button class="kw-class-type-btn" data-attr="brand" onclick="selectAttrType('brand',event)">Brand</button>
+        </div>
+        <div class="kw-class-values" id="kw-class-values-panel"></div>
+      </div>
     </div>
     <div>
       <button id="kw-btn-clear" onclick="clearKwFilters()" style="display:none;background:#111;color:#fff;border:none;border-radius:24px;padding:5px 16px;font-size:10px;font-weight:700;letter-spacing:1px;text-transform:uppercase;font-family:'Montserrat',sans-serif;cursor:pointer">Clear filters</button>
@@ -594,60 +619,6 @@
 
   <div class="kw-layout">
     <div class="kw-list-panel">
-      <div class="kw-list-controls" id="kw-attr-filters" style="display:none;align-items:flex-start;gap:10px">
-        <span style="font-size:9px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:#aaa;padding-top:6px;white-space:nowrap">Show only:</span>
-        <div style="display:flex;flex-wrap:wrap;gap:6px">
-          <div class="kw-msd" id="kw-attr-colour">
-            <button class="kw-msd-btn" id="kw-attr-colour-btn" onclick="toggleAttr('colour',event)">
-              <span id="kw-attr-colour-label">Colour</span>
-              <span class="kw-msd-badge" id="kw-attr-colour-badge" style="display:none"></span>
-            </button>
-            <div class="kw-msd-panel" id="kw-attr-colour-panel" style="display:none;max-height:260px;overflow-y:auto"></div>
-          </div>
-          <div class="kw-msd" id="kw-attr-material">
-            <button class="kw-msd-btn" id="kw-attr-material-btn" onclick="toggleAttr('material',event)">
-              <span id="kw-attr-material-label">Material</span>
-              <span class="kw-msd-badge" id="kw-attr-material-badge" style="display:none"></span>
-            </button>
-            <div class="kw-msd-panel" id="kw-attr-material-panel" style="display:none;max-height:260px;overflow-y:auto"></div>
-          </div>
-          <div class="kw-msd" id="kw-attr-trim">
-            <button class="kw-msd-btn" id="kw-attr-trim-btn" onclick="toggleAttr('trim',event)">
-              <span id="kw-attr-trim-label">Trim</span>
-              <span class="kw-msd-badge" id="kw-attr-trim-badge" style="display:none"></span>
-            </button>
-            <div class="kw-msd-panel" id="kw-attr-trim-panel" style="display:none;max-height:260px;overflow-y:auto"></div>
-          </div>
-          <div class="kw-msd" id="kw-attr-pattern">
-            <button class="kw-msd-btn" id="kw-attr-pattern-btn" onclick="toggleAttr('pattern',event)">
-              <span id="kw-attr-pattern-label">Pattern</span>
-              <span class="kw-msd-badge" id="kw-attr-pattern-badge" style="display:none"></span>
-            </button>
-            <div class="kw-msd-panel" id="kw-attr-pattern-panel" style="display:none;max-height:260px;overflow-y:auto"></div>
-          </div>
-          <div class="kw-msd" id="kw-attr-type">
-            <button class="kw-msd-btn" id="kw-attr-type-btn" onclick="toggleAttr('type',event)">
-              <span id="kw-attr-type-label">Type</span>
-              <span class="kw-msd-badge" id="kw-attr-type-badge" style="display:none"></span>
-            </button>
-            <div class="kw-msd-panel" id="kw-attr-type-panel" style="display:none;max-height:260px;overflow-y:auto"></div>
-          </div>
-          <div class="kw-msd" id="kw-attr-fit">
-            <button class="kw-msd-btn" id="kw-attr-fit-btn" onclick="toggleAttr('fit',event)">
-              <span id="kw-attr-fit-label">Fit</span>
-              <span class="kw-msd-badge" id="kw-attr-fit-badge" style="display:none"></span>
-            </button>
-            <div class="kw-msd-panel" id="kw-attr-fit-panel" style="display:none;max-height:260px;overflow-y:auto"></div>
-          </div>
-          <div class="kw-msd" id="kw-attr-brand">
-            <button class="kw-msd-btn" id="kw-attr-brand-btn" onclick="toggleAttr('brand',event)">
-              <span id="kw-attr-brand-label">Brand</span>
-              <span class="kw-msd-badge" id="kw-attr-brand-badge" style="display:none"></span>
-            </button>
-            <div class="kw-msd-panel" id="kw-attr-brand-panel" style="display:none;max-height:260px;overflow-y:auto"></div>
-          </div>
-        </div>
-      </div>
       <table class="kw-table">
         <thead>
           <tr>
@@ -1401,11 +1372,22 @@ function toggleMsd(key, e) {
   const panel = document.getElementById(`msd-${key}-panel`);
   const isOpen = panel.style.display !== 'none';
   kwMsdKeys.forEach(k => { document.getElementById(`msd-${k}-panel`).style.display='none'; });
+  const cp = document.getElementById('msd-classification-panel'); if (cp) cp.style.display='none';
+  if (!isOpen) panel.style.display = 'block';
+}
+
+function toggleClassPanel(e) {
+  e && e.stopPropagation();
+  const panel = document.getElementById('msd-classification-panel');
+  const isOpen = panel.style.display !== 'none';
+  kwMsdKeys.forEach(k => { document.getElementById(`msd-${k}-panel`).style.display='none'; });
+  panel.style.display = 'none';
   if (!isOpen) panel.style.display = 'block';
 }
 
 document.addEventListener('click', () => {
   kwMsdKeys.forEach(k => { const p=document.getElementById(`msd-${k}-panel`); if(p) p.style.display='none'; });
+  const cp = document.getElementById('msd-classification-panel'); if (cp) cp.style.display='none';
 });
 
 function toggleMsdItem(key, value) {
@@ -1465,7 +1447,8 @@ async function loadKeywords() {
 
 function checkKwClearBtn() {
   const age = document.getElementById('kw-filter-age').value;
-  const has = kwMsd.retailer.size || kwMsd.category.size || kwMsd.subcategory.size || age;
+  const hasAttr = _attrKeys.some(k => kwAttr[k].size > 0);
+  const has = kwMsd.retailer.size || kwMsd.category.size || kwMsd.subcategory.size || age || hasAttr;
   const btn = document.getElementById('kw-btn-clear');
   if (btn) btn.style.display = has ? 'inline-block' : 'none';
 }
@@ -1473,6 +1456,9 @@ function checkKwClearBtn() {
 function clearKwFilters() {
   kwMsdKeys.forEach(k => { kwMsd[k].clear(); _updateMsdUi(k); });
   document.getElementById('kw-filter-age').value = '';
+  _attrKeys.forEach(k => { kwAttr[k].clear(); _updateAttrUi(k); });
+  _updateClassificationPillUi();
+  _renderActiveAttrPanel();
   checkKwClearBtn();
   loadKeywords();
 }
@@ -1734,40 +1720,67 @@ function _kwClassify(name) {
 const kwAttr = { colour: new Set(), material: new Set(), trim: new Set(), pattern: new Set(), type: new Set(), fit: new Set(), brand: new Set() };
 const _attrKeys = ['colour','material','trim','pattern','type','fit','brand'];
 
-function toggleAttr(key, e) {
+let kwAttrActiveType = 'colour';
+let kwAttrMaps = null;
+
+function selectAttrType(key, e) {
   e && e.stopPropagation();
-  const panel = document.getElementById(`kw-attr-${key}-panel`);
-  const isOpen = panel.style.display !== 'none';
-  // close all attr panels + msd panels
-  _attrKeys.forEach(k => { document.getElementById(`kw-attr-${k}-panel`).style.display='none'; });
-  kwMsdKeys.forEach(k => { const p=document.getElementById(`msd-${k}-panel`); if(p) p.style.display='none'; });
-  if (!isOpen) panel.style.display = 'block';
+  kwAttrActiveType = key;
+  document.querySelectorAll('.kw-class-type-btn').forEach(b => b.classList.toggle('active', b.dataset.attr === key));
+  _renderActiveAttrPanel();
 }
 
-document.addEventListener('click', () => {
-  _attrKeys.forEach(k => { const p=document.getElementById(`kw-attr-${k}-panel`); if(p) p.style.display='none'; });
-});
-
 function toggleAttrItem(key, value) {
+  _attrKeys.forEach(k => { if (k !== key) kwAttr[k].clear(); });
   if (kwAttr[key].has(value)) kwAttr[key].delete(value);
   else kwAttr[key].add(value);
-  _updateAttrUi(key);
+  _attrKeys.forEach(k => _updateAttrUi(k));
+  _updateClassificationPillUi();
+  _renderActiveAttrPanel();
   renderKwProducts();
+  checkKwClearBtn();
 }
 
 function _updateAttrUi(key) {
-  const set    = kwAttr[key];
-  const badge  = document.getElementById(`kw-attr-${key}-badge`);
-  const btn    = document.getElementById(`kw-attr-${key}-btn`);
+  const set = kwAttr[key];
   document.querySelectorAll(`[data-attr-key="${key}"]`).forEach(el => {
     const val = el.dataset.attrVal;
-    el.classList.toggle('checked', set.has(val));
+    const checked = set.has(val);
+    el.classList.toggle('checked', checked);
+    const chk = el.querySelector('.kw-msd-check');
+    if (chk) chk.classList.toggle('checked', checked);
   });
-  if (set.size) {
-    badge.textContent=set.size; badge.style.display='inline-block'; btn.classList.add('active');
+}
+
+function _updateClassificationPillUi() {
+  const activeKey = _attrKeys.find(k => kwAttr[k].size > 0);
+  const badge = document.getElementById('msd-classification-badge');
+  const btn   = document.getElementById('msd-classification-btn');
+  const size  = activeKey ? kwAttr[activeKey].size : 0;
+  if (size) {
+    badge.textContent = size; badge.style.display = 'inline-block'; btn.classList.add('active');
   } else {
-    badge.style.display='none'; btn.classList.remove('active');
+    badge.style.display = 'none'; btn.classList.remove('active');
   }
+  document.querySelectorAll('.kw-class-type-btn').forEach(b => {
+    b.classList.toggle('filtered', b.dataset.attr === activeKey);
+  });
+}
+
+function _renderActiveAttrPanel() {
+  const panel = document.getElementById('kw-class-values-panel');
+  const key   = kwAttrActiveType;
+  const maps  = kwAttrMaps || { colour:{}, material:{}, trim:{}, pattern:{}, type:{}, fit:{}, brand:{} };
+  const entries = Object.entries(maps[key] || {}).sort((a,b)=>b[1]-a[1]||a[0].localeCompare(b[0]));
+  if (!entries.length) { panel.innerHTML = '<div class="kw-msd-item" style="color:#aaa">None found</div>'; return; }
+  panel.innerHTML = entries.map(([term,cnt]) => `
+    <div class="kw-msd-item ${kwAttr[key].has(term)?'checked':''}"
+         data-attr-key="${key}" data-attr-val="${term}"
+         onclick="toggleAttrItem('${key}','${term.replace(/'/g,"\\'")}')">
+      <span class="kw-msd-check ${kwAttr[key].has(term)?'checked':''}"></span>
+      <span style="flex:1;text-transform:capitalize">${term}</span>
+      <span style="color:#aaa;font-size:9px;margin-left:4px">${cnt}</span>
+    </div>`).join('');
 }
 
 function buildKwAttrFilters(products) {
@@ -1782,30 +1795,8 @@ function buildKwAttrFilters(products) {
     for (const f of p._attrs.fits)      maps.fit[f]=(maps.fit[f]||0)+1;
     for (const b of p._attrs.brands)    maps.brand[b]=(maps.brand[b]||0)+1;
   }
-  function toSorted(map) {
-    return Object.entries(map).sort((a,b)=>b[1]-a[1]||a[0].localeCompare(b[0]));
-  }
-  function renderPanel(panelId, key, entries) {
-    const panel = document.getElementById(panelId);
-    if (!entries.length) { panel.innerHTML='<div class="kw-msd-item" style="color:#aaa">None found</div>'; return; }
-    panel.innerHTML = entries.map(([term,cnt])=>`
-      <div class="kw-msd-item ${kwAttr[key].has(term)?'checked':''}"
-           data-attr-key="${key}" data-attr-val="${term}"
-           onclick="toggleAttrItem('${key}','${term.replace(/'/g,"\\'")}')">
-        <span class="kw-msd-check ${kwAttr[key].has(term)?'checked':''}"></span>
-        <span style="flex:1;text-transform:capitalize">${term}</span>
-        <span style="color:#aaa;font-size:9px;margin-left:4px">${cnt}</span>
-      </div>`).join('');
-  }
-  renderPanel('kw-attr-colour-panel',   'colour',   toSorted(maps.colour));
-  renderPanel('kw-attr-material-panel', 'material', toSorted(maps.material));
-  renderPanel('kw-attr-trim-panel',     'trim',     toSorted(maps.trim));
-  renderPanel('kw-attr-pattern-panel',  'pattern',  toSorted(maps.pattern));
-  renderPanel('kw-attr-type-panel',     'type',     toSorted(maps.type));
-  renderPanel('kw-attr-fit-panel',      'fit',      toSorted(maps.fit));
-  renderPanel('kw-attr-brand-panel',    'brand',    toSorted(maps.brand));
-  const hasAny = Object.values(maps).some(m => Object.keys(m).length);
-  document.getElementById('kw-attr-filters').style.display = hasAny ? 'flex' : 'none';
+  kwAttrMaps = maps;
+  _renderActiveAttrPanel();
 }
 
 function _kwAttrPredicate(p) {
