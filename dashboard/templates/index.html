@@ -592,7 +592,7 @@
     </div>
     <div class="kw-msd" id="msd-classification">
       <button class="kw-msd-btn" id="msd-classification-btn" onclick="toggleClassPanel(event)">
-        <span id="msd-classification-label">Classification</span>
+        <span id="msd-classification-label">All classifications</span>
         <span class="kw-msd-badge" id="msd-classification-badge" style="display:none"></span>
         <i class="ti ti-chevron-down" style="font-size:11px;opacity:.5" aria-hidden="true"></i>
       </button>
@@ -610,7 +610,7 @@
       </div>
     </div>
     <div>
-      <button id="kw-btn-clear" onclick="clearKwFilters()" style="display:none;background:#111;color:#fff;border:none;border-radius:24px;padding:5px 16px;font-size:10px;font-weight:700;letter-spacing:1px;text-transform:uppercase;font-family:'Montserrat',sans-serif;cursor:pointer">Clear filters</button>
+      <button id="kw-btn-clear" onclick="clearKwFilters()" style="background:#111;color:#fff;border:none;border-radius:24px;padding:5px 16px;font-size:10px;font-weight:700;letter-spacing:1px;text-transform:uppercase;font-family:'Montserrat',sans-serif;cursor:pointer">Clear filters</button>
     </div>
     <div style="margin-left:auto">
       <input type="text" id="kw-search" placeholder="Search keywords…" oninput="renderKeywords()">
@@ -624,7 +624,7 @@
           <tr>
             <th data-kwcol="keyword" onclick="kwSort(this)">Keyword<span class="sort-icon"></span></th>
             <th data-kwcol="count" class="kw-sort-desc" onclick="kwSort(this)">Frequency<span class="sort-icon"></span></th>
-            <th style="cursor:default">Filter product listing</th>
+            <th style="cursor:default">Filter products</th>
           </tr>
         </thead>
         <tbody id="kw-table-body">
@@ -1427,6 +1427,11 @@ function _kwParams() {
   if (categories.length) p.set('category',    categories.join(','));
   if (subcats.length)    p.set('subcategory', subcats.join(','));
   if (age)               p.set('max_age',     age);
+  _attrKeys.forEach(k => {
+    if (kwAttr[k].size) p.set(k === 'colour' ? 'colours' : k === 'material' ? 'materials' :
+      k === 'trim' ? 'trims' : k === 'pattern' ? 'patterns' : k === 'type' ? 'types' :
+      k === 'fit' ? 'fits' : 'brands', [...kwAttr[k]].join(','));
+  });
   return p;
 }
 
@@ -1449,11 +1454,10 @@ async function loadKeywords() {
 }
 
 function checkKwClearBtn() {
-  const age = document.getElementById('kw-filter-age').value;
-  const hasAttr = _attrKeys.some(k => kwAttr[k].size > 0);
-  const has = kwMsd.retailer.size || kwMsd.category.size || kwMsd.subcategory.size || age || hasAttr;
+  // 'Clear filters' is always visible now; this function is kept (and still
+  // called elsewhere) in case future logic needs to react to filter state.
   const btn = document.getElementById('kw-btn-clear');
-  if (btn) btn.style.display = has ? 'inline-block' : 'none';
+  if (btn) btn.style.display = 'inline-block';
 }
 
 function clearKwFilters() {
@@ -1462,6 +1466,9 @@ function clearKwFilters() {
   _attrKeys.forEach(k => { kwAttr[k].clear(); _updateAttrUi(k); });
   _updateClassificationPillUi();
   _renderActiveAttrPanel();
+  kwIncluded.clear();
+  kwExcluded.clear();
+  renderKwFilterChips();
   checkKwClearBtn();
   loadKeywords();
 }
@@ -1742,6 +1749,7 @@ function toggleAttrItem(key, value) {
   _renderActiveAttrPanel();
   renderKwProducts();
   checkKwClearBtn();
+  loadKeywords();
 }
 
 function _updateAttrUi(key) {

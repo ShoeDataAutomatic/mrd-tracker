@@ -340,6 +340,13 @@ def api_keywords():
     max_age     = request.args.get('max_age') or None
     start_date  = request.args.get('start_date') or None
     end_date    = request.args.get('end_date')   or None
+    colours_f   = _split((request.args.get('colours')   or '').lower())
+    materials_f = _split((request.args.get('materials') or '').lower())
+    trims_f     = _split((request.args.get('trims')     or '').lower())
+    patterns_f  = _split((request.args.get('patterns')  or '').lower())
+    types_f     = _split((request.args.get('types')     or '').lower())
+    fits_f      = _split((request.args.get('fits')      or '').lower())
+    brands_f    = _split((request.args.get('brands')    or '').lower())
 
     spans = {'week': 7, 'month': 30, 'quarter': 90}
     n     = spans.get(comparison, 30)
@@ -383,6 +390,15 @@ def api_keywords():
         last_seen = p.get('last_seen') or ''
         if not name:
             continue
+        if colours_f or materials_f or trims_f or patterns_f or types_f or fits_f or brands_f:
+            c, m, tr, pa, ty, fi, br = _classify_name(name.lower())
+            if colours_f   and not any(t in c  for t in colours_f):   continue
+            if materials_f and not any(t in m  for t in materials_f): continue
+            if trims_f     and not any(t in tr for t in trims_f):     continue
+            if patterns_f  and not any(t in pa for t in patterns_f):  continue
+            if types_f     and not any(t in ty for t in types_f):     continue
+            if fits_f      and not any(t in fi for t in fits_f):      continue
+            if brands_f    and not any(t in br for t in brands_f):    continue
         tokens    = _tokenise(name)
         last_date = last_seen[:10]   # normalise datetime -> date for comparison
         if curr_start <= last_date <= curr_end:
