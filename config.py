@@ -177,3 +177,15 @@ SHEETS = {
     'worksheet_name':   'Rankings',
     'top_n':            50,
 }
+
+# -----------------------------------------------------------------------------
+# Keyword classification (LLM)
+# -----------------------------------------------------------------------------
+# Used by dashboard/keyword_classifier.py to classify new product-name keywords
+# into Mitch's 7 categories after each scrape. Set ANTHROPIC_API_KEY as a
+# Railway environment variable. If unset, the dashboard and scraper still work
+# normally — new keywords simply won't be auto-classified until it's set.
+# -----------------------------------------------------------------------------
+
+ANTHROPIC_API_KEY = os.environ.get('ANTHROPIC_API_KEY', '')
+ANTHROPIC_MODEL    = os.environ.get('ANTHROPIC_MODEL', 'claude-sonnet-4-6')

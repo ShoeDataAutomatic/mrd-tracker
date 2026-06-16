@@ -95,9 +95,120 @@ def init_db():
     c.execute('CREATE INDEX IF NOT EXISTS idx_scores_date ON scores(scored_date)')
     c.execute('CREATE INDEX IF NOT EXISTS idx_snapshots_product ON snapshots(product_id)')
 
+    c.execute('''
+        CREATE TABLE IF NOT EXISTS keyword_classifications (
+            keyword     TEXT PRIMARY KEY,
+            colour      INTEGER DEFAULT 0,
+            material    INTEGER DEFAULT 0,
+            trim        INTEGER DEFAULT 0,
+            pattern     INTEGER DEFAULT 0,
+            type        INTEGER DEFAULT 0,
+            fit         INTEGER DEFAULT 0,
+            brand       INTEGER DEFAULT 0,
+            status      TEXT DEFAULT 'pending',   -- pending | approved | rejected
+            source      TEXT DEFAULT 'llm',       -- manual | llm
+            examples    TEXT,                     -- JSON list of example product names
+            created_at  TEXT NOT NULL,
+            reviewed_at TEXT
+        )
+    ''')
+    c.execute('CREATE INDEX IF NOT EXISTS idx_keyword_class_status ON keyword_classifications(status)')
+
     conn.commit()
     conn.close()
     print('[db] Initialised.')
+
+
+# ---------------------------------------------------------------------------
+# Keyword classifications (smart attribute filters on the Keyword Analysis page)
+# ---------------------------------------------------------------------------
+# Single source of truth for the 7-category keyword classification scheme
+# (Colour / Material / Trim / Pattern / Type / Fit / Brand). Rows start life
+# either as 'manual' (Mitch's original reviewed CSV, seeded once) or 'llm'
+# (auto-suggested after a scrape finds new keywords), and always start
+# 'pending' for LLM suggestions so they go through Mitch's review queue
+# before affecting the live dashboard filters.
+
+_KW_ATTR_COLS = ['colour', 'material', 'trim', 'pattern', 'type', 'fit', 'brand']
+
+
+def get_keyword_classifications(status=None):
+    """Return keyword_classifications rows (optionally filtered by status),
+    newest first. Each row's 'examples' field is parsed from JSON to a list."""
+    conn = get_connection()
+    c = conn.cursor()
+    if status:
+        c.execute('SELECT * FROM keyword_classifications WHERE status = ? ORDER BY created_at DESC', (status,))
+    else:
+        c.execute('SELECT * FROM keyword_classifications ORDER BY created_at DESC')
+    rows = [dict(r) for r in c.fetchall()]
+    conn.close()
+    for r in rows:
+        try:
+            r['examples'] = json.loads(r['examples'] or '[]')
+        except (TypeError, ValueError):
+            r['examples'] = []
+    return rows
+
+
+def get_known_keyword_set():
+    """All keywords that already have a row, regardless of status. Used to
+    detect genuinely new keywords after a scrape."""
+    conn = get_connection()
+    c = conn.cursor()
+    c.execute('SELECT keyword FROM keyword_classifications')
+    keywords = {r['keyword'] for r in c.fetchall()}
+    conn.close()
+    return keywords
+
+
+def add_keyword_classification(keyword, attrs, status='pending', source='llm', examples=None):
+    """
+    Insert a new keyword row if (and only if) it doesn't already exist.
+    Never overwrites an existing row — use review_keyword_classification()
+    to change the status/attrs of a keyword that's already in the table.
+    """
+    conn = get_connection()
+    c = conn.cursor()
+    now = datetime.utcnow().isoformat()
+    cols   = ', '.join(_KW_ATTR_COLS)
+    qmarks = ', '.join('?' * len(_KW_ATTR_COLS))
+    values = [1 if attrs.get(k) else 0 for k in _KW_ATTR_COLS]
+    c.execute(f'''
+        INSERT OR IGNORE INTO keyword_classifications
+            (keyword, {cols}, status, source, examples, created_at)
+        VALUES (?, {qmarks}, ?, ?, ?, ?)
+    ''', [keyword] + values + [status, source, json.dumps(examples or []), now])
+    conn.commit()
+    conn.close()
+
+
+def review_keyword_classification(keyword, decision, attrs=None):
+    """
+    Apply Mitch's review decision to a pending keyword.
+    decision: 'approved' or 'rejected'.
+    attrs: optional dict of {colour: bool, ...} to correct the suggested
+    categories before approving (if omitted, the existing values are kept).
+    """
+    conn = get_connection()
+    c = conn.cursor()
+    now = datetime.utcnow().isoformat()
+    if attrs:
+        set_cols = ', '.join(f'{k} = ?' for k in _KW_ATTR_COLS)
+        values   = [1 if attrs.get(k) else 0 for k in _KW_ATTR_COLS]
+        c.execute(f'''
+            UPDATE keyword_classifications
+            SET status = ?, reviewed_at = ?, {set_cols}
+            WHERE keyword = ?
+        ''', [decision, now] + values + [keyword])
+    else:
+        c.execute('''
+            UPDATE keyword_classifications
+            SET status = ?, reviewed_at = ?
+            WHERE keyword = ?
+        ''', (decision, now, keyword))
+    conn.commit()
+    conn.close()
 
 
 # ---------------------------------------------------------------------------

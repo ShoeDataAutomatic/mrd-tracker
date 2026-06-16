@@ -10,6 +10,8 @@ Usage:
   python run.py --dashboard      Start the web dashboard
   python run.py --discover       Print raw HTML for selector debugging
   python run.py --init           Initialise the database only
+  python run.py --classify-keywords   Classify any new product-name keywords now
+  python run.py --seed-keywords       One-off: load legacy keyword sets into the DB
 """
 
 import sys
@@ -149,6 +151,29 @@ def run_refresh_images(retailer=None):
     logger.info('=== Image URL refresh complete ===')
 
 
+def run_classify_keywords():
+    """Find new product-name keywords and classify them via the Claude API,
+    queuing suggestions in the dashboard's review queue. Safe to run repeatedly."""
+    from dashboard import keyword_classifier
+    import database as db
+    db.init_db()
+    logger.info('=== Keyword classification started ===')
+    result = keyword_classifier.run_keyword_classification_job()
+    logger.info(f"=== Keyword classification complete: {result.get('queued', 0)} "
+                f"of {result.get('new_keywords', 0)} new keyword(s) queued for review ===")
+
+
+def run_seed_keywords():
+    """One-off migration: load the legacy hardcoded keyword term sets into the
+    keyword_classifications table as approved/manual rows. Safe to re-run."""
+    from dashboard import keyword_classifier
+    import database as db
+    db.init_db()
+    logger.info('=== Seeding legacy keyword classifications ===')
+    count = keyword_classifier.seed_legacy_classifications()
+    logger.info(f'=== Seeded {count} legacy keyword classification(s) ===')
+
+
 def full_run():
     """Scrape, refresh images, score, send email digest, and sync sheets."""
     run_scrape()
@@ -184,6 +209,7 @@ def start_scheduler():
         logger.info('=== Daily job triggered ===')
         run_scrape()
         run_refresh_images()   # Refresh image URLs immediately after scrape
+        run_classify_keywords()   # Classify any new keywords via LLM, queued for review
         run_score()
         run_sheets()
 
@@ -218,6 +244,8 @@ if __name__ == '__main__':
     parser.add_argument('--discover',  nargs='?', const='primark', metavar='RETAILER',
                         help='Print raw HTML for selector debugging (default: primark)')
     parser.add_argument('--init',            action='store_true', help='Initialise the database only')
+    parser.add_argument('--classify-keywords', action='store_true', help='Classify any new product-name keywords now')
+    parser.add_argument('--seed-keywords',     action='store_true', help='One-off: load legacy keyword sets into the DB')
     args = parser.parse_args()
 
     if   args.init:                          import database as db; db.init_db()
@@ -228,4 +256,6 @@ if __name__ == '__main__':
     elif args.sheets:                        run_sheets()
     elif args.dashboard:                     run_dashboard()
     elif args.discover:                      run_discover(args.discover)
+    elif getattr(args, 'classify_keywords'): run_classify_keywords()
+    elif getattr(args, 'seed_keywords'):     run_seed_keywords()
     else:                                    start_scheduler()

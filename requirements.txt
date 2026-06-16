@@ -10,6 +10,9 @@ requests==2.32.3            # HTTP (used for simpler pages if playwright not nee
 # Web dashboard
 flask==3.0.3
 
+# Keyword classification (LLM)
+anthropic==0.39.0
+
 # Scheduler
 schedule==1.2.2
 

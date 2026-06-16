@@ -146,19 +146,58 @@ _BRAND_TERMS = frozenset([
 ])
 
 
+_KW_ATTR_KEYS = ['colour', 'material', 'trim', 'pattern', 'type', 'fit', 'brand']
+
+# In-memory cache of term sets, merged from the hardcoded sets above (the
+# original baseline) plus any keywords Mitch has approved via the review
+# queue (see /api/keyword-review/* routes below). Refreshed periodically so
+# newly-approved keywords show up in the live filters without a restart, but
+# without hitting the database on every single product classification.
+_term_cache = {'ts': 0, 'sets': None}
+_TERM_CACHE_TTL = 300   # seconds
+
+
+def _get_term_sets():
+    import time
+    now = time.time()
+    if _term_cache['sets'] is None or now - _term_cache['ts'] > _TERM_CACHE_TTL:
+        sets = {
+            'colour':   set(_COLOUR_TERMS),
+            'material': set(_MATERIAL_TERMS),
+            'trim':     set(_TRIM_TERMS),
+            'pattern':  set(_PATTERN_TERMS),
+            'type':     set(_TYPE_TERMS),
+            'fit':      set(_FIT_TERMS),
+            'brand':    set(_BRAND_TERMS),
+        }
+        try:
+            for row in db.get_keyword_classifications(status='approved'):
+                for key in _KW_ATTR_KEYS:
+                    if row.get(key):
+                        sets[key].add(row['keyword'])
+        except Exception:
+            pass   # DB unavailable — fall back to the hardcoded sets only
+        _term_cache['sets'] = sets
+        _term_cache['ts']   = now
+    return _term_cache['sets']
+
+
 def _classify_name(name):
     """Return (colours, materials, trims, patterns, types, fits, brands) -
-    sets of matching attribute terms found in a product name."""
+    sets of matching attribute terms found in a product name. Term sets are
+    the hardcoded baseline merged with any Mitch-approved additions from the
+    keyword review queue."""
     tokens = set(_tokenise(name))   # unigrams + bigrams, stop-words removed
+    term_sets = _get_term_sets()
     colours, materials, trims, patterns, types, fits, brands = (
         set(), set(), set(), set(), set(), set(), set()
     )
-    for terms, bucket in (
-        (_COLOUR_TERMS, colours), (_MATERIAL_TERMS, materials),
-        (_TRIM_TERMS, trims), (_PATTERN_TERMS, patterns),
-        (_TYPE_TERMS, types), (_FIT_TERMS, fits), (_BRAND_TERMS, brands),
+    for key, bucket in (
+        ('colour', colours), ('material', materials),
+        ('trim', trims), ('pattern', patterns),
+        ('type', types), ('fit', fits), ('brand', brands),
     ):
-        for t in terms:
+        for t in term_sets[key]:
             if t in tokens:
                 bucket.add(t)
     return colours, materials, trims, patterns, types, fits, brands
@@ -509,6 +548,41 @@ def export_keyword_classifications():
         mimetype='text/csv',
         headers={'Content-Disposition': 'attachment; filename="keyword_classifications.csv"'}
     )
+
+
+@app.route('/api/keyword-review/pending')
+def api_keyword_review_pending():
+    """List keywords the LLM has suggested classifications for, awaiting Mitch's review."""
+    rows = db.get_keyword_classifications(status='pending')
+    return jsonify(rows)
+
+
+@app.route('/api/keyword-review/decide', methods=['POST'])
+def api_keyword_review_decide():
+    """
+    Approve or reject a pending keyword suggestion.
+    Body: {"keyword": "glitter", "decision": "approved"|"rejected", "attrs": {"colour": false, ...}}
+    'attrs' is optional — only needed if Mitch corrected the suggested categories before approving.
+    """
+    data     = request.get_json(silent=True) or {}
+    keyword  = (data.get('keyword') or '').strip()
+    decision = (data.get('decision') or '').strip()
+    attrs    = data.get('attrs')
+    if not keyword or decision not in ('approved', 'rejected'):
+        return jsonify({'error': 'keyword and a valid decision (approved/rejected) are required'}), 400
+    db.review_keyword_classification(keyword, decision, attrs=attrs)
+    return jsonify({'ok': True})
+
+
+@app.route('/api/keyword-review/run-now', methods=['POST'])
+def api_keyword_review_run_now():
+    """Manually trigger the new-keyword classification job (normally runs after each scrape)."""
+    from dashboard import keyword_classifier
+    try:
+        result = keyword_classifier.run_keyword_classification_job()
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+    return jsonify(result)
 
 
 @app.route('/api/success')
