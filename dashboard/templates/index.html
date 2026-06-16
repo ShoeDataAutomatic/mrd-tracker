@@ -1394,6 +1394,14 @@ function _updateMsdUi(key) {
   } else {
     badge.style.display='none'; btn.classList.remove('active');
   }
+  if (key === 'classification') {
+    const label = document.getElementById('msd-classification-label');
+    if (label) {
+      label.textContent = set.size
+        ? [...set].map(v => v.charAt(0).toUpperCase() + v.slice(1)).join(', ')
+        : 'All classifications';
+    }
+  }
 }
 
 function _kwParams() {

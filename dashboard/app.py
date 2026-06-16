@@ -388,9 +388,13 @@ def api_keywords():
             c, m, tr, pa, ty, fi, br = _classify_name(name.lower())
             buckets = {'colour': c, 'material': m, 'trim': tr, 'pattern': pa,
                        'type': ty, 'fit': fi, 'brand': br}
-            if not any(buckets.get(t) for t in class_types):
+            tokens = set()
+            for t in class_types:
+                tokens |= buckets.get(t, set())
+            if not tokens:
                 continue
-        tokens    = _tokenise(name)
+        else:
+            tokens = _tokenise(name)
         last_date = last_seen[:10]   # normalise datetime -> date for comparison
         if curr_start <= last_date <= curr_end:
             curr_counter.update(tokens)
