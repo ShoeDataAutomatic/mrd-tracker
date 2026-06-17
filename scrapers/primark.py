@@ -297,6 +297,15 @@ class PrimarkScraper(BaseScraper):
         thumb       = item.get('thumb_image', '').strip()
         image_url   = f'{thumb}?w=600&fmt=auto' if thumb else None
 
+        # The PLP feed doesn't list a colour name field on the product itself, but
+        # the first (displayed) variant's sku_color holds the colour swatch shown
+        # on the card (e.g. "tan", "chocolate"). Fold it into the name so the
+        # keyword classifier (which only tokenises `name`) can pick it up.
+        variants = item.get('variants') or []
+        colour   = (variants[0].get('sku_color') or '').strip().lower() if variants else ''
+        title    = self.clean_text(item.get('title', 'Unknown'))
+        name     = f'{title} {colour.title()}' if colour else title
+
         # Use provided label, otherwise derive from category_path
         if not category_label:
             slug = category_path.split('/en-gb/c/')[-1].strip('/')
@@ -304,7 +313,7 @@ class PrimarkScraper(BaseScraper):
 
         return {
             'sku':             pid,
-            'name':            self.clean_text(item.get('title', 'Unknown')),
+            'name':            name,
             'url':             f'https://www.primark.com/en-gb/p/{url_slug}',
             'category':        category_label,
             'subcategory':     subcategory,
@@ -317,6 +326,7 @@ class PrimarkScraper(BaseScraper):
             'image_url':       image_url,
             'raw_data': {
                 'description': item.get('description'),
+                'colour':      colour or None,
                 'color_count': item.get('colorCount'),
                 'brand':       item.get('brand'),
                 'was_price':   was_price,
