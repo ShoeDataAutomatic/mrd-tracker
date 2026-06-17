@@ -86,8 +86,8 @@ def _tokenise(name):
 _COLOUR_TERMS = frozenset([
     'abstract', 'animal', 'beige', 'black', 'blue', 'bright', 'brown', 'burgundy',
     'camel', 'chocolate', 'clear', 'colour', 'contrast', 'coral', 'cream', 'dark',
-    'dot', 'floral', 'gingham', 'gold', 'green', 'grey', 'gum', 'khaki', 'leopard',
-    'light', 'lilac', 'metallic', 'mink', 'mint', 'multi', 'multicolour', 'navy',
+    'dot', 'ecru', 'floral', 'gingham', 'gold', 'green', 'grey', 'gum', 'khaki', 'leopard',
+    'light', 'lilac', 'metallic', 'mink', 'mint', 'multi', 'multicolour', 'natural', 'navy',
     'nude', 'oatmeal', 'off', 'orange', 'pale', 'pink', 'polka', 'print', 'printed',
     'red', 'rose', 'rust', 'seagrass', 'silver', 'snake', 'stone', 'stripe', 'striped',
     'tan', 'tone', 'tortoiseshell', 'white', 'yellow'
