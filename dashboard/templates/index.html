@@ -354,6 +354,219 @@
     .kw-review-approve:hover { background: #333; }
     .kw-review-reject { background: #fff; color: #c33; border: 1.5px solid #e0c0c0; border-radius: 24px; padding: 5px 16px; font-size: 10px; font-weight: 700; letter-spacing: 1px; text-transform: uppercase; font-family: 'Montserrat', sans-serif; cursor: pointer; }
     .kw-review-reject:hover { background: #fdf0f0; }
+
+  /* ===== Mobile layout (Option 1: Card Feed + Bottom Sheet) ===== */
+  .bottom-nav, .mobile-fab, .mobile-sheet, .mobile-sheet-backdrop { display: none; }
+  .mobile-cards { display: none; }
+
+  @media (max-width: 760px) {
+    .tab-bar { display: none; }
+
+    .bottom-nav {
+      display: flex;
+      position: fixed;
+      left: 0; right: 0; bottom: 0;
+      height: 58px;
+      background: #fff;
+      border-top: 1px solid #e8e8e5;
+      z-index: 500;
+      padding-bottom: env(safe-area-inset-bottom, 0);
+    }
+    .bn-item {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 3px;
+      background: none;
+      border: none;
+      color: #999;
+      font-family: 'Montserrat', sans-serif;
+      font-size: 9px;
+      font-weight: 700;
+      letter-spacing: .3px;
+      text-transform: uppercase;
+      cursor: pointer;
+      position: relative;
+    }
+    .bn-item svg { width: 20px; height: 20px; }
+    .bn-item.active { color: #E8563A; }
+    .bn-badge {
+      position: absolute;
+      top: 2px; right: calc(50% - 18px);
+      background: #E8563A;
+      color: #fff;
+      border-radius: 10px;
+      min-width: 15px;
+      height: 15px;
+      padding: 0 4px;
+      font-size: 9px;
+      font-weight: 700;
+      display: none;
+      align-items: center;
+      justify-content: center;
+    }
+
+    body { padding-bottom: 70px; }
+
+    .date-bar, .controls { display: none; }
+
+    .mobile-fab {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      position: fixed;
+      right: 16px;
+      bottom: 74px;
+      z-index: 480;
+      background: #111;
+      color: #fff;
+      border: none;
+      border-radius: 24px;
+      padding: 12px 18px;
+      font-family: 'Montserrat', sans-serif;
+      font-size: 11px;
+      font-weight: 800;
+      letter-spacing: 1px;
+      text-transform: uppercase;
+      box-shadow: 0 4px 14px rgba(0,0,0,.25);
+      cursor: pointer;
+    }
+    .mobile-fab svg { width: 14px; height: 14px; }
+
+    .mobile-sheet-backdrop {
+      display: block;
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,0);
+      pointer-events: none;
+      transition: background .25s ease;
+      z-index: 600;
+    }
+    .mobile-sheet-backdrop.open { background: rgba(0,0,0,.4); pointer-events: auto; }
+
+    .mobile-sheet {
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+      position: fixed;
+      left: 0; right: 0; bottom: 0;
+      max-height: 82vh;
+      background: #fff;
+      border-radius: 18px 18px 0 0;
+      transform: translateY(100%);
+      transition: transform .28s ease;
+      z-index: 601;
+    }
+    .mobile-sheet.open { transform: translateY(0); }
+    .mobile-sheet-handle { width: 36px; height: 4px; background: #ddd; border-radius: 2px; margin: 10px auto 4px; flex: 0 0 auto; }
+    .mobile-sheet-head {
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 6px 18px 12px; border-bottom: 1px solid #f0f0f0; flex: 0 0 auto;
+    }
+    .mobile-sheet-head h3 { font-size: 13px; font-weight: 800; }
+    .mobile-sheet-done {
+      background: none; border: none; color: #E8563A; font-family: 'Montserrat', sans-serif;
+      font-size: 11px; font-weight: 800; letter-spacing: .5px; text-transform: uppercase; cursor: pointer;
+    }
+    .mobile-sheet-body {
+      padding: 14px 18px 28px;
+      overflow-y: auto;
+      flex: 1 1 auto;
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+    }
+    .mobile-sheet-body .date-bar,
+    .mobile-sheet-body .controls {
+      display: flex !important;
+      flex-direction: column;
+      align-items: stretch;
+      gap: 10px;
+      position: static;
+      width: 100%;
+    }
+    .mobile-sheet-body .ms-wrap { width: 100%; }
+    .mobile-sheet-body .ms-dropdown { position: static; box-shadow: none; border: 1px solid #eee; margin-top: 6px; }
+    .ms-field { display: flex; flex-direction: column; gap: 6px; }
+    .ms-field-label { font-size: 10px; font-weight: 800; letter-spacing: .5px; text-transform: uppercase; color: #888; }
+
+    .stats { display: flex; overflow-x: auto; gap: 10px; scroll-snap-type: x mandatory; padding-bottom: 4px; -webkit-overflow-scrolling: touch; }
+    .stats::-webkit-scrollbar { display: none; }
+    .stat-card { flex: 0 0 62%; scroll-snap-align: start; }
+
+    #tab-rankings .table-wrap table,
+    #tab-markdown .table-wrap table { display: none; }
+
+    .mobile-cards { display: flex; flex-direction: column; gap: 10px; }
+
+    .mc-card { background: #fff; border: 1px solid #ececea; border-radius: 14px; padding: 12px 14px; }
+    .mc-row { display: flex; align-items: center; gap: 10px; cursor: pointer; }
+    .mc-thumb { width: 46px; height: 46px; border-radius: 8px; object-fit: cover; flex: 0 0 auto; background: #f2f2ef; }
+    .mc-body { flex: 1 1 auto; min-width: 0; }
+    .mc-name { font-size: 12px; font-weight: 700; color: #111; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    .mc-meta { font-size: 10px; color: #999; margin-top: 2px; }
+    .mc-right { display: flex; flex-direction: column; align-items: flex-end; gap: 2px; flex: 0 0 auto; }
+    .mc-score { font-size: 13px; font-weight: 800; color: #E8563A; }
+    .mc-price { font-size: 10px; color: #666; }
+    .mc-chevron { width: 16px; height: 16px; color: #ccc; transition: transform .2s ease; flex: 0 0 auto; }
+    .mc-card.expanded .mc-chevron { transform: rotate(90deg); }
+    .mc-expand { display: none; grid-template-columns: 1fr 1fr; gap: 10px 14px; margin-top: 12px; padding-top: 12px; border-top: 1px solid #f2f2ef; }
+    .mc-card.expanded .mc-expand { display: grid; }
+    .mc-field-lbl { font-size: 9px; font-weight: 800; letter-spacing: .5px; text-transform: uppercase; color: #aaa; margin-bottom: 2px; }
+    .mc-field-val { font-size: 12px; color: #222; font-weight: 600; }
+
+    .sc-card { grid-template-columns: 1fr !important; }
+    .sc-signal-grid { grid-template-columns: 1fr !important; }
+
+    .kw-review-checks { gap: 14px; }
+    .kw-review-check-lbl { font-size: 11px; padding: 4px 0; }
+    .kw-review-actions { gap: 10px; }
+    .kw-review-approve, .kw-review-reject { padding: 8px 18px; font-size: 11px; }
+
+    .kw-layout { grid-template-columns: 1fr !important; }
+
+    .kw-mobile-back {
+      display: flex; align-items: center; gap: 6px; cursor: pointer;
+      font-size: 11px; font-weight: 800; letter-spacing: .5px; text-transform: uppercase; color: #666;
+      padding: 4px 0 12px;
+    }
+    .kw-mobile-back svg { width: 14px; height: 14px; }
+
+    .kw-products-panel {
+      position: fixed; top: 0; right: 0; bottom: 0; left: 0;
+      background: #f7f7f5;
+      transform: translateX(100%);
+      transition: transform .25s ease;
+      z-index: 550;
+      overflow-y: auto;
+      padding: 16px;
+    }
+    .kw-products-panel.open { transform: translateX(0); }
+
+    .kw-mobile-viewbar {
+      display: none;
+      position: fixed;
+      left: 50%;
+      bottom: 74px;
+      transform: translateX(-50%) translateY(8px);
+      opacity: 0;
+      transition: opacity .2s ease, transform .2s ease;
+      background: #111;
+      color: #fff;
+      border-radius: 24px;
+      padding: 11px 22px;
+      font-size: 11px;
+      font-weight: 800;
+      letter-spacing: .5px;
+      text-transform: uppercase;
+      z-index: 490;
+      cursor: pointer;
+      box-shadow: 0 4px 14px rgba(0,0,0,.25);
+    }
+    .kw-mobile-viewbar.show { display: block; opacity: 1; transform: translateX(-50%) translateY(0); }
+  }
   </style>
 </head>
 <body>
@@ -376,6 +589,37 @@
   <button class="tab-btn" data-tab="markdown" onclick="switchTab('markdown')">Removed products</button>
   <button class="tab-btn" data-tab="review" onclick="switchTab('review')">Review queue<span class="kw-review-badge" id="kw-review-badge" style="display:none">0</span></button>
 </div>
+
+<!-- ===== MOBILE BOTTOM NAV ===== -->
+<div class="bottom-nav">
+  <button class="bn-item active" data-tab="rankings" onclick="switchTab('rankings')">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 3v18h18"/><path d="M18 17V9"/><path d="M13 17V5"/><path d="M8 17v-3"/></svg>
+    <span>Rankings</span>
+  </button>
+  <button class="bn-item" data-tab="keywords" onclick="switchTab('keywords')">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20.59 13.41 11 4H4v7l9.59 9.59a2 2 0 0 0 2.82 0l4.18-4.18a2 2 0 0 0 0-2.82z"/><circle cx="7.5" cy="7.5" r="1" fill="currentColor"/></svg>
+    <span>Keywords</span>
+  </button>
+  <button class="bn-item" data-tab="success" onclick="switchTab('success')">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 12h-4l-3 9L9 3l-3 9H2"/></svg>
+    <span>Success</span>
+  </button>
+  <button class="bn-item" data-tab="markdown" onclick="switchTab('markdown')">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18"/><path d="M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/></svg>
+    <span>Removed</span>
+  </button>
+  <button class="bn-item" data-tab="review" onclick="switchTab('review')">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>
+    <span>Review</span>
+    <span class="bn-badge" id="bn-review-badge">0</span>
+  </button>
+</div>
+
+<!-- ===== MOBILE FILTERS FAB ===== -->
+<button class="mobile-fab" onclick="openMobileSheet()">
+  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="4" y1="6" x2="20" y2="6"/><line x1="8" y1="12" x2="16" y2="12"/><line x1="11" y1="18" x2="13" y2="18"/></svg>
+  <span>Filters</span>
+</button>
 
 <!-- ═══ UNIVERSAL DATE BAR ═══ -->
 <div class="date-bar">
@@ -502,6 +746,8 @@
     </div>
   </div>
 
+  <div class="mobile-cards" id="mobile-cards-rankings"></div>
+
 </div><!-- /tab-rankings -->
 
 <!-- ═══════════════════════ KEYWORDS TAB ═══════════════════════ -->
@@ -622,7 +868,11 @@
         </tbody>
       </table>
     </div>
-    <div class="kw-products-panel">
+    <div class="kw-products-panel" id="kw-products-panel">
+      <div class="kw-mobile-back" onclick="closeKwMobilePanel()">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"/></svg>
+        <span>Back to keywords</span>
+      </div>
       <div class="kw-active-filters">
         <div class="kw-filter-row">
           <span class="kw-filter-label">Include</span>
@@ -652,6 +902,8 @@
       </div>
     </div>
   </div>
+
+<div class="kw-mobile-viewbar" id="kw-mobile-viewbar" onclick="openKwMobilePanel()">View results</div>
 
 </div><!-- /tab-keywords -->
 
@@ -767,6 +1019,8 @@
       </table>
     </div>
   </div>
+
+  <div class="mobile-cards" id="mobile-cards-markdown"></div>
 
 </div><!-- /tab-markdown -->
 
@@ -1100,7 +1354,10 @@ document.addEventListener('click', e => {
 // ═══════════════════════════════════════════════════
 // TAB SWITCHING
 // ═══════════════════════════════════════════════════
+let currentTab = 'rankings';
+
 function switchTab(name) {
+  currentTab = name;
   document.getElementById('tab-rankings').style.display = name === 'rankings' ? '' : 'none';
   document.getElementById('tab-keywords').style.display = name === 'keywords' ? '' : 'none';
   document.getElementById('tab-success').style.display  = name === 'success'  ? '' : 'none';
@@ -1108,6 +1365,9 @@ function switchTab(name) {
   document.getElementById('tab-review').style.display   = name === 'review'   ? '' : 'none';
   document.querySelectorAll('.tab-btn').forEach(b =>
     b.classList.toggle('active', b.dataset.tab === name));
+  document.querySelectorAll('.bn-item').forEach(b =>
+    b.classList.toggle('active', b.dataset.tab === name));
+  if (name !== 'keywords') closeKwMobilePanel();
   if (name === 'keywords' && allKeywords.length === 0) loadKeywords();
   if (name === 'markdown' && allMarkdown.length === 0) loadMarkdown();
   if (name === 'success'  && allSuccess.length  === 0) loadSuccess();
@@ -1260,6 +1520,7 @@ function renderTable() {
       <p>The scraper hasn't run yet, or no data matches your filters.</p>
       <p style="margin-top:8px">Run <code>python run.py --scrape</code> to collect data.</p>
     </div></td></tr>`;
+    renderMobileCards(vis);
     return;
   }
 
@@ -1304,6 +1565,51 @@ function renderTable() {
       <td><div class="tags">${tags}</div></td>
       <td>${spark}</td>
     </tr>`;
+  }).join('');
+  renderMobileCards(vis);
+}
+
+function renderMobileCards(vis) {
+  const container = document.getElementById('mobile-cards-rankings');
+  if (!container) return;
+  if (!vis.length) {
+    container.innerHTML = `<div class="empty-state"><strong>No products found.</strong></div>`;
+    return;
+  }
+  container.innerHTML = vis.map((p) => {
+    const currPrice = p.latest_price != null ? `£${p.latest_price.toFixed(2)}` : '—';
+    const wasPrice  = p.was_price   != null ? `£${p.was_price.toFixed(2)}`    : null;
+    const price     = wasPrice
+      ? `<span style="text-decoration:line-through;color:#ccc;font-size:10px">${wasPrice}</span> ${currPrice}`
+      : currPrice;
+    const rank   = p.latest_rank   != null ? `#${p.latest_rank}` : '—';
+    const age    = p.days_tracked  != null ? `${p.days_tracked}d` : '—';
+    const catD   = (p.category   ||'').replace(/-/g,' ')||'—';
+    const subD   = normSub((p.subcategory||'').replace(/-/g,' '))||'—';
+    const tags   = (p.signal_tags||[]).map(t=>`<span class="tag ${TAG_CLASSES[t]||'tag-markdown'}">${t}</span>`).join('');
+    const spark  = buildSparkline(p.score_series||[]);
+    const img    = p.image_url ? `/api/image/${p.id}` : '';
+    return `<div class="mc-card" onclick="this.classList.toggle('expanded')">
+      <div class="mc-row">
+        ${img ? `<img class="mc-thumb" src="${img}" alt="${p.name}" loading="lazy">` : `<div class="mc-thumb"></div>`}
+        <div class="mc-body">
+          <div class="mc-name">${p.name}</div>
+          <div class="mc-meta">${p.retailer} · ${catD}</div>
+        </div>
+        <div class="mc-right">
+          <div class="mc-score">${p.total_score.toFixed(0)}</div>
+          <div class="mc-price">${price}</div>
+        </div>
+        <svg class="mc-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg>
+      </div>
+      <div class="mc-expand">
+        <div><div class="mc-field-lbl">Subcategory</div><div class="mc-field-val">${subD}</div></div>
+        <div><div class="mc-field-lbl">Page rank</div><div class="mc-field-val">${rank}</div></div>
+        <div><div class="mc-field-lbl">Age</div><div class="mc-field-val">${age}</div></div>
+        <div><div class="mc-field-lbl">Trend</div><div class="mc-field-val">${spark}</div></div>
+        <div style="grid-column:1/-1"><div class="mc-field-lbl">Signals</div><div class="tags">${tags || '—'}</div></div>
+      </div>
+    </div>`;
   }).join('');
 }
 
@@ -1475,6 +1781,23 @@ function renderKwFilterChips() {
   excEl.innerHTML = kwExcluded.size
     ? [...kwExcluded].map(k=>`<span class="kw-chip kw-chip-exc">${k}<span class="kw-chip-x" onclick="toggleKwKeyword('${k.replace(/'/g,"\\'")}','exclude')">×</span></span>`).join('')
     : '<span class="kw-no-filter">None selected</span>';
+
+  const totalSelected = kwIncluded.size + kwExcluded.size;
+  const viewbar = document.getElementById('kw-mobile-viewbar');
+  if (viewbar) {
+    viewbar.textContent = `View results (${totalSelected})`;
+    viewbar.classList.toggle('show', totalSelected > 0);
+  }
+}
+
+function openKwMobilePanel() {
+  const panel = document.getElementById('kw-products-panel');
+  if (panel) panel.classList.add('open');
+}
+
+function closeKwMobilePanel() {
+  const panel = document.getElementById('kw-products-panel');
+  if (panel) panel.classList.remove('open');
 }
 
 function renderKeywords() {
@@ -1881,6 +2204,7 @@ function renderMarkdown() {
       <strong>No removed products found.</strong>
       <p>Products with the Removed signal will appear here after the next scoring run.</p>
     </div></td></tr>`;
+    renderMdMobileCards(vis);
     return;
   }
 
@@ -1923,6 +2247,44 @@ function renderMarkdown() {
       <td>${spark}</td>
       <td style="white-space:nowrap">${confDots}<span style="font-size:10px;font-weight:600;color:${confColour};margin-left:4px;text-transform:capitalize">${p.confidence}</span></td>
     </tr>`;
+  }).join('');
+  renderMdMobileCards(vis);
+}
+
+function renderMdMobileCards(vis) {
+  const container = document.getElementById('mobile-cards-markdown');
+  if (!container) return;
+  if (!vis.length) {
+    container.innerHTML = `<div class="empty-state"><strong>No removed products found.</strong></div>`;
+    return;
+  }
+  container.innerHTML = vis.map((p) => {
+    const img = p.image_url ? `/api/image/${p.id}` : '';
+    const colour = REASON_COLOURS[p.reason] || '#888';
+    const bg     = REASON_BG[p.reason]      || '#f5f5f5';
+    const border = REASON_BORDER[p.reason]  || '#e0e0e0';
+    const label  = REASON_LABELS[p.reason]  || p.reason;
+    const sub    = normSub((p.subcategory || p.category || '').replace(/-/g,' '));
+    const spark  = buildSparkline(p.score_series || []);
+    return `<div class="mc-card" onclick="this.classList.toggle('expanded')">
+      <div class="mc-row">
+        ${img ? `<img class="mc-thumb" src="${img}" alt="${p.name}" loading="lazy">` : `<div class="mc-thumb"></div>`}
+        <div class="mc-body">
+          <div class="mc-name">${cap(p.name)}</div>
+          <div class="mc-meta">${cap(p.retailer||'')} · ${sub}</div>
+        </div>
+        <div class="mc-right">
+          <span style="display:inline-block;font-size:8px;font-weight:700;letter-spacing:.5px;text-transform:uppercase;padding:3px 8px;border-radius:24px;background:${bg};color:${colour};border:1px solid ${border};white-space:nowrap">${label}</span>
+        </div>
+        <svg class="mc-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg>
+      </div>
+      <div class="mc-expand">
+        <div><div class="mc-field-lbl">Days active</div><div class="mc-field-val">${p.days_active != null ? `${p.days_active}d` : '—'}</div></div>
+        <div><div class="mc-field-lbl">Avg score</div><div class="mc-field-val">${p.avg_score}</div></div>
+        <div><div class="mc-field-lbl">Confidence</div><div class="mc-field-val" style="text-transform:capitalize">${p.confidence}</div></div>
+        <div><div class="mc-field-lbl">Score history</div><div class="mc-field-val">${spark}</div></div>
+      </div>
+    </div>`;
   }).join('');
 }
 
@@ -2100,9 +2462,104 @@ function buildSuccessSparkline(series, strokeColor) {
 }
 
 
+// ═══════════════════════════════════════════════════
+// MOBILE: bottom-nav review badge mirror
+// ═══════════════════════════════════════════════════
+(function() {
+  const src = document.getElementById('kw-review-badge');
+  const dst = document.getElementById('bn-review-badge');
+  if (!src || !dst) return;
+  function sync() {
+    dst.textContent = src.textContent;
+    dst.style.display = src.style.display === 'none' ? 'none' : 'flex';
+  }
+  sync();
+  new MutationObserver(sync).observe(src, { attributes: true, childList: true, characterData: true, attributeFilter: ['style'] });
+})();
+
+// ═══════════════════════════════════════════════════
+// MOBILE: filter bottom sheet (DOM-portal: relocate real
+// filter controls into the sheet on open, restore on close)
+// ═══════════════════════════════════════════════════
+const MOBILE_FILTER_CONFIG = {
+  rankings: [
+    { id: 'col-filter-name',     label: 'Product name' },
+    { id: 'ms-wrap-retailer',    label: 'Retailer' },
+    { id: 'ms-wrap-category',    label: 'Gender' },
+    { id: 'ms-wrap-subcategory', label: 'Subcategory' },
+    { id: 'ms-wrap-signal',      label: 'Signals' },
+    { id: 'col-filter-score',    label: 'Score' },
+    { id: 'col-filter-price',    label: 'Price' },
+    { id: 'col-filter-rank',     label: 'Page rank' },
+    { id: 'col-filter-age',      label: 'Age' },
+  ],
+  keywords: [{ sel: '#tab-keywords .controls', label: null }],
+  markdown: [{ sel: '#tab-markdown .controls', label: null }],
+  success:  [{ sel: '#tab-success .controls',  label: null }],
+  review:   [],
+};
+
+let _mobileSheetPortals = [];
+
+function openMobileSheet() {
+  const body = document.getElementById('mobile-sheet-body');
+  const sheet = document.getElementById('mobile-sheet');
+  const backdrop = document.getElementById('mobile-sheet-backdrop');
+  if (!body || !sheet || !backdrop) return;
+
+  const defs = [{ sel: '.date-bar', label: null }].concat(MOBILE_FILTER_CONFIG[currentTab] || []);
+  _mobileSheetPortals = [];
+  body.innerHTML = '';
+
+  defs.forEach(def => {
+    const el = def.id ? document.getElementById(def.id) : document.querySelector(def.sel);
+    if (!el) return;
+    _mobileSheetPortals.push({ el, parent: el.parentNode, next: el.nextSibling });
+    if (def.label) {
+      const field = document.createElement('div');
+      field.className = 'ms-field';
+      const lbl = document.createElement('div');
+      lbl.className = 'ms-field-label';
+      lbl.textContent = def.label;
+      field.appendChild(lbl);
+      field.appendChild(el);
+      body.appendChild(field);
+    } else {
+      body.appendChild(el);
+    }
+  });
+
+  sheet.classList.add('open');
+  backdrop.classList.add('open');
+}
+
+function closeMobileSheet() {
+  _mobileSheetPortals.forEach(({ el, parent, next }) => {
+    if (!parent) return;
+    if (next && next.parentNode === parent) parent.insertBefore(el, next);
+    else parent.appendChild(el);
+  });
+  _mobileSheetPortals = [];
+  const sheet = document.getElementById('mobile-sheet');
+  const backdrop = document.getElementById('mobile-sheet-backdrop');
+  if (sheet) sheet.classList.remove('open');
+  if (backdrop) backdrop.classList.remove('open');
+}
+
 _initDateBar();
 loadAll();
 </script>
+
+<!-- ===== MOBILE FILTER SHEET ===== -->
+<div class="mobile-sheet-backdrop" id="mobile-sheet-backdrop" onclick="closeMobileSheet()"></div>
+<div class="mobile-sheet" id="mobile-sheet">
+  <div class="mobile-sheet-handle"></div>
+  <div class="mobile-sheet-head">
+    <h3>Filters</h3>
+    <button class="mobile-sheet-done" onclick="closeMobileSheet()">Done</button>
+  </div>
+  <div class="mobile-sheet-body" id="mobile-sheet-body"></div>
+</div>
 
 <div class="img-lb" id="img-lb" onclick="closeLightbox()">
   <img id="img-lb-img" src="" alt="" onclick="event.stopPropagation()">
