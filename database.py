@@ -420,6 +420,17 @@ def get_latest_snapshot(product_id):
     return snaps[0] if snaps else None
 
 
+def get_last_scrape_time():
+    """Return the UTC ISO timestamp of the most recent snapshot across all
+    products (i.e. when data was last scraped), or None if no snapshots exist."""
+    conn = get_connection()
+    c = conn.cursor()
+    c.execute('SELECT MAX(timestamp) AS ts FROM snapshots')
+    row = c.fetchone()
+    conn.close()
+    return row['ts'] if row and row['ts'] else None
+
+
 def get_previous_snapshot(product_id):
     snaps = get_snapshots(product_id, limit=2)
     return snaps[1] if len(snaps) >= 2 else None

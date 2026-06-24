@@ -325,6 +325,7 @@ def api_stats():
         'top_score':            top[0]['total_score'] if top else 0,
         'fastest_rising':       fastest_rising,
         'fastest_rising_delta': fastest_rising_delta,
+        'last_scrape':          db.get_last_scrape_time(),
     })
 
 
