@@ -211,7 +211,7 @@ class NewLookScraper(BaseScraper):
 
         products = []
         for gender, group in by_gender.items():
-            for rank, entry in enumerate(group, start=1):
+            for entry in group:
                 subcategory = self._style_from_category_prefix(
                         entry['url_path'], style_prefixes
                     )
@@ -234,11 +234,19 @@ class NewLookScraper(BaseScraper):
                     'category':        gender,
                     'subcategory':     subcategory,
                     'price':           None,   # Filled in below if fetch_prices=True
-                    'rank':            rank,
+                    # 'rank' is intentionally None: the sitemap has no relationship
+                    # to actual category-page position, so any number here would be
+                    # noise. A previous version used the sitemap iteration order as
+                    # a fake rank, which caused huge spurious "rank_improvement"
+                    # score swings (sitemap order shifts day to day for reasons
+                    # unrelated to merchandising position).
+                    'rank':            None,
                     'review_count':    None,
                     'sizes_available': [],
                     'sizes_oos':       [],
-                    'is_featured':     rank <= 4,
+                    # Same reasoning: no reliable "featured slot" signal from the
+                    # sitemap, so don't fabricate one from sitemap order either.
+                    'is_featured':     False,
                     'image_url':       entry['image_url'],
                     'raw_data':        {'was_price': None, 'is_markdown': False},
                     '_url':            entry['url'],   # kept for price fetching
