@@ -73,6 +73,10 @@ jobs:
           GOOGLE_CREDENTIALS_JSON: ${{ secrets.GOOGLE_CREDENTIALS_JSON }}
         continue-on-error: true   # Don't fail the whole run if Sheets isn't configured
 
+      - name: Checkpoint database (flush WAL before commit)
+        run: |
+          python -c "import sqlite3; conn = sqlite3.connect('mrd_tracker.db'); conn.execute('PRAGMA wal_checkpoint(TRUNCATE);'); conn.close()"
+
       - name: Commit updated database to repo
         run: |
           git config user.email "github-actions[bot]@users.noreply.github.com"
