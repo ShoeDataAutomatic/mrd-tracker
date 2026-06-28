@@ -8,6 +8,12 @@ __pycache__/
 dist/
 build/
 
+# SQLite WAL/SHM sidecar files — these are transient and must never be
+# committed on their own. A stale committed -wal paired with a freshly
+# updated .db file caused "database disk image is malformed" errors.
+*.db-wal
+*.db-shm
+
 # Environment
 .env
 .venv/
