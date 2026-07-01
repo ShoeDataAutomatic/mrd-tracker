@@ -313,45 +313,6 @@
     .img-lb.open { display:flex; }
     .img-lb img { width:600px; max-width:90vw; object-fit:contain; border-radius:4px; cursor:default; box-shadow:0 8px 40px rgba(0,0,0,0.4); }
 
-    /* ── Success Analysis tab ── */
-    .sc-card { background: #fff; border: 0.5px solid #e0e0e0; border-radius: 8px; display: grid; grid-template-columns: 200px 1fr 320px; overflow: hidden; min-height: 200px; }
-    .sc-img  { background: #f5f5f5; border-right: 1px solid #e5e5e5; display: flex; align-items: center; justify-content: center; overflow: hidden; }
-    .sc-img img { width: 100%; height: 100%; object-fit: cover; display: block; }
-    .sc-info { padding: 22px 24px; border-right: 1px solid #f0f0f0; display: flex; flex-direction: column; align-items: flex-start; }
-    .sc-product-name { font-size: 14px; font-weight: 700; color: #000; margin-bottom: 6px; line-height: 1.3; text-decoration: none; display: block; }
-    .sc-product-name:hover { color: #E8563A; }
-    .sc-product-meta { font-size: 10px; color: #bbb; font-weight: 600; letter-spacing: .5px; margin-bottom: 14px; }
-    .sc-chart-col { padding: 22px 24px; display: flex; flex-direction: column; }
-    .sc-scores-row { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 18px; }
-    .sc-score-lbl { font-size: 9px; font-weight: 700; letter-spacing: 1.5px; text-transform: uppercase; color: #bbb; margin-bottom: 4px; }
-    .sc-score-num { font-size: 32px; font-weight: 700; color: #000; letter-spacing: -1px; line-height: 1.1; }
-    .sc-score-sub { font-size: 10px; color: #bbb; font-weight: 600; margin-top: 2px; }
-    .sc-chart-head { font-size: 9px; font-weight: 700; letter-spacing: 1px; text-transform: uppercase; color: #bbb; margin-bottom: 8px; display: flex; align-items: center; justify-content: space-between; }
-    .sc-traj-badge { font-size: 9px; font-weight: 700; letter-spacing: .5px; text-transform: uppercase; padding: 3px 9px; border-radius: 3px; }
-    .sc-signal-grid { display: grid; grid-template-columns: repeat(3,1fr); border-top: 0.5px solid #eee; }
-    .sc-signal-cell { padding: 16px 24px; border-right: 0.5px solid #eee; border-bottom: 0.5px solid #eee; }
-    .sc-signal-cell:nth-child(3n) { border-right: none; }
-    .sc-signal-bar-wrap { background: #f5f5f5; border-radius: 2px; height: 6px; width: 100%; margin-bottom: 6px; overflow: hidden; }
-    .sc-signal-bar { height: 6px; border-radius: 2px; }
-
-    /* ── Keyword review queue ── */
-    .kw-review-badge { background: #E8563A; color: #fff; border-radius: 12px; min-width: 18px; height: 18px; padding: 0 5px; font-size: 10px; font-weight: 700; display: inline-flex; align-items: center; justify-content: center; margin-left: 6px; }
-    .kw-run-btn { background: #fff; color: #888; border: 1.5px solid #e0e0e0; border-radius: 24px; padding: 5px 16px; font-size: 10px; font-weight: 700; letter-spacing: 1px; text-transform: uppercase; font-family: 'Montserrat', sans-serif; cursor: pointer; }
-    .kw-run-btn:hover { border-color: #aaa; color: #444; }
-    .kw-run-btn:disabled { opacity: .5; cursor: default; }
-    .kw-review-page { max-width: 920px; }
-    .kw-review-row { border-bottom: 1px solid #f0f0f0; padding: 14px 0; }
-    .kw-review-row:last-child { border-bottom: none; }
-    .kw-review-word { font-size: 13px; font-weight: 700; text-transform: capitalize; color: #000; }
-    .kw-review-examples { font-size: 10px; color: #999; margin-top: 2px; line-height: 1.5; }
-    .kw-review-checks { display: flex; flex-wrap: wrap; gap: 10px; margin: 10px 0; }
-    .kw-review-check-lbl { display: inline-flex; align-items: center; gap: 5px; font-size: 10px; font-weight: 700; letter-spacing: .5px; text-transform: uppercase; color: #555; cursor: pointer; }
-    .kw-review-check-lbl input { cursor: pointer; }
-    .kw-review-actions { display: flex; gap: 8px; }
-    .kw-review-approve { background: #111; color: #fff; border: none; border-radius: 24px; padding: 5px 16px; font-size: 10px; font-weight: 700; letter-spacing: 1px; text-transform: uppercase; font-family: 'Montserrat', sans-serif; cursor: pointer; }
-    .kw-review-approve:hover { background: #333; }
-    .kw-review-reject { background: #fff; color: #c33; border: 1.5px solid #e0c0c0; border-radius: 24px; padding: 5px 16px; font-size: 10px; font-weight: 700; letter-spacing: 1px; text-transform: uppercase; font-family: 'Montserrat', sans-serif; cursor: pointer; }
-    .kw-review-reject:hover { background: #fdf0f0; }
 
   /* ===== Mobile layout (Option 1: Card Feed + Bottom Sheet) ===== */
   .bottom-nav, .mobile-fab, .mobile-sheet, .mobile-sheet-backdrop { display: none; }
@@ -516,14 +477,6 @@
     .mc-field-lbl { font-size: 9px; font-weight: 800; letter-spacing: .5px; text-transform: uppercase; color: #aaa; margin-bottom: 2px; }
     .mc-field-val { font-size: 12px; color: #222; font-weight: 600; }
 
-    .sc-card { grid-template-columns: 1fr !important; }
-    .sc-signal-grid { grid-template-columns: 1fr !important; }
-
-    .kw-review-checks { gap: 14px; }
-    .kw-review-check-lbl { font-size: 11px; padding: 4px 0; }
-    .kw-review-actions { gap: 10px; }
-    .kw-review-approve, .kw-review-reject { padding: 8px 18px; font-size: 11px; }
-
     .kw-layout { grid-template-columns: 1fr !important; }
 
     .kw-mobile-back {
@@ -583,9 +536,6 @@
 <div class="tab-bar">
   <button class="tab-btn active" data-tab="rankings" onclick="switchTab('rankings')">Rankings</button>
   <button class="tab-btn" data-tab="keywords" onclick="switchTab('keywords')">Keyword analysis</button>
-  <button class="tab-btn" data-tab="success" onclick="switchTab('success')">Success analysis</button>
-  <button class="tab-btn" data-tab="markdown" onclick="switchTab('markdown')">Removed products</button>
-  <button class="tab-btn" data-tab="review" onclick="switchTab('review')">Review queue<span class="kw-review-badge" id="kw-review-badge" style="display:none">0</span></button>
 </div>
 
 <!-- ===== MOBILE BOTTOM NAV ===== -->
@@ -597,19 +547,6 @@
   <button class="bn-item" data-tab="keywords" onclick="switchTab('keywords')">
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20.59 13.41 11 4H4v7l9.59 9.59a2 2 0 0 0 2.82 0l4.18-4.18a2 2 0 0 0 0-2.82z"/><circle cx="7.5" cy="7.5" r="1" fill="currentColor"/></svg>
     <span>Keywords</span>
-  </button>
-  <button class="bn-item" data-tab="success" onclick="switchTab('success')">
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 12h-4l-3 9L9 3l-3 9H2"/></svg>
-    <span>Success</span>
-  </button>
-  <button class="bn-item" data-tab="markdown" onclick="switchTab('markdown')">
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18"/><path d="M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/></svg>
-    <span>Removed</span>
-  </button>
-  <button class="bn-item" data-tab="review" onclick="switchTab('review')">
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>
-    <span>Review</span>
-    <span class="bn-badge" id="bn-review-badge">0</span>
   </button>
 </div>
 
@@ -905,188 +842,10 @@
 
 </div><!-- /tab-keywords -->
 
-<!-- ═══════════════════════ REVIEW QUEUE TAB ═══════════════════════ -->
-<div id="tab-review" style="display:none">
-  <div style="display:flex;align-items:center;justify-content:space-between;padding:20px 24px 0">
-    <div style="font-size:9px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:#bbb">New keywords awaiting classification review</div>
-    <button id="kw-run-btn" class="kw-run-btn" onclick="runKeywordClassification()">Classify new keywords</button>
-  </div>
-  <div class="kw-review-page" id="kw-review-body" style="padding:8px 24px 32px">
-    <div class="empty-state" style="padding:40px 20px">Loading…</div>
-  </div>
-</div><!-- /tab-review -->
 
-<!-- ═══════════════════════ REMOVED PRODUCTS TAB ═══════════════════════ -->
-<div id="tab-markdown" style="display:none">
+<div id="tab-markdown" style="display:none"></div>
 
-  <div class="controls">
-    <div>
-      <select id="md-filter-retailer" onchange="loadMarkdown()">
-        <option value="">All retailers</option>
-        {% for r in retailers %}
-        <option value="{{ r.key }}">{{ r.name }}</option>
-        {% endfor %}
-      </select>
-    </div>
-    <div>
-      <select id="md-filter-category" onchange="loadMarkdown()">
-        <option value="">All genders</option>
-        <option value="women">Women</option>
-        <option value="men">Men</option>
-        <option value="girls">Girls</option>
-        <option value="boys">Boys</option>
-      </select>
-    </div>
-    <div>
-      <select id="md-filter-reason" onchange="renderMarkdown()">
-        <option value="">All reasons</option>
-        <option value="poor_seller">Poor seller</option>
-        <option value="end_of_season">End of season</option>
-        <option value="completed_run">Completed run</option>
-      </select>
-    </div>
-    <button class="btn-refresh" onclick="loadMarkdown()">Refresh</button>
-  </div>
-
-  <div class="stats" id="md-stats">
-    <div class="stat-card">
-      <div class="label">Total removed</div>
-      <div class="value" id="md-stat-total">—</div>
-    </div>
-    <div class="stat-card">
-      <div class="label">Poor seller</div>
-      <div class="value" id="md-stat-poor" style="color:#E8563A">—</div>
-      <div class="sub pink" id="md-stat-poor-pct"></div>
-    </div>
-    <div class="stat-card">
-      <div class="label">End of season</div>
-      <div class="value" id="md-stat-season" style="color:#f59e0b">—</div>
-      <div class="sub" style="color:#f59e0b" id="md-stat-season-pct"></div>
-    </div>
-    <div class="stat-card">
-      <div class="label">Completed run</div>
-      <div class="value" id="md-stat-clear" style="color:#00a651">—</div>
-      <div class="sub up" id="md-stat-clear-pct"></div>
-    </div>
-  </div>
-
-  <!-- Reason summary cards -->
-  <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:12px;padding:16px 28px 0">
-    <div style="background:#fff;border:0.5px solid #e0e0e0;border-radius:8px;padding:16px 18px">
-      <div style="font-size:9px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:#E8563A;margin-bottom:6px">Poor seller</div>
-      <div style="font-size:12px;color:#555;font-weight:500;line-height:1.6">Low scores throughout life, never featured, no rank improvement. Removed because it failed to connect with customers.</div>
-      <div style="height:3px;background:#f0f0f0;border-radius:2px;margin-top:12px"><div id="md-bar-poor" style="height:3px;background:#E8563A;border-radius:2px;width:0%;transition:width .4s"></div></div>
-    </div>
-    <div style="background:#fff;border:0.5px solid #e0e0e0;border-radius:8px;padding:16px 18px">
-      <div style="font-size:9px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:#f59e0b;margin-bottom:6px">End of season</div>
-      <div style="font-size:12px;color:#555;font-weight:500;line-height:1.6">Seasonal style removed as the range turns over. Expected pattern — not a product failure signal.</div>
-      <div style="height:3px;background:#f0f0f0;border-radius:2px;margin-top:12px"><div id="md-bar-season" style="height:3px;background:#f59e0b;border-radius:2px;width:0%;transition:width .4s"></div></div>
-    </div>
-    <div style="background:#fff;border:0.5px solid #e0e0e0;border-radius:8px;padding:16px 18px">
-      <div style="font-size:9px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:#00a651;margin-bottom:6px">Completed run</div>
-      <div style="font-size:12px;color:#555;font-weight:500;line-height:1.6">High-scoring, featured style that ran its course. Strong consumer demand confirmed — worth referencing in future design decisions.</div>
-      <div style="height:3px;background:#f0f0f0;border-radius:2px;margin-top:12px"><div id="md-bar-clear" style="height:3px;background:#00a651;border-radius:2px;width:0%;transition:width .4s"></div></div>
-    </div>
-  </div>
-
-  <!-- Insights banner -->
-  <div id="md-insights" style="display:none;margin:14px 28px 0;background:#fff8f0;border:1px solid #fed7aa;border-radius:4px;padding:12px 16px">
-    <div style="font-size:9px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:#d97706;margin-bottom:8px">Key insights</div>
-    <div id="md-insights-list" style="display:flex;gap:8px;flex-wrap:wrap"></div>
-  </div>
-
-  <!-- Product table -->
-  <div class="table-wrap" style="padding-top:14px">
-    <div class="table-container">
-      <table>
-        <thead>
-          <tr class="sort-row">
-            <th class="no-sort" style="width:50px"></th>
-            <th class="sortable" data-mdcol="name">Product<span class="sort-icon"></span></th>
-            <th class="sortable" data-mdcol="reason">Reason<span class="sort-icon"></span></th>
-            <th class="sortable" data-mdcol="days_active">Days active<span class="sort-icon"></span></th>
-            <th class="sortable sort-desc" data-mdcol="peak_score">Peak score<span class="sort-icon"></span></th>
-            <th class="sortable" data-mdcol="avg_score">Avg score<span class="sort-icon"></span></th>
-            <th class="no-sort">Score history</th>
-            <th class="sortable" data-mdcol="confidence">Confidence<span class="sort-icon"></span></th>
-          </tr>
-        </thead>
-        <tbody id="md-table-body">
-          <tr><td colspan="8"><div class="empty-state">Loading…</div></td></tr>
-        </tbody>
-      </table>
-    </div>
-  </div>
-
-  <div class="mobile-cards" id="mobile-cards-markdown"></div>
-
-</div><!-- /tab-markdown -->
-
-<!-- ═══════════════════════ SUCCESS ANALYSIS TAB ═══════════════════════ -->
-<div id="tab-success" style="display:none">
-
-  <div class="controls" style="padding:12px 28px">
-    <button class="pill active" id="sc-cat-btn-all"   onclick="scSetCategory('')">All</button>
-    <button class="pill"        id="sc-cat-btn-women" onclick="scSetCategory('women')">Women</button>
-    <button class="pill"        id="sc-cat-btn-men"   onclick="scSetCategory('men')">Men</button>
-    <button class="pill"        id="sc-cat-btn-girls" onclick="scSetCategory('girls')">Girls</button>
-    <button class="pill"        id="sc-cat-btn-boys"  onclick="scSetCategory('boys')">Boys</button>
-    <div style="margin-left:auto;display:flex;align-items:center;gap:8px">
-      <span style="font-size:10px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:#bbb">Min days</span>
-      <select id="sc-filter-mindays" onchange="loadSuccess()"
-        style="border:1.5px solid #e0e0e0;border-radius:24px;padding:6px 14px;font-size:10px;font-weight:700;color:#000;font-family:'Montserrat',sans-serif;appearance:none;-webkit-appearance:none;outline:none;background:#fff;cursor:pointer">
-        <option value="30">30 days</option>
-        <option value="45">45 days</option>
-        <option value="60">60 days</option>
-      </select>
-      <select id="sc-filter-sort" onchange="renderSuccess()"
-        style="border:1.5px solid #e0e0e0;border-radius:24px;padding:6px 14px;font-size:10px;font-weight:700;color:#000;font-family:'Montserrat',sans-serif;appearance:none;-webkit-appearance:none;outline:none;background:#fff;cursor:pointer">
-        <option value="peak_score">Sort: peak score</option>
-        <option value="cumulative">Sort: cumulative</option>
-      </select>
-    </div>
-  </div>
-
-  <div class="stats">
-    <div class="stat-card">
-      <div class="label">Successful products</div>
-      <div class="value" id="sc-stat-total">—</div>
-    </div>
-    <div class="stat-card">
-      <div class="label">Avg days online</div>
-      <div class="value" id="sc-stat-avgdays">—</div>
-    </div>
-    <div class="stat-card">
-      <div class="label">Avg peak score</div>
-      <div class="value" id="sc-stat-avgpeak">—</div>
-    </div>
-    <div class="stat-card">
-      <div class="label">Top signal</div>
-      <div class="value sm" id="sc-stat-topsignal">—</div>
-      <div class="sub pink" id="sc-stat-topsignal-pct"></div>
-    </div>
-  </div>
-
-  <!-- Signal frequency panel -->
-  <div id="sc-signal-panel" style="background:#fff;border-bottom:1px solid #eee">
-    <div style="padding:12px 28px">
-      <div style="font-size:10px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:#000">Signal frequency across successful products</div>
-    </div>
-    <div id="sc-signal-grid" class="sc-signal-grid"></div>
-  </div>
-
-  <!-- Section heading -->
-  <div style="background:#fff;border-bottom:1px solid #eee;padding:14px 28px;display:flex;align-items:center;justify-content:space-between">
-    <div style="font-size:10px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:#000">Successful products — score trajectories</div>
-    <div style="font-size:10px;color:#bbb;font-weight:600" id="sc-section-meta">4-day rolling avg</div>
-  </div>
-
-  <!-- Products list -->
-  <div id="sc-products-list" style="padding:20px 28px;background:#f7f7f5;display:flex;flex-direction:column;gap:14px">
-    <div style="text-align:center;padding:60px 20px;color:#bbb">Loading…</div>
-  </div>
-
-</div><!-- /tab-success -->
+<div id="tab-success" style="display:none"></div>
 
 <script>
 // ═══════════════════════════════════════════════════
@@ -1123,8 +882,6 @@ function applyDateRange() {
   loadStats();
   loadRankings();
   if (allKeywords.length > 0) loadKeywords();
-  if (allSuccess.length  > 0) loadSuccess();
-  if (allMarkdown.length > 0) loadMarkdown();
 }
 
 function _initDateBar() {
@@ -1358,18 +1115,14 @@ function switchTab(name) {
   currentTab = name;
   document.getElementById('tab-rankings').style.display = name === 'rankings' ? '' : 'none';
   document.getElementById('tab-keywords').style.display = name === 'keywords' ? '' : 'none';
-  document.getElementById('tab-success').style.display  = name === 'success'  ? '' : 'none';
-  document.getElementById('tab-markdown').style.display = name === 'markdown' ? '' : 'none';
-  document.getElementById('tab-review').style.display   = name === 'review'   ? '' : 'none';
+  document.getElementById('tab-success').style.display  = 'none';
+  document.getElementById('tab-markdown').style.display = 'none';
   document.querySelectorAll('.tab-btn').forEach(b =>
     b.classList.toggle('active', b.dataset.tab === name));
   document.querySelectorAll('.bn-item').forEach(b =>
     b.classList.toggle('active', b.dataset.tab === name));
   if (name !== 'keywords') closeKwMobilePanel();
   if (name === 'keywords' && allKeywords.length === 0) loadKeywords();
-  if (name === 'markdown' && allMarkdown.length === 0) loadMarkdown();
-  if (name === 'success'  && allSuccess.length  === 0) loadSuccess();
-  if (name === 'review') loadReviewQueueAndRender();
 }
 
 
@@ -1654,7 +1407,7 @@ function clearAllFilters() {
   renderTable();
 }
 
-function loadAll() { loadStats(); loadRankings(); loadReviewQueueBadge(); }
+function loadAll() { loadStats(); loadRankings(); }
 
 // Initialise with empty options — populated after data loads
 initMultiSelects([], []);
@@ -1849,106 +1602,6 @@ function kwSort(th) {
   renderKeywords();
 }
 
-// ─── Keyword review queue ──────────────────────────────────────
-const KW_REVIEW_ATTRS = ['colour','material','trim','pattern','type','fit','brand'];
-let kwReviewRows = [];
-
-async function loadReviewQueueBadge() {
-  try {
-    const res  = await fetch('/api/keyword-review/pending');
-    const rows = await res.json();
-    kwReviewRows = rows || [];
-    const badge = document.getElementById('kw-review-badge');
-    if (kwReviewRows.length) {
-      badge.textContent = kwReviewRows.length;
-      badge.style.display = 'inline-flex';
-    } else {
-      badge.style.display = 'none';
-    }
-  } catch (e) { /* dashboard still works without the review queue */ }
-}
-
-async function loadReviewQueueAndRender() {
-  const body = document.getElementById('kw-review-body');
-  body.innerHTML = '<div class="empty-state" style="padding:40px 20px">Loading…</div>';
-  const res  = await fetch('/api/keyword-review/pending');
-  kwReviewRows = await res.json();
-  renderReviewQueue();
-  const badge = document.getElementById('kw-review-badge');
-  if (kwReviewRows.length) {
-    badge.textContent = kwReviewRows.length;
-    badge.style.display = 'inline-flex';
-  } else {
-    badge.style.display = 'none';
-  }
-}
-
-function renderReviewQueue() {
-  const body = document.getElementById('kw-review-body');
-  if (!kwReviewRows.length) {
-    body.innerHTML = '<div class="empty-state" style="padding:40px 20px">No keywords waiting for review. New keywords are classified automatically after each scrape.</div>';
-    return;
-  }
-  body.innerHTML = kwReviewRows.map(row => {
-    const kw = row.keyword.replace(/'/g,"\'");
-    const examples = (row.examples || []).slice(0,3).join('  ·  ') || 'No example products available';
-    const checks = KW_REVIEW_ATTRS.map(attr => {
-      const checked = row[attr] ? 'checked' : '';
-      return `<label class="kw-review-check-lbl"><input type="checkbox" id="kw-review-${row.keyword}-${attr}" ${checked}>${attr}</label>`;
-    }).join('');
-    return `<div class="kw-review-row">
-      <div class="kw-review-word">${row.keyword}</div>
-      <div class="kw-review-examples">${examples}</div>
-      <div class="kw-review-checks">${checks}</div>
-      <div class="kw-review-actions">
-        <button class="kw-review-approve" onclick="decideReviewKeyword('${kw}','approved')">Approve</button>
-        <button class="kw-review-reject" onclick="decideReviewKeyword('${kw}','rejected')">Reject</button>
-      </div>
-    </div>`;
-  }).join('');
-}
-
-async function decideReviewKeyword(keyword, decision) {
-  const attrs = {};
-  KW_REVIEW_ATTRS.forEach(attr => {
-    const el = document.getElementById(`kw-review-${keyword}-${attr}`);
-    attrs[attr] = el ? el.checked : false;
-  });
-  await fetch('/api/keyword-review/decide', {
-    method: 'POST',
-    headers: {'Content-Type': 'application/json'},
-    body: JSON.stringify({keyword, decision, attrs}),
-  });
-  kwReviewRows = kwReviewRows.filter(r => r.keyword !== keyword);
-  renderReviewQueue();
-  const badge = document.getElementById('kw-review-badge');
-  if (kwReviewRows.length) {
-    badge.textContent = kwReviewRows.length;
-    badge.style.display = 'inline-flex';
-  } else {
-    badge.style.display = 'none';
-  }
-}
-
-async function runKeywordClassification() {
-  const btn = document.getElementById('kw-run-btn');
-  btn.disabled = true;
-  btn.textContent = 'Classifying…';
-  try {
-    const res  = await fetch('/api/keyword-review/run-now', {method: 'POST'});
-    const data = await res.json();
-    if (data.error) {
-      btn.textContent = 'Failed — see logs';
-    } else {
-      btn.textContent = `Found ${data.new_keywords||0}, queued ${data.queued||0}`;
-      await loadReviewQueueBadge();
-    }
-  } catch (e) {
-    btn.textContent = 'Failed — see logs';
-  } finally {
-    setTimeout(() => { btn.disabled = false; btn.textContent = 'Classify new keywords'; }, 3000);
-  }
-}
 
 let kwProducts = [];
 
@@ -2100,386 +1753,11 @@ function renderKwProducts() {
   }).join('');
 }
 
-// ═══════════════════════════════════════════════════
-// MARKDOWN ANALYSIS TAB
-// ═══════════════════════════════════════════════════
-let allMarkdown = [], mdSortCol = 'peak_score', mdSortDir = 'desc';
+let allMarkdown = [];
 
-const REASON_LABELS = {
-  poor_seller:   'Poor seller',
-  end_of_season: 'End of season',
-  completed_run: 'Completed run',
-};
-const REASON_COLOURS = {
-  poor_seller:   '#E8563A',
-  end_of_season: '#f59e0b',
-  completed_run: '#00a651',
-};
-const REASON_BG = {
-  poor_seller:   '#fff0f3',
-  end_of_season: '#fffbeb',
-  completed_run: '#f0fdf4',
-};
-const REASON_BORDER = {
-  poor_seller:   '#ffd0d9',
-  end_of_season: '#fde68a',
-  completed_run: '#bbf7d0',
-};
-const CONF_COLOURS = { high:'#00a651', medium:'#f59e0b', low:'#aaa' };
-
-document.querySelectorAll('th[data-mdcol]').forEach(th => {
-  th.addEventListener('click', () => {
-    const col = th.dataset.mdcol;
-    if (mdSortCol === col) mdSortDir = mdSortDir === 'asc' ? 'desc' : 'asc';
-    else { mdSortCol = col; mdSortDir = col === 'name' ? 'asc' : 'desc'; }
-    document.querySelectorAll('th[data-mdcol]').forEach(h => h.classList.remove('sort-asc','sort-desc'));
-    th.classList.add(mdSortDir === 'asc' ? 'sort-asc' : 'sort-desc');
-    renderMarkdown();
-  });
-});
-
-async function loadMarkdown() {
-  const retailer = document.getElementById('md-filter-retailer').value;
-  const category = document.getElementById('md-filter-category').value;
-  const params   = new URLSearchParams(getDateRange());
-  if (retailer) params.set('retailer', retailer);
-  if (category) params.set('category', category);
-  document.getElementById('md-table-body').innerHTML =
-    `<tr><td colspan="8"><div class="empty-state">Loading…</div></td></tr>`;
-
-  const res  = await fetch('/api/markdown?' + params);
-  const data = await res.json();
-  allMarkdown = data.products || [];
-
-  const s = data.summary || {};
-  const t = s.total || 0;
-  document.getElementById('md-stat-total').textContent   = t;
-  document.getElementById('md-stat-poor').textContent    = s.poor_seller   || 0;
-  document.getElementById('md-stat-season').textContent  = s.end_of_season || 0;
-  document.getElementById('md-stat-clear').textContent   = s.completed_run || 0;
-  document.getElementById('md-stat-poor-pct').textContent   = t ? `${Math.round((s.poor_seller||0)/t*100)}% of removed`   : '';
-  document.getElementById('md-stat-season-pct').textContent = t ? `${Math.round((s.end_of_season||0)/t*100)}% of removed` : '';
-  document.getElementById('md-stat-clear-pct').textContent  = t ? `${Math.round((s.completed_run||0)/t*100)}% of removed` : '';
-
-  // Update reason card bars
-  if (t > 0) {
-    document.getElementById('md-bar-poor').style.width   = `${Math.round((s.poor_seller||0)/t*100)}%`;
-    document.getElementById('md-bar-season').style.width = `${Math.round((s.end_of_season||0)/t*100)}%`;
-    document.getElementById('md-bar-clear').style.width  = `${Math.round((s.completed_run||0)/t*100)}%`;
-  }
-
-  // Insights
-  const insights = data.insights || [];
-  const insightBox  = document.getElementById('md-insights');
-  const insightList = document.getElementById('md-insights-list');
-  if (insights.length) {
-    insightBox.style.display = '';
-    insightList.innerHTML = insights.map(i =>
-      `<span style="font-size:10px;font-weight:600;color:#92400e;background:#fff;border:1px solid #fed7aa;border-radius:12px;padding:3px 10px">${i}</span>`
-    ).join('');
-  } else {
-    insightBox.style.display = 'none';
-  }
-
-  renderMarkdown();
-}
-
-function renderMarkdown() {
-  const reason = document.getElementById('md-filter-reason').value;
-  const tbody  = document.getElementById('md-table-body');
-
-  let vis = allMarkdown.filter(p => {
-    if (reason && p.reason !== reason) return false;
-    return true;
-  });
-
-  vis = [...vis].sort((a,b) => {
-    let va = a[mdSortCol], vb = b[mdSortCol];
-    const confOrder = {high:3, medium:2, low:1};
-    if (mdSortCol === 'confidence') { va = confOrder[va]||0; vb = confOrder[vb]||0; }
-    if (mdSortCol === 'reason')     { va = (va||'').toLowerCase(); vb = (vb||'').toLowerCase(); }
-    if (va == null) va = mdSortDir === 'asc' ? Infinity  : -Infinity;
-    if (vb == null) vb = mdSortDir === 'asc' ? Infinity  : -Infinity;
-    return mdSortDir === 'asc' ? (va<vb?-1:va>vb?1:0) : (va>vb?-1:va<vb?1:0);
-  });
-
-  if (!vis.length) {
-    tbody.innerHTML = `<tr><td colspan="8"><div class="empty-state">
-      <strong>No removed products found.</strong>
-      <p>Products with the Removed signal will appear here after the next scoring run.</p>
-    </div></td></tr>`;
-    renderMdMobileCards(vis);
-    return;
-  }
-
-  tbody.innerHTML = vis.map(p => {
-    const img = p.image_url
-      ? `<div class="thumb-wrap" style="position:relative">
-           <img src="/api/image/${p.id}" alt="${p.name}" loading="lazy" style="cursor:pointer"
-                onclick="showImageLightbox(this.src,this.alt)"
-                onerror="this.parentElement.innerHTML='<div class=\\'no-img\\'>&#128094;</div>'">
-           <div class="preview"><img src="/api/image/${p.id}" alt="${p.name}"></div>
-         </div>`
-      : `<div class="thumb-wrap"><div class="no-img">&#128094;</div></div>`;
-
-    const colour = REASON_COLOURS[p.reason] || '#888';
-    const bg     = REASON_BG[p.reason]      || '#f5f5f5';
-    const border = REASON_BORDER[p.reason]  || '#e0e0e0';
-    const label  = REASON_LABELS[p.reason]  || p.reason;
-
-    const confColour = CONF_COLOURS[p.confidence] || '#aaa';
-    const confDots   = ['high','medium','low'].map((l,i) => {
-      const levels = {high:3, medium:2, low:1};
-      const fill   = levels[p.confidence] > i ? confColour : '#e0e0e0';
-      return `<span style="width:8px;height:8px;border-radius:50%;background:${fill};display:inline-block;margin-right:2px"></span>`;
-    }).join('');
-
-    const spark = buildSparkline(p.score_series || []);
-    const sub   = normSub((p.subcategory || p.category || '').replace(/-/g,' '));
-
-    return `<tr>
-      <td style="padding:8px 6px">${img}</td>
-      <td>
-        <a class="product-name" href="${p.url}" target="_blank">${cap(p.name)}</a>
-        <div style="font-size:9px;color:#aaa;font-weight:600;letter-spacing:.5px;text-transform:uppercase;margin-top:2px">${cap(p.retailer||'')} · ${sub}</div>
-      </td>
-      <td>
-        <span style="display:inline-block;font-size:9px;font-weight:700;letter-spacing:1px;text-transform:uppercase;padding:3px 9px;border-radius:24px;background:${bg};color:${colour};border:1px solid ${border};white-space:nowrap">${label}</span>
-      </td>
-      <td style="font-size:11px;color:#555;font-weight:600">${p.days_active != null ? `${p.days_active}d` : '—'}</td>
-      <td style="font-size:12px;font-weight:500;color:#555">${p.avg_score}</td>
-      <td>${spark}</td>
-      <td style="white-space:nowrap">${confDots}<span style="font-size:10px;font-weight:600;color:${confColour};margin-left:4px;text-transform:capitalize">${p.confidence}</span></td>
-    </tr>`;
-  }).join('');
-  renderMdMobileCards(vis);
-}
-
-function renderMdMobileCards(vis) {
-  const container = document.getElementById('mobile-cards-markdown');
-  if (!container) return;
-  if (!vis.length) {
-    container.innerHTML = `<div class="empty-state"><strong>No removed products found.</strong></div>`;
-    return;
-  }
-  container.innerHTML = vis.map((p) => {
-    const img = p.image_url ? `/api/image/${p.id}` : '';
-    const colour = REASON_COLOURS[p.reason] || '#888';
-    const bg     = REASON_BG[p.reason]      || '#f5f5f5';
-    const border = REASON_BORDER[p.reason]  || '#e0e0e0';
-    const label  = REASON_LABELS[p.reason]  || p.reason;
-    const sub    = normSub((p.subcategory || p.category || '').replace(/-/g,' '));
-    const spark  = buildSparkline(p.score_series || []);
-    return `<div class="mc-card" onclick="this.classList.toggle('expanded')">
-      <div class="mc-row">
-        ${img ? `<img class="mc-thumb" src="${img}" alt="${p.name}" loading="lazy">` : `<div class="mc-thumb"></div>`}
-        <div class="mc-body">
-          <div class="mc-name">${cap(p.name)}</div>
-          <div class="mc-meta">${cap(p.retailer||'')} · ${sub}</div>
-        </div>
-        <div class="mc-right">
-          <span style="display:inline-block;font-size:8px;font-weight:700;letter-spacing:.5px;text-transform:uppercase;padding:3px 8px;border-radius:24px;background:${bg};color:${colour};border:1px solid ${border};white-space:nowrap">${label}</span>
-        </div>
-        <svg class="mc-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg>
-      </div>
-      <div class="mc-expand">
-        <div><div class="mc-field-lbl">Days active</div><div class="mc-field-val">${p.days_active != null ? `${p.days_active}d` : '—'}</div></div>
-        <div><div class="mc-field-lbl">Avg score</div><div class="mc-field-val">${p.avg_score}</div></div>
-        <div><div class="mc-field-lbl">Confidence</div><div class="mc-field-val" style="text-transform:capitalize">${p.confidence}</div></div>
-        <div><div class="mc-field-lbl">Score history</div><div class="mc-field-val">${spark}</div></div>
-      </div>
-    </div>`;
-  }).join('');
-}
-
-// ═══════════════════════════════════════════════════
-// SUCCESS ANALYSIS TAB
-// ═══════════════════════════════════════════════════
-let allSuccess = [], scCategory = '';
-
-const TRAJ_LABELS = {
-  early_spike:    'Early spike',
-  steady_climber: 'Steady climber',
-  mid_life_peak:  'Mid-life peak',
-};
-const TRAJ_STYLE = {
-  early_spike:    { bg: '#fff3e0', color: '#b36200', stroke: '#ff6600' },
-  steady_climber: { bg: '#e6f0ff', color: '#1a4fa3', stroke: '#0066cc' },
-  mid_life_peak:  { bg: '#ffe6ef', color: '#b3004a', stroke: '#E8563A' },
-};
-const SC_SIGNAL_COLORS = {
-  long_runner:      '#00a651',
-  featured:         '#0066cc',
-  rank_improvement: '#6633cc',
-  sizes_sold_out:   '#ff6600',
-  restock_event:    '#cc9900',
-  review_velocity:  '#cc0052',
-};
-
-function scSetCategory(cat) {
-  scCategory = cat;
-  document.querySelectorAll('[id^="sc-cat-btn-"]').forEach(b => {
-    const btnCat = b.id.replace('sc-cat-btn-', '');
-    b.classList.toggle('active', btnCat === (cat || 'all'));
-  });
-  renderSuccess();
-}
-
-async function loadSuccess() {
-  const minDays = document.getElementById('sc-filter-mindays').value;
-  document.getElementById('sc-products-list').innerHTML =
-    '<div style="text-align:center;padding:60px 20px;color:#bbb;font-size:12px;font-weight:600">Loading…</div>';
-
-  const res  = await fetch('/api/success?' + new URLSearchParams({min_days: minDays, ...getDateRange()}));
-  const data = await res.json();
-  allSuccess = data.products || [];
-
-  const s = data.summary || {};
-  document.getElementById('sc-stat-total').textContent         = s.total    || 0;
-  document.getElementById('sc-stat-avgdays').textContent       = s.avg_days || '—';
-  document.getElementById('sc-stat-avgpeak').textContent       = s.avg_peak || '—';
-  document.getElementById('sc-stat-topsignal').textContent     = s.top_signal_label || '—';
-  document.getElementById('sc-stat-topsignal-pct').textContent = s.top_signal_pct
-    ? s.top_signal_pct + '% of successes' : '';
-
-  renderSignalFreq(data.signal_freq || []);
-  renderSuccess();
-}
-
-function renderSignalFreq(freqData) {
-  const grid  = document.getElementById('sc-signal-grid');
-  const panel = document.getElementById('sc-signal-panel');
-  if (!freqData.length) { panel.style.display = 'none'; return; }
-  panel.style.display = '';
-
-  const total  = allSuccess.length || 1;
-  const maxCnt = Math.max(...freqData.map(f => f.count), 1);
-
-  grid.innerHTML = freqData.map(f => {
-    const pct    = Math.round((f.count / total) * 100);
-    const barW   = Math.round((f.count / maxCnt) * 100);
-    const color  = SC_SIGNAL_COLORS[f.key] || '#888';
-    return `<div class="sc-signal-cell">
-      <div style="font-size:10px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:#555;margin-bottom:8px">${f.label}</div>
-      <div class="sc-signal-bar-wrap"><div class="sc-signal-bar" style="width:${barW}%;background:${color}"></div></div>
-      <div style="font-size:10px;color:#999;font-weight:600">${f.count} of ${total} · ${pct}%</div>
-    </div>`;
-  }).join('');
-}
-
-function renderSuccess() {
-  const sortBy  = document.getElementById('sc-filter-sort').value;
-  const minDays = document.getElementById('sc-filter-mindays').value;
-  const list    = document.getElementById('sc-products-list');
-
-  let vis = allSuccess.filter(p => {
-    if (!scCategory) return true;
-    return (p.category || '').toLowerCase().split('/').includes(scCategory);
-  });
-
-  vis = [...vis].sort((a, b) =>
-    sortBy === 'cumulative' ? b.cumulative - a.cumulative : b.peak_score - a.peak_score
-  );
-
-  document.getElementById('sc-section-meta').textContent =
-    `${vis.length} product${vis.length !== 1 ? 's' : ''} · min ${minDays} days · peak > 40 · demand signal required · 4-day rolling avg`;
-
-  if (!vis.length) {
-    list.innerHTML = `<div class="empty-state">
-      <strong>No successful products found.</strong>
-      <p>Try reducing the minimum days threshold, or run the scorer to collect more data.</p>
-    </div>`;
-    return;
-  }
-
-  list.innerHTML = vis.map(p => buildSuccessCard(p)).join('');
-}
-
-function buildSuccessCard(p) {
-  const traj     = TRAJ_STYLE[p.trajectory] || TRAJ_STYLE.mid_life_peak;
-  const trajLbl  = TRAJ_LABELS[p.trajectory] || '';
-  const sub      = normSub((p.subcategory || p.category || '').replace(/-/g, ' ')) || '—';
-  const cumFmt   = p.cumulative.toLocaleString();
-
-  const img = p.image_url
-    ? `<img src="/api/image/${p.id}" alt="${p.name}" loading="lazy" style="cursor:pointer"
-           onclick="showImageLightbox(this.src,this.alt)"
-           onerror="this.parentElement.innerHTML='<div style=\\'color:#ccc;font-size:48px;display:flex;align-items:center;justify-content:center;width:100%;height:100%\\'>&#128094;</div>'">`
-    : `<div style="color:#ccc;font-size:48px;display:flex;align-items:center;justify-content:center;width:100%;height:100%">&#128094;</div>`;
-
-  const tags = (p.signal_tags || [])
-    .filter(t => t !== 'Removed' && t !== 'Marked down')
-    .map(t => `<span class="tag ${TAG_CLASSES[t] || 'tag-markdown'}">${t}</span>`)
-    .join('');
-
-  const spark = buildSuccessSparkline(p.score_series || [], traj.stroke);
-
-  return `<div class="sc-card">
-    <div class="sc-img">${img}</div>
-    <div class="sc-info">
-      <a class="sc-product-name" href="${p.url}" target="_blank">${cap(p.name)}</a>
-      <div class="sc-product-meta">${sub}</div>
-      <div class="tags">${tags}</div>
-    </div>
-    <div class="sc-chart-col">
-      <div class="sc-scores-row">
-        <div>
-          <div class="sc-score-lbl">Peak score</div>
-          <div class="sc-score-num">${p.peak_score}</div>
-          <div class="sc-score-sub">Day ${p.peak_day} of ${p.days_tracked}</div>
-        </div>
-        <div style="text-align:right">
-          <div class="sc-score-lbl">Cumulative</div>
-          <div class="sc-score-num">${cumFmt}</div>
-          <div class="sc-score-sub">Over ${p.days_tracked} days</div>
-        </div>
-      </div>
-      <div class="sc-chart-head">
-        <span>4-day avg score</span>
-        <span class="sc-traj-badge" style="background:${traj.bg};color:${traj.color}">${trajLbl}</span>
-      </div>
-      <div style="flex:1;min-height:70px">${spark}</div>
-    </div>
-  </div>`;
-}
-
-function buildSuccessSparkline(series, strokeColor) {
-  if (!series || series.length < 2) return '<svg style="width:100%;height:70px"></svg>';
-  const raw      = series.map(s => s.score);
-  const smoothed = raw.map((_, i) => {
-    const slice = raw.slice(Math.max(0, i - 3), i + 1);
-    return slice.reduce((a, b) => a + b, 0) / slice.length;
-  });
-  const maxV = Math.max(...smoothed, 1);
-  const w = 280, h = 70;
-  const pts = smoothed.map((v, i) => {
-    const x = (i / (smoothed.length - 1)) * w;
-    const y = h - (v / maxV) * (h - 6) - 3;
-    return x.toFixed(1) + ',' + y.toFixed(1);
-  });
-  const polyPts = pts.join(' ');
-  const fillPts = '0,' + h + ' ' + polyPts + ' ' + w + ',' + h;
-  return `<svg viewBox="0 0 ${w} ${h}" style="width:100%;height:70px;display:block" preserveAspectRatio="none">
-    <polygon points="${fillPts}" fill="${strokeColor}" fill-opacity="0.07"/>
-    <polyline points="${polyPts}" fill="none" stroke="${strokeColor}" stroke-width="1.5" stroke-linejoin="round" stroke-linecap="round"/>
-  </svg>`;
-}
+let allSuccess = [];
 
 
-// ═══════════════════════════════════════════════════
-// MOBILE: bottom-nav review badge mirror
-// ═══════════════════════════════════════════════════
-(function() {
-  const src = document.getElementById('kw-review-badge');
-  const dst = document.getElementById('bn-review-badge');
-  if (!src || !dst) return;
-  function sync() {
-    dst.textContent = src.textContent;
-    dst.style.display = src.style.display === 'none' ? 'none' : 'flex';
-  }
-  sync();
-  new MutationObserver(sync).observe(src, { attributes: true, childList: true, characterData: true, attributeFilter: ['style'] });
-})();
 
 // ═══════════════════════════════════════════════════
 // MOBILE: filter bottom sheet (DOM-portal: relocate real
@@ -2498,9 +1776,6 @@ const MOBILE_FILTER_CONFIG = {
     { id: 'col-filter-age',      label: 'Age' },
   ],
   keywords: [{ sel: '#tab-keywords .controls', label: null }],
-  markdown: [{ sel: '#tab-markdown .controls', label: null }],
-  success:  [{ sel: '#tab-success .controls',  label: null }],
-  review:   [],
 };
 
 let _mobileSheetPortals = [];
