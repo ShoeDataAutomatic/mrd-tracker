@@ -33,6 +33,12 @@ primark_page.html
 .DS_Store
 Thumbs.db
 
+# FUSE filesystem artifacts (created by Linux sandbox on NTFS mounts)
+.fuse_hidden*
+
+# Database backups (local only, large, not needed in git)
+*.db.bak-*
+
 # IDE
 .vscode/
 .idea/
