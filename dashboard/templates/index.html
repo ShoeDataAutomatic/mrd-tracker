@@ -55,6 +55,7 @@
 
     /* ── Controls bar ── */
     .controls {
+      position: sticky; top: 0; z-index: 20;
       background: #fff; border-bottom: 1px solid #eee;
       padding: 10px 28px; display: flex; gap: 8px; align-items: center; flex-wrap: wrap;
     }
@@ -102,6 +103,7 @@
     .table-container { background: #fff; border: 0.5px solid #e0e0e0; border-radius: 8px; overflow: visible; }
     table { width: 100%; border-collapse: collapse; }
     thead tr.sort-row { background: #111; }
+    thead tr.sort-row th { position: sticky; top: 0; z-index: 10; background: #111; }
     th {
       padding: 11px 14px; text-align: left; font-size: 9px; font-weight: 700;
       font-family: 'Montserrat', sans-serif; color: #fff; text-transform: uppercase;
@@ -117,6 +119,7 @@
     /* ── Filter row ── */
     .filter-row { background: #f7f7f5; }
     .filter-row th {
+      position: sticky; top: 36px; z-index: 10;
       background: #f7f7f5; padding: 5px 6px; border-bottom: 1px solid #eee;
       cursor: default; font-size: inherit; color: inherit; text-transform: none;
       letter-spacing: 0; font-weight: normal; vertical-align: top;
