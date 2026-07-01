@@ -322,6 +322,24 @@
   .mobile-cards { display: none; }
   .kw-mobile-back, .kw-mobile-viewbar { display: none; }
 
+  /* ── Keywords tab: full-viewport, no page scroll on desktop ── */
+  @media (min-width: 761px) {
+    body.kw-active {
+      overflow: hidden; height: 100vh;
+      display: flex; flex-direction: column;
+    }
+    body.kw-active #tab-keywords {
+      flex: 1; min-height: 0;
+      display: flex; flex-direction: column;
+    }
+    body.kw-active .kw-layout {
+      flex: 1; min-height: 0;
+      grid-template-rows: 1fr;
+    }
+    body.kw-active .kw-list-panel,
+    body.kw-active .kw-products-panel { max-height: none; }
+  }
+
   @media (max-width: 760px) {
     .tab-bar { display: none; }
 
@@ -1116,6 +1134,7 @@ let currentTab = 'rankings';
 
 function switchTab(name) {
   currentTab = name;
+  document.body.classList.toggle('kw-active', name === 'keywords');
   document.getElementById('tab-rankings').style.display = name === 'rankings' ? '' : 'none';
   document.getElementById('tab-keywords').style.display = name === 'keywords' ? '' : 'none';
   document.getElementById('tab-success').style.display  = 'none';
