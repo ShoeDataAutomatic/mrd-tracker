@@ -350,14 +350,43 @@
   @media (max-width: 760px) {
     .tab-bar { display: none; }
 
-    /* Mobile header user — show only logout, hide username */
+    /* ── Header: stack logo above user links ── */
+    .header {
+      flex-wrap: wrap;
+      height: auto;
+      padding: 10px 16px 8px;
+      row-gap: 4px;
+    }
+    .header-logo { flex: 0 0 100%; }
     .header-username { display: none; }
     .header-admin-link { font-size: 10px; }
     .header-logout { font-size: 10px; }
 
-    /* Rankings: show only first 2 stat cards on mobile */
+    /* ── Rankings stats: no sticky gap, no overflow ── */
     #tab-rankings .stat-card:nth-child(n+3) { display: none; }
-    #tab-rankings .stats { grid-template-columns: 1fr 1fr; }
+    #tab-rankings .stats {
+      position: static !important;
+      display: grid !important;
+      grid-template-columns: 1fr 1fr;
+      overflow-x: hidden;
+      width: 100%;
+      gap: 0;
+    }
+    #tab-rankings .stat-card { flex: none; padding: 12px 14px; }
+    #tab-rankings .stat-card .value { font-size: 24px; }
+
+    /* ── Keywords stats: hide top keyword, no overflow ── */
+    #tab-keywords .stat-card:nth-child(n+3) { display: none; }
+    #tab-keywords .stats {
+      position: static !important;
+      display: grid !important;
+      grid-template-columns: 1fr 1fr;
+      overflow-x: hidden;
+      width: 100%;
+      gap: 0;
+    }
+    #tab-keywords .stat-card { flex: none; padding: 12px 14px; }
+    #tab-keywords .stat-card .value { font-size: 24px; }
 
     .bottom-nav {
       display: flex;
@@ -514,7 +543,14 @@
     .mc-field-lbl { font-size: 9px; font-weight: 800; letter-spacing: .5px; text-transform: uppercase; color: #aaa; margin-bottom: 2px; }
     .mc-field-val { font-size: 12px; color: #222; font-weight: 600; }
 
-    .kw-layout { grid-template-columns: 1fr !important; }
+    /* ── Keywords layout: full width, no side margins ── */
+    .kw-layout {
+      grid-template-columns: 1fr !important;
+      margin: 0 !important;
+      border-radius: 0;
+      border-left: none;
+      border-right: none;
+    }
 
     .kw-mobile-back {
       display: flex; align-items: center; gap: 6px; cursor: pointer;
@@ -528,9 +564,9 @@
       background: #f7f7f5;
       transform: translateX(100%);
       transition: transform .25s ease;
-      z-index: 550;
+      z-index: 1000;
       overflow-y: auto;
-      padding: 16px;
+      padding: 16px 16px calc(74px + 16px);
     }
     .kw-products-panel.open { transform: translateX(0); }
 
