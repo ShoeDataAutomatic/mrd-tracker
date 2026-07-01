@@ -29,9 +29,6 @@
     }
     .header-logo { font-size: 14px; font-weight: 900; letter-spacing: 4px; text-transform: uppercase; color: #111; }
     .header-logo span { color: #E8563A; }
-    .header-meta { display: flex; align-items: center; gap: 20px; font-size: 10px; letter-spacing: 1.5px; text-transform: uppercase; font-weight: 600; }
-    .header-meta .scrape { color: #bbb; }
-    .header-meta .time   { color: #555; }
     .header-user { display: flex; align-items: center; gap: 14px; margin-left: auto; }
     .header-username { font-size: 11px; font-weight: 700; color: #999; letter-spacing: .5px; }
     .header-admin-link { font-size: 11px; font-weight: 800; color: #111; letter-spacing: .5px; text-transform: uppercase; text-decoration: none; }
@@ -353,9 +350,6 @@
   @media (max-width: 760px) {
     .tab-bar { display: none; }
 
-    /* Hide last-updated time on mobile */
-    .header-meta { display: none; }
-
     /* Mobile header user — show only logout, hide username */
     .header-username { display: none; }
     .header-admin-link { font-size: 10px; }
@@ -632,10 +626,6 @@
 <!-- ═══ HEADER ═══ -->
 <div class="header">
   <div class="header-logo">Sidewalk <span>·</span> Analytics</div>
-  <div class="header-meta">
-    <span class="scrape">Data last updated:</span>
-    <span class="time" id="header-time">—</span>
-  </div>
   <div class="header-user">
     <span class="header-username">{{ username }}</span>
     {% if is_admin %}<a href="/admin" class="header-admin-link">Admin</a>{% endif %}
@@ -1360,14 +1350,7 @@ async function loadStats() {
   document.getElementById('stat-top-score').textContent = d.top_score ? `${d.top_score.toFixed(0)} pts` : '';
   document.getElementById('stat-rising').textContent    = d.fastest_rising ? cap(d.fastest_rising) : '—';
   document.getElementById('stat-rising-sub').textContent= d.fastest_rising_delta ? `+${d.fastest_rising_delta}% vs prev week` : '';
-  if (d.last_scrape) {
-    const lastScrape = new Date(d.last_scrape + 'Z');
-    document.getElementById('header-time').textContent =
-      lastScrape.toLocaleDateString('en-GB', {day:'2-digit',month:'short',year:'numeric'}) + ', ' +
-      lastScrape.toLocaleTimeString('en-GB', {hour:'2-digit',minute:'2-digit'});
-  } else {
-    document.getElementById('header-time').textContent = '—';
-  }
+
 }
 
 async function loadRankings() {
