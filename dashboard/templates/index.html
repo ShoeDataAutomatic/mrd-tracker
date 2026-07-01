@@ -17,6 +17,7 @@
 
     /* ── Header ── */
     .header {
+      position: sticky; top: 0; z-index: 100;
       background: #fff;
       padding: 0 28px;
       display: flex;
@@ -33,6 +34,7 @@
 
     /* ── Tab bar ── */
     .tab-bar {
+      position: sticky; top: 52px; z-index: 99;
       background: #fff;
       border-bottom: 2.5px solid #E8563A;
       padding: 0 28px;
@@ -87,6 +89,7 @@
 
     /* ── Stats row ── */
     .stats { display: grid; grid-template-columns: repeat(4,1fr); background: #fff; border-bottom: 1px solid #eee; }
+    #tab-rankings .stats { position: sticky; top: 138px; z-index: 97; }
     .stat-card { padding: 18px 24px; border-right: 0.5px solid #f0f0f0; }
     .stat-card:last-child { border-right: none; }
     .stat-card .label { font-size: 9px; font-weight: 700; letter-spacing: 2px; text-transform: uppercase; color: #bbb; margin-bottom: 0; }
@@ -103,7 +106,7 @@
     .table-container { background: #fff; border: 0.5px solid #e0e0e0; border-radius: 8px; overflow: visible; }
     table { width: 100%; border-collapse: collapse; }
     thead tr.sort-row { background: #111; }
-    thead tr.sort-row th { position: sticky; top: 0; z-index: 10; background: #111; }
+    thead tr.sort-row th { position: sticky; top: 241px; z-index: 10; background: #111; }
     th {
       padding: 11px 14px; text-align: left; font-size: 9px; font-weight: 700;
       font-family: 'Montserrat', sans-serif; color: #fff; text-transform: uppercase;
@@ -119,7 +122,7 @@
     /* ── Filter row ── */
     .filter-row { background: #f7f7f5; }
     .filter-row th {
-      position: sticky; top: 36px; z-index: 10;
+      position: sticky; top: 275px; z-index: 10;
       background: #f7f7f5; padding: 5px 6px; border-bottom: 1px solid #eee;
       cursor: default; font-size: inherit; color: inherit; text-transform: none;
       letter-spacing: 0; font-weight: normal; vertical-align: top;
@@ -299,7 +302,7 @@
     .kw-msd-check.checked::after { content: '✓'; color: #fff; font-size: 9px; font-weight: 700; }
 
     /* ── Date range bar ── */
-    .date-bar { background: #fff; border-bottom: 1px solid #eee; padding: 8px 28px; display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
+    .date-bar { position: sticky; top: 95px; z-index: 98; background: #fff; border-bottom: 1px solid #eee; padding: 8px 28px; display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
     .date-bar-label { font-size: 9px; font-weight: 700; letter-spacing: 2px; text-transform: uppercase; color: #bbb; white-space: nowrap; margin-right: 4px; }
     .date-preset-btn { border: 1.5px solid #e0e0e0; border-radius: 24px; padding: 5px 14px; font-size: 10px; font-weight: 700; letter-spacing: 1px; text-transform: uppercase; font-family: 'Montserrat', sans-serif; color: #888; background: #fff; cursor: pointer; white-space: nowrap; }
     .date-preset-btn.active { background: #111; border-color: #111; color: #fff; }
