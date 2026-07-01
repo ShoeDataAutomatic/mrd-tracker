@@ -347,11 +347,18 @@
   @media (max-width: 760px) {
     .tab-bar { display: none; }
 
+    /* Hide last-updated time on mobile */
+    .header-meta { display: none; }
+
+    /* Rankings: show only first 2 stat cards on mobile */
+    #tab-rankings .stat-card:nth-child(n+3) { display: none; }
+    #tab-rankings .stats { grid-template-columns: 1fr 1fr; }
+
     .bottom-nav {
       display: flex;
       position: fixed;
       left: 0; right: 0; bottom: 0;
-      height: 58px;
+      height: 62px;
       background: #fff;
       border-top: 1px solid #e8e8e5;
       z-index: 500;
@@ -368,23 +375,23 @@
       border: none;
       color: #999;
       font-family: 'Montserrat', sans-serif;
-      font-size: 9px;
+      font-size: 10px;
       font-weight: 700;
       letter-spacing: .3px;
       text-transform: uppercase;
       cursor: pointer;
       position: relative;
     }
-    .bn-item svg { width: 20px; height: 20px; }
+    .bn-item svg { width: 22px; height: 22px; }
     .bn-item.active { color: #E8563A; }
     .bn-badge {
       position: absolute;
-      top: 2px; right: calc(50% - 18px);
+      top: 4px; right: calc(50% - 20px);
       background: #E8563A;
       color: #fff;
       border-radius: 10px;
-      min-width: 15px;
-      height: 15px;
+      min-width: 16px;
+      height: 16px;
       padding: 0 4px;
       font-size: 9px;
       font-weight: 700;
@@ -393,7 +400,7 @@
       justify-content: center;
     }
 
-    body { padding-bottom: 70px; }
+    body { padding-bottom: 74px; }
 
     .date-bar, .controls { display: none; }
 
@@ -543,7 +550,70 @@
       box-shadow: 0 4px 14px rgba(0,0,0,.25);
     }
     .kw-mobile-viewbar.show { display: block; opacity: 1; transform: translateX(-50%) translateY(0); }
+
+    /* Mobile filter sheet footer */
+    .mobile-sheet-footer {
+      flex-shrink: 0;
+      padding: 8px 18px 14px;
+      border-top: 1px solid #f0f0f0;
+      text-align: center;
+    }
+    .mobile-sheet-clear {
+      background: none; border: none;
+      color: #E8563A;
+      font-family: 'Montserrat', sans-serif;
+      font-size: 11px; font-weight: 800; letter-spacing: .5px; text-transform: uppercase;
+      cursor: pointer; padding: 4px 0;
+    }
+
+    /* Keywords mobile controls bar (search + classification) */
+    .kw-mobile-controls {
+      display: flex; flex-direction: column; gap: 8px;
+      padding: 10px 12px 8px;
+      background: #fff; border-bottom: 1px solid #eee;
+      flex-shrink: 0;
+    }
+    .kw-mobile-search-wrap {
+      display: flex; align-items: center; gap: 8px;
+      background: #f7f7f5; border-radius: 22px; padding: 9px 14px;
+    }
+    .kw-mobile-search-wrap svg { width: 15px; height: 15px; color: #bbb; flex-shrink: 0; }
+    .kw-mobile-search-wrap input {
+      border: none; background: transparent;
+      font-size: 13px; font-weight: 500; font-family: 'Montserrat', sans-serif;
+      color: #111; outline: none; width: 100%;
+    }
+    .kw-mobile-search-wrap input::placeholder { color: #bbb; }
+    .kw-mobile-class-wrap { position: relative; }
+    .kw-mobile-class-btn {
+      width: 100%; display: flex; align-items: center; justify-content: space-between;
+      background: #fff; border: 1.5px solid #e0e0e0; border-radius: 22px;
+      padding: 9px 14px; font-family: 'Montserrat', sans-serif;
+      font-size: 12px; font-weight: 700; color: #666; cursor: pointer;
+    }
+    .kw-mobile-class-btn.active { border-color: #111; color: #111; }
+    .kw-mobile-class-btn svg { width: 14px; height: 14px; color: #aaa; flex-shrink: 0; }
+    .kw-mobile-class-panel {
+      position: absolute; top: calc(100% + 6px); left: 0; right: 0; z-index: 200;
+      background: #fff; border: 1px solid #e0e0e0; border-radius: 14px;
+      box-shadow: 0 6px 24px rgba(0,0,0,0.12); overflow: hidden;
+    }
+    .kw-mobile-class-item {
+      display: flex; align-items: center; gap: 10px;
+      padding: 12px 14px; font-size: 13px; font-weight: 600; color: #111;
+      cursor: pointer; border-bottom: 1px solid #f5f5f3;
+    }
+    .kw-mobile-class-item:last-child { border-bottom: none; }
+    .kw-mobile-class-check {
+      width: 18px; height: 18px; border-radius: 5px; border: 1.5px solid #ddd;
+      flex-shrink: 0; display: flex; align-items: center; justify-content: center;
+      font-size: 11px; font-weight: 900; color: transparent;
+    }
+    .kw-mobile-class-check.checked { background: #111; border-color: #111; color: #fff; }
   }
+
+  /* Hide keyword mobile controls on desktop */
+  .kw-mobile-controls { display: none; }
   </style>
 </head>
 <body>
@@ -569,17 +639,16 @@
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 3v18h18"/><path d="M18 17V9"/><path d="M13 17V5"/><path d="M8 17v-3"/></svg>
     <span>Rankings</span>
   </button>
+  <button class="bn-item" id="bn-filter-btn" onclick="openMobileSheet()">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="4" y1="6" x2="20" y2="6"/><line x1="8" y1="12" x2="16" y2="12"/><line x1="11" y1="18" x2="13" y2="18"/></svg>
+    <span class="bn-badge" id="bn-filter-badge">0</span>
+    <span>Filter</span>
+  </button>
   <button class="bn-item" data-tab="keywords" onclick="switchTab('keywords')">
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20.59 13.41 11 4H4v7l9.59 9.59a2 2 0 0 0 2.82 0l4.18-4.18a2 2 0 0 0 0-2.82z"/><circle cx="7.5" cy="7.5" r="1" fill="currentColor"/></svg>
     <span>Keywords</span>
   </button>
 </div>
-
-<!-- ===== MOBILE FILTERS FAB ===== -->
-<button class="mobile-fab" onclick="openMobileSheet()">
-  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="4" y1="6" x2="20" y2="6"/><line x1="8" y1="12" x2="16" y2="12"/><line x1="11" y1="18" x2="13" y2="18"/></svg>
-  <span>Filters</span>
-</button>
 
 <!-- ═══ UNIVERSAL DATE BAR ═══ -->
 <div class="date-bar">
@@ -712,6 +781,30 @@
 
 <!-- ═══════════════════════ KEYWORDS TAB ═══════════════════════ -->
 <div id="tab-keywords" style="display:none">
+
+  <!-- Mobile-only: persistent search + classification bar -->
+  <div class="kw-mobile-controls" id="kw-mobile-controls">
+    <div class="kw-mobile-search-wrap">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+      <input type="text" id="kw-mobile-search" placeholder="Search keywords…"
+        oninput="document.getElementById('kw-search').value=this.value; renderKeywords()">
+    </div>
+    <div class="kw-mobile-class-wrap">
+      <button class="kw-mobile-class-btn" id="kw-mobile-class-btn" onclick="toggleKwMobileClass(event)">
+        <span id="kw-mobile-class-label">All classifications</span>
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>
+      </button>
+      <div class="kw-mobile-class-panel" id="kw-mobile-class-panel" style="display:none">
+        <div class="kw-mobile-class-item" onclick="toggleMsdItem('classification','colour')"><span class="kw-mobile-class-check" id="kw-mobile-check-colour"></span>Colour</div>
+        <div class="kw-mobile-class-item" onclick="toggleMsdItem('classification','material')"><span class="kw-mobile-class-check" id="kw-mobile-check-material"></span>Material</div>
+        <div class="kw-mobile-class-item" onclick="toggleMsdItem('classification','trim')"><span class="kw-mobile-class-check" id="kw-mobile-check-trim"></span>Trim</div>
+        <div class="kw-mobile-class-item" onclick="toggleMsdItem('classification','pattern')"><span class="kw-mobile-class-check" id="kw-mobile-check-pattern"></span>Pattern</div>
+        <div class="kw-mobile-class-item" onclick="toggleMsdItem('classification','type')"><span class="kw-mobile-class-check" id="kw-mobile-check-type"></span>Type</div>
+        <div class="kw-mobile-class-item" onclick="toggleMsdItem('classification','fit')"><span class="kw-mobile-class-check" id="kw-mobile-check-fit"></span>Fit</div>
+        <div class="kw-mobile-class-item" onclick="toggleMsdItem('classification','brand')"><span class="kw-mobile-class-check" id="kw-mobile-check-brand"></span>Brand</div>
+      </div>
+    </div>
+  </div>
 
   <div class="stats" style="grid-template-columns:repeat(3,1fr)">
     <div class="stat-card">
@@ -1145,10 +1238,51 @@ function switchTab(name) {
   document.getElementById('tab-markdown').style.display = 'none';
   document.querySelectorAll('.tab-btn').forEach(b =>
     b.classList.toggle('active', b.dataset.tab === name));
-  document.querySelectorAll('.bn-item').forEach(b =>
+  // Only mark rankings/keywords buttons active — not the Filter button
+  document.querySelectorAll('.bn-item[data-tab]').forEach(b =>
     b.classList.toggle('active', b.dataset.tab === name));
   if (name !== 'keywords') closeKwMobilePanel();
   if (name === 'keywords' && allKeywords.length === 0) loadKeywords();
+  updateMobileFilterBadge();
+}
+
+// ── Mobile filter badge ───────────────────────────────────────────────────────
+function updateMobileFilterBadge() {
+  const badge = document.getElementById('bn-filter-badge');
+  if (!badge) return;
+  let count = 0;
+  if (currentTab === 'keywords') {
+    kwMsdKeys.forEach(k => { count += kwMsd[k].size; });
+    if (document.getElementById('kw-filter-age') && document.getElementById('kw-filter-age').value) count++;
+  } else {
+    // Rankings
+    if (typeof msSelections !== 'undefined') {
+      Object.values(msSelections).forEach(a => { count += a.length; });
+    }
+    ['col-filter-name','col-filter-score','col-filter-price','col-filter-rank','col-filter-age']
+      .forEach(id => { const el = document.getElementById(id); if (el && el.value) count++; });
+  }
+  badge.textContent = count;
+  badge.style.display = count > 0 ? 'flex' : 'none';
+}
+
+function clearMobileFilters() {
+  if (currentTab === 'keywords') {
+    clearKwFilters();
+  } else {
+    clearAllFilters();
+  }
+  updateMobileFilterBadge();
+}
+
+// ── Keywords mobile classification pulldown ───────────────────────────────────
+function toggleKwMobileClass(e) {
+  e && e.stopPropagation();
+  const panel = document.getElementById('kw-mobile-class-panel');
+  if (!panel) return;
+  // Close all MSD panels first
+  kwMsdKeys.forEach(k => { const p = document.getElementById(`msd-${k}-panel`); if (p) p.style.display = 'none'; });
+  panel.style.display = panel.style.display === 'none' ? 'block' : 'none';
 }
 
 
@@ -1418,6 +1552,7 @@ function updateClearButton() {
     document.getElementById('col-filter-age').value;
   const btn = document.getElementById('btn-clear-filters');
   if (btn) btn.style.display = hasFilters ? 'inline-block' : 'none';
+  updateMobileFilterBadge();
 }
 
 function clearAllFilters() {
@@ -1459,6 +1594,8 @@ function toggleMsd(key, e) {
 
 document.addEventListener('click', () => {
   kwMsdKeys.forEach(k => { const p=document.getElementById(`msd-${k}-panel`); if(p) p.style.display='none'; });
+  const mcp = document.getElementById('kw-mobile-class-panel');
+  if (mcp) mcp.style.display = 'none';
 });
 
 function toggleMsdItem(key, value) {
@@ -1484,12 +1621,21 @@ function _updateMsdUi(key) {
     badge.style.display='none'; btn.classList.remove('active');
   }
   if (key === 'classification') {
+    const text = set.size
+      ? [...set].map(v => v.charAt(0).toUpperCase() + v.slice(1)).join(', ')
+      : 'All classifications';
     const label = document.getElementById('msd-classification-label');
-    if (label) {
-      label.textContent = set.size
-        ? [...set].map(v => v.charAt(0).toUpperCase() + v.slice(1)).join(', ')
-        : 'All classifications';
-    }
+    if (label) label.textContent = text;
+    // Sync mobile classification label + checks
+    const mobileLabel = document.getElementById('kw-mobile-class-label');
+    if (mobileLabel) mobileLabel.textContent = text;
+    const mobileBtn = document.getElementById('kw-mobile-class-btn');
+    if (mobileBtn) mobileBtn.classList.toggle('active', set.size > 0);
+    ['colour','material','trim','pattern','type','fit','brand'].forEach(val => {
+      const el = document.getElementById(`kw-mobile-check-${val}`);
+      if (el) el.classList.toggle('checked', set.has(val));
+    });
+    updateMobileFilterBadge();
   }
 }
 
@@ -1530,6 +1676,7 @@ function checkKwClearBtn() {
   // called elsewhere) in case future logic needs to react to filter state.
   const btn = document.getElementById('kw-btn-clear');
   if (btn) btn.style.display = 'inline-block';
+  updateMobileFilterBadge();
 }
 
 function clearKwFilters() {
@@ -1537,6 +1684,10 @@ function clearKwFilters() {
   document.getElementById('kw-filter-age').value = '';
   kwIncluded.clear();
   kwExcluded.clear();
+  // Also clear the mobile search input
+  const mobileSearch = document.getElementById('kw-mobile-search');
+  if (mobileSearch) mobileSearch.value = '';
+  document.getElementById('kw-search').value = '';
   renderKwFilterChips();
   checkKwClearBtn();
   loadKeywords();
@@ -1858,6 +2009,7 @@ function closeMobileSheet() {
   const backdrop = document.getElementById('mobile-sheet-backdrop');
   if (sheet) sheet.classList.remove('open');
   if (backdrop) backdrop.classList.remove('open');
+  updateMobileFilterBadge();
 }
 
 _initDateBar();
@@ -1873,6 +2025,9 @@ loadAll();
     <button class="mobile-sheet-done" onclick="closeMobileSheet()">Done</button>
   </div>
   <div class="mobile-sheet-body" id="mobile-sheet-body"></div>
+  <div class="mobile-sheet-footer">
+    <button class="mobile-sheet-clear" onclick="clearMobileFilters()">Clear all filters</button>
+  </div>
 </div>
 
 <div class="img-lb" id="img-lb" onclick="closeLightbox()">
