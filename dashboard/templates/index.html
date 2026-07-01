@@ -1725,13 +1725,22 @@ function renderKwProducts() {
   const _attrFiltered = kwProducts.filter(_kwAttrPredicate);
   const sorted=[..._attrFiltered].sort((a,b)=>{
     if (sortBy==='name')        return (a.name||'').localeCompare(b.name||'');
-    if (sortBy==='score')       return (b.total_score||0)-(a.total_score||0);
+    if (sortBy==='score') {
+      const diff = (+b.total_score||0)-(+a.total_score||0);
+      if (diff !== 0) return diff;
+      // tiebreak by newest first
+      const fa=a.first_seen||'', fb=b.first_seen||'';
+      return fb > fa ? 1 : fb < fa ? -1 : 0;
+    }
     if (sortBy==='subcategory') {
       const sa=normSub((a.subcategory||a.category||'').replace(/-/g,' '))||'';
       const sb=normSub((b.subcategory||b.category||'').replace(/-/g,' '))||'';
       return sa.localeCompare(sb);
     }
-    return (b.last_seen||'').localeCompare(a.last_seen||'');
+    // recent first — use first_seen (newest product listings); last_seen is
+    // updated every scrape so all active products are tied by it
+    const fa=a.first_seen||'', fb=b.first_seen||'';
+    return fb > fa ? 1 : fb < fa ? -1 : 0;
   });
   // Update product count in meta bar
   const metaEl2=document.getElementById('kw-result-meta');
