@@ -9,6 +9,7 @@ Tables:
 
 import sqlite3
 import json
+import os
 from datetime import datetime, date
 from config import DATABASE_PATH
 
@@ -114,9 +115,40 @@ def init_db():
     ''')
     c.execute('CREATE INDEX IF NOT EXISTS idx_keyword_class_status ON keyword_classifications(status)')
 
+    c.execute('''
+        CREATE TABLE IF NOT EXISTS users (
+            id                   INTEGER PRIMARY KEY AUTOINCREMENT,
+            username             TEXT UNIQUE NOT NULL,
+            password_hash        TEXT NOT NULL,
+            can_access_rankings  INTEGER DEFAULT 1,
+            can_access_keywords  INTEGER DEFAULT 1,
+            is_admin             INTEGER DEFAULT 0
+        )
+    ''')
+
     conn.commit()
     conn.close()
     print('[db] Initialised.')
+
+
+def init_admin_user():
+    """Create or update the admin user from environment variables.
+    Called on every app startup so changing ADMIN_PASSWORD takes effect on redeploy.
+    """
+    from werkzeug.security import generate_password_hash
+    username = os.environ.get('ADMIN_USERNAME', 'admin')
+    password = os.environ.get('ADMIN_PASSWORD', 'changeme')
+    pw_hash  = generate_password_hash(password)
+    conn = get_connection()
+    existing = conn.execute('SELECT id FROM users WHERE username = ?', (username,)).fetchone()
+    if existing:
+        conn.execute('UPDATE users SET password_hash=?, is_admin=1, can_access_rankings=1, can_access_keywords=1 WHERE username=?',
+                     (pw_hash, username))
+    else:
+        conn.execute('INSERT INTO users (username, password_hash, can_access_rankings, can_access_keywords, is_admin) VALUES (?,?,1,1,1)',
+                     (username, pw_hash))
+    conn.commit()
+    conn.close()
 
 
 # ---------------------------------------------------------------------------
@@ -579,3 +611,61 @@ def get_score_history_batch(product_ids, days=30, start_date=None, end_date=None
 
     conn.close()
     return result
+
+
+# ---------------------------------------------------------------------------
+# User authentication
+# ---------------------------------------------------------------------------
+
+def get_user_by_id(user_id):
+    conn = get_connection()
+    row = conn.execute('SELECT * FROM users WHERE id = ?', (user_id,)).fetchone()
+    conn.close()
+    return dict(row) if row else None
+
+
+def get_user_by_username(username):
+    conn = get_connection()
+    row = conn.execute('SELECT * FROM users WHERE username = ?', (username,)).fetchone()
+    conn.close()
+    return dict(row) if row else None
+
+
+def get_all_users():
+    """Return all non-admin users, ordered by username."""
+    conn = get_connection()
+    rows = conn.execute('SELECT * FROM users WHERE is_admin = 0 ORDER BY username').fetchall()
+    conn.close()
+    return [dict(r) for r in rows]
+
+
+def create_user(username, password_hash, can_rankings=True, can_keywords=True):
+    conn = get_connection()
+    try:
+        conn.execute(
+            'INSERT INTO users (username, password_hash, can_access_rankings, can_access_keywords, is_admin) VALUES (?,?,?,?,0)',
+            (username, password_hash, 1 if can_rankings else 0, 1 if can_keywords else 0)
+        )
+        conn.commit()
+        return True, None
+    except sqlite3.IntegrityError:
+        return False, 'Username already exists.'
+    finally:
+        conn.close()
+
+
+def delete_user(user_id):
+    conn = get_connection()
+    conn.execute('DELETE FROM users WHERE id = ? AND is_admin = 0', (user_id,))
+    conn.commit()
+    conn.close()
+
+
+def update_user_access(user_id, can_rankings, can_keywords):
+    conn = get_connection()
+    conn.execute(
+        'UPDATE users SET can_access_rankings=?, can_access_keywords=? WHERE id=? AND is_admin=0',
+        (1 if can_rankings else 0, 1 if can_keywords else 0, user_id)
+    )
+    conn.commit()
+    conn.close()

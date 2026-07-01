@@ -32,6 +32,12 @@
     .header-meta { display: flex; align-items: center; gap: 20px; font-size: 10px; letter-spacing: 1.5px; text-transform: uppercase; font-weight: 600; }
     .header-meta .scrape { color: #bbb; }
     .header-meta .time   { color: #555; }
+    .header-user { display: flex; align-items: center; gap: 14px; margin-left: auto; }
+    .header-username { font-size: 11px; font-weight: 700; color: #999; letter-spacing: .5px; }
+    .header-admin-link { font-size: 11px; font-weight: 800; color: #111; letter-spacing: .5px; text-transform: uppercase; text-decoration: none; }
+    .header-admin-link:hover { color: #E8563A; }
+    .header-logout { font-size: 11px; font-weight: 700; color: #bbb; letter-spacing: .5px; text-decoration: none; text-transform: uppercase; }
+    .header-logout:hover { color: #E8563A; }
 
     /* ── Tab bar ── */
     .tab-bar {
@@ -350,6 +356,11 @@
     /* Hide last-updated time on mobile */
     .header-meta { display: none; }
 
+    /* Mobile header user — show only logout, hide username */
+    .header-username { display: none; }
+    .header-admin-link { font-size: 10px; }
+    .header-logout { font-size: 10px; }
+
     /* Rankings: show only first 2 stat cards on mobile */
     #tab-rankings .stat-card:nth-child(n+3) { display: none; }
     #tab-rankings .stats { grid-template-columns: 1fr 1fr; }
@@ -625,29 +636,38 @@
     <span class="scrape">Data last updated:</span>
     <span class="time" id="header-time">—</span>
   </div>
+  <div class="header-user">
+    <span class="header-username">{{ username }}</span>
+    {% if is_admin %}<a href="/admin" class="header-admin-link">Admin</a>{% endif %}
+    <a href="/logout" class="header-logout">Sign out</a>
+  </div>
 </div>
 
 <!-- ═══ TAB BAR ═══ -->
 <div class="tab-bar">
-  <button class="tab-btn active" data-tab="rankings" onclick="switchTab('rankings')">Rankings</button>
-  <button class="tab-btn" data-tab="keywords" onclick="switchTab('keywords')">Keyword analysis</button>
+  {% if can_rankings %}<button class="tab-btn{% if can_rankings %} active{% endif %}" data-tab="rankings" onclick="switchTab('rankings')">Rankings</button>{% endif %}
+  {% if can_keywords %}<button class="tab-btn{% if not can_rankings %} active{% endif %}" data-tab="keywords" onclick="switchTab('keywords')">Keyword analysis</button>{% endif %}
 </div>
 
 <!-- ===== MOBILE BOTTOM NAV ===== -->
 <div class="bottom-nav">
-  <button class="bn-item active" data-tab="rankings" onclick="switchTab('rankings')">
+  {% if can_rankings %}
+  <button class="bn-item{% if can_rankings %} active{% endif %}" data-tab="rankings" onclick="switchTab('rankings')">
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 3v18h18"/><path d="M18 17V9"/><path d="M13 17V5"/><path d="M8 17v-3"/></svg>
     <span>Rankings</span>
   </button>
+  {% endif %}
   <button class="bn-item" id="bn-filter-btn" onclick="openMobileSheet()">
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="4" y1="6" x2="20" y2="6"/><line x1="8" y1="12" x2="16" y2="12"/><line x1="11" y1="18" x2="13" y2="18"/></svg>
     <span class="bn-badge" id="bn-filter-badge">0</span>
     <span>Filter</span>
   </button>
-  <button class="bn-item" data-tab="keywords" onclick="switchTab('keywords')">
+  {% if can_keywords %}
+  <button class="bn-item{% if not can_rankings %} active{% endif %}" data-tab="keywords" onclick="switchTab('keywords')">
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20.59 13.41 11 4H4v7l9.59 9.59a2 2 0 0 0 2.82 0l4.18-4.18a2 2 0 0 0 0-2.82z"/><circle cx="7.5" cy="7.5" r="1" fill="currentColor"/></svg>
     <span>Keywords</span>
   </button>
+  {% endif %}
 </div>
 
 <!-- ═══ UNIVERSAL DATE BAR ═══ -->
@@ -666,7 +686,7 @@
 </div>
 
 <!-- ═══════════════════════ RANKINGS TAB ═══════════════════════ -->
-<div id="tab-rankings">
+<div id="tab-rankings"{% if not can_rankings %} style="display:none"{% endif %}>
 
   <div class="stats">
     <div class="stat-card">
@@ -780,7 +800,7 @@
 </div><!-- /tab-rankings -->
 
 <!-- ═══════════════════════ KEYWORDS TAB ═══════════════════════ -->
-<div id="tab-keywords" style="display:none">
+<div id="tab-keywords"{% if can_rankings %} style="display:none"{% endif %}>
 
   <!-- Mobile-only: persistent search + classification bar -->
   <div class="kw-mobile-controls" id="kw-mobile-controls">
@@ -997,9 +1017,13 @@ function onCustomDate() {
 }
 
 function applyDateRange() {
+  {% if can_rankings %}
   loadStats();
   loadRankings();
+  {% endif %}
+  {% if can_keywords %}
   if (allKeywords.length > 0) loadKeywords();
+  {% endif %}
 }
 
 function _initDateBar() {
@@ -1227,7 +1251,7 @@ document.addEventListener('click', e => {
 // ═══════════════════════════════════════════════════
 // TAB SWITCHING
 // ═══════════════════════════════════════════════════
-let currentTab = 'rankings';
+let currentTab = '{% if can_rankings %}rankings{% else %}keywords{% endif %}';
 
 function switchTab(name) {
   currentTab = name;
@@ -1568,7 +1592,7 @@ function clearAllFilters() {
   renderTable();
 }
 
-function loadAll() { loadStats(); loadRankings(); }
+function loadAll() { {% if can_rankings %}loadStats(); loadRankings();{% endif %} {% if can_keywords %}loadKeywords();{% endif %} }
 
 // Initialise with empty options — populated after data loads
 initMultiSelects([], []);
@@ -2013,7 +2037,16 @@ function closeMobileSheet() {
 }
 
 _initDateBar();
-loadAll();
+{% if can_rankings %}
+loadStats();
+loadRankings();
+{% elif can_keywords %}
+document.body.classList.add('kw-active');
+if (typeof showKwMobileControls === 'function') showKwMobileControls();
+{% endif %}
+{% if can_keywords %}
+loadKeywords();
+{% endif %}
 </script>
 
 <!-- ===== MOBILE FILTER SHEET ===== -->

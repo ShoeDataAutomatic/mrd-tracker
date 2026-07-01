@@ -13,8 +13,11 @@ sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..'))
 
 import re
 import json
+import os
 from collections import Counter
-from flask import Flask, render_template, jsonify, request, Response, redirect
+from flask import Flask, render_template, jsonify, request, Response, redirect, url_for, flash
+from flask_login import LoginManager, UserMixin, login_user, logout_user, login_required, current_user
+from werkzeug.security import generate_password_hash, check_password_hash
 from config import DASHBOARD_HOST, DASHBOARD_PORT, DASHBOARD_DEBUG, RETAILERS
 import scorer
 import database as db
@@ -203,6 +206,109 @@ def _classify_name(name):
     return colours, materials, trims, patterns, types, fits, brands
 
 app = Flask(__name__)
+app.secret_key = os.environ.get('SECRET_KEY', 'dev-secret-change-in-prod')
+
+# ---------------------------------------------------------------------------
+# Auth setup
+# ---------------------------------------------------------------------------
+
+login_manager = LoginManager(app)
+login_manager.login_view = 'login'
+login_manager.login_message = ''   # suppress default flash
+
+
+class User(UserMixin):
+    def __init__(self, row):
+        self.id            = row['id']
+        self.username      = row['username']
+        self.can_rankings  = bool(row['can_access_rankings'])
+        self.can_keywords  = bool(row['can_access_keywords'])
+        self.is_admin      = bool(row['is_admin'])
+
+    def get_id(self):
+        return str(self.id)
+
+
+@login_manager.user_loader
+def load_user(user_id):
+    row = db.get_user_by_id(int(user_id))
+    return User(row) if row else None
+
+
+# Initialise DB tables and seed admin on startup
+db.init_db()
+db.init_admin_user()
+
+
+# ---------------------------------------------------------------------------
+# Auth routes
+# ---------------------------------------------------------------------------
+
+@app.route('/login', methods=['GET', 'POST'])
+def login():
+    if current_user.is_authenticated:
+        return redirect(url_for('index'))
+    error = None
+    if request.method == 'POST':
+        username = request.form.get('username', '').strip()
+        password = request.form.get('password', '')
+        row = db.get_user_by_username(username)
+        if row and check_password_hash(row['password_hash'], password):
+            login_user(User(row), remember=True)
+            return redirect(url_for('index'))
+        error = 'Invalid username or password.'
+    return render_template('login.html', error=error)
+
+
+@app.route('/logout')
+@login_required
+def logout():
+    logout_user()
+    return redirect(url_for('login'))
+
+
+@app.route('/admin', methods=['GET', 'POST'])
+@login_required
+def admin():
+    if not current_user.is_admin:
+        return redirect(url_for('index'))
+
+    error = None
+    success = None
+
+    if request.method == 'POST':
+        action = request.form.get('action')
+
+        if action == 'create':
+            username     = request.form.get('username', '').strip()
+            password     = request.form.get('password', '').strip()
+            can_rankings = 'can_rankings' in request.form
+            can_keywords = 'can_keywords' in request.form
+            if not username or not password:
+                error = 'Username and password are required.'
+            else:
+                ok, msg = db.create_user(username, generate_password_hash(password),
+                                         can_rankings, can_keywords)
+                if ok:
+                    success = f'User "{username}" created.'
+                else:
+                    error = msg
+
+        elif action == 'delete':
+            user_id = int(request.form.get('user_id', 0))
+            db.delete_user(user_id)
+            success = 'User deleted.'
+
+        elif action == 'update_access':
+            user_id      = int(request.form.get('user_id', 0))
+            can_rankings = 'can_rankings' in request.form
+            can_keywords = 'can_keywords' in request.form
+            db.update_user_access(user_id, can_rankings, can_keywords)
+            success = 'Access updated.'
+
+    users = db.get_all_users()
+    return render_template('admin.html', users=users, error=error, success=success,
+                           admin_username=os.environ.get('ADMIN_USERNAME', 'admin'))
 
 
 # ---------------------------------------------------------------------------
@@ -210,13 +316,18 @@ app = Flask(__name__)
 # ---------------------------------------------------------------------------
 
 @app.route('/')
+@login_required
 def index():
     retailer_list = [
         {'key': k, 'name': v['name']}
         for k, v in RETAILERS.items()
         if v.get('enabled')
     ]
-    return render_template('index.html', retailers=retailer_list)
+    return render_template('index.html', retailers=retailer_list,
+                           can_rankings=current_user.can_rankings,
+                           can_keywords=current_user.can_keywords,
+                           is_admin=current_user.is_admin,
+                           username=current_user.username)
 
 
 # ---------------------------------------------------------------------------
@@ -224,6 +335,7 @@ def index():
 # ---------------------------------------------------------------------------
 
 @app.route('/api/rankings')
+@login_required
 def api_rankings():
     retailer   = request.args.get('retailer') or None
     days       = int(request.args.get('days', 30))
@@ -247,6 +359,7 @@ def api_rankings():
 
 
 @app.route('/api/image/<int:product_id>')
+@login_required
 def api_image(product_id):
     data, content_type = db.get_image_blob(product_id)
     if data:
@@ -260,6 +373,7 @@ def api_image(product_id):
 
 
 @app.route('/api/product/<int:product_id>')
+@login_required
 def api_product(product_id):
     product  = db.get_product(product_id)
     if not product:
@@ -276,6 +390,7 @@ def api_product(product_id):
 
 
 @app.route('/api/stats')
+@login_required
 def api_stats():
     from datetime import date, timedelta
 
@@ -330,6 +445,7 @@ def api_stats():
 
 
 @app.route('/api/keywords')
+@login_required
 def api_keywords():
     from datetime import date, timedelta
     def _split(v): return [x.strip() for x in v.split(',') if x.strip()]
@@ -430,6 +546,7 @@ def api_keywords():
 
 
 @app.route('/api/keywords/products')
+@login_required
 def api_keyword_products():
     def _split(v): return [x.strip() for x in v.split(',') if x.strip()]
 
@@ -484,6 +601,7 @@ def api_keyword_products():
 
 
 @app.route('/api/keywords/attributes')
+@login_required
 def api_keyword_attributes():
     def _split(v): return [x.strip() for x in v.split(',') if x.strip()]
     include_raw = (request.args.get('include') or '').lower().strip()
@@ -532,6 +650,7 @@ def api_keyword_attributes():
     })
 
 @app.route('/export/keyword-classifications')
+@login_required
 def export_keyword_classifications():
     import csv, io
     products = db.get_all_products(retailer=None)
