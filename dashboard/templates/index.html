@@ -261,8 +261,14 @@
     .kw-delta-up  { font-size: 10px; color: #00a651; font-weight: 700; white-space: nowrap; }
     .kw-delta-dn  { font-size: 10px; color: #E8563A; font-weight: 700; white-space: nowrap; }
     .kw-delta-new { font-size: 10px; color: #bbb; font-weight: 500; }
-    .kw-btn-group { display: flex; gap: 4px; }
-    .kw-btn-inc, .kw-btn-exc { border: 1.5px solid #e0e0e0; border-radius: 24px; padding: 3px 10px; font-size: 9px; font-weight: 700; letter-spacing: 1px; text-transform: uppercase; font-family: 'Montserrat', sans-serif; cursor: pointer; background: #fff; color: #888; transition: all .12s; }
+    .kw-btn-group { display: flex; gap: 4px; align-items: center; }
+    .kw-btn-inc, .kw-btn-exc {
+      border: 1.5px solid #e0e0e0; border-radius: 6px;
+      width: 26px; height: 26px; padding: 0; flex-shrink: 0;
+      display: flex; align-items: center; justify-content: center;
+      cursor: pointer; background: #fff; color: #aaa; transition: all .12s;
+    }
+    .kw-btn-inc svg, .kw-btn-exc svg { width: 13px; height: 13px; stroke: currentColor; flex-shrink: 0; }
     .kw-btn-inc:hover { border-color: #2d6a3f; color: #2d6a3f; }
     .kw-btn-exc:hover { border-color: #c0392b; color: #c0392b; }
     .kw-btn-inc-active { background: #2d6a3f !important; border-color: #2d6a3f !important; color: #fff !important; }
@@ -936,7 +942,7 @@
     </div>
   </div>
 
-  <div class="stats" style="grid-template-columns:repeat(3,1fr)">
+  <div class="stats" style="grid-template-columns:repeat(2,1fr)">
     <div class="stat-card">
       <div class="label">Unique keywords</div>
       <div class="value" id="kw-stat-unique">—</div>
@@ -944,11 +950,6 @@
     <div class="stat-card">
       <div class="label">Products analysed</div>
       <div class="value" id="kw-stat-products">—</div>
-    </div>
-    <div class="stat-card">
-      <div class="label">Top keyword</div>
-      <div class="value sm" id="kw-stat-top">—</div>
-      <div class="sub pink" id="kw-stat-top-count"></div>
     </div>
   </div>
 
@@ -1797,10 +1798,6 @@ async function loadKeywords() {
   kwMaxCount  = Math.max(...allKeywords.map(k=>k.count), 1);
   document.getElementById('kw-stat-unique').textContent   = data.unique_count   ?? '—';
   document.getElementById('kw-stat-products').textContent = data.products_total ?? '—';
-  if (data.top_keyword) {
-    document.getElementById('kw-stat-top').textContent       = cap(data.top_keyword.keyword);
-    document.getElementById('kw-stat-top-count').textContent = `${data.top_keyword.count} products`;
-  } else { document.getElementById('kw-stat-top').textContent='—'; }
   checkKwClearBtn();
   renderKeywords();
   loadKwProducts();
@@ -1897,8 +1894,8 @@ function renderKeywords() {
         <span class="kw-count">${k.count}</span>
       </div></td>
       <td><div class="kw-btn-group">
-        <button class="kw-btn-inc${isInc?' kw-btn-inc-active':''}" onclick="toggleKwKeyword('${kw}','include')">Include</button>
-        <button class="kw-btn-exc${isExc?' kw-btn-exc-active':''}" onclick="toggleKwKeyword('${kw}','exclude')">Exclude</button>
+        <button class="kw-btn-inc${isInc?' kw-btn-inc-active':''}" onclick="toggleKwKeyword('${kw}','include')" title="Include"><svg viewBox="0 0 24 24" fill="none" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg></button>
+        <button class="kw-btn-exc${isExc?' kw-btn-exc-active':''}" onclick="toggleKwKeyword('${kw}','exclude')" title="Exclude"><svg viewBox="0 0 24 24" fill="none" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button>
       </div></td>
     </tr>`;
   }).join('');
@@ -2091,6 +2088,7 @@ function openMobileSheet() {
   const backdrop = document.getElementById('mobile-sheet-backdrop');
   if (sheet)    sheet.classList.add('open');
   if (backdrop) backdrop.classList.add('open');
+  document.body.style.overflow = 'hidden';
 }
 
 function closeMobileSheet() {
@@ -2098,8 +2096,13 @@ function closeMobileSheet() {
   const backdrop = document.getElementById('mobile-sheet-backdrop');
   if (sheet)    sheet.classList.remove('open');
   if (backdrop) backdrop.classList.remove('open');
+  document.body.style.overflow = '';
   updateMobileFilterBadge();
 }
+
+let _sheetSwipeY = 0;
+function _sheetHandleTouchStart(e) { _sheetSwipeY = e.touches[0].clientY; }
+function _sheetHandleTouchEnd(e)   { if (e.changedTouches[0].clientY - _sheetSwipeY > 60) closeMobileSheet(); }
 
 function renderMobileAccordion() {
   const body = document.getElementById('mobile-sheet-body');
@@ -2417,7 +2420,7 @@ loadKeywords();
 <!-- ===== MOBILE FILTER SHEET ===== -->
 <div class="mobile-sheet-backdrop" id="mobile-sheet-backdrop" onclick="closeMobileSheet()"></div>
 <div class="mobile-sheet" id="mobile-sheet">
-  <div class="mobile-sheet-handle"></div>
+  <div class="mobile-sheet-handle" ontouchstart="_sheetHandleTouchStart(event)" ontouchend="_sheetHandleTouchEnd(event)"></div>
   <div class="mobile-sheet-head">
     <div style="display:flex;align-items:center;gap:8px;">
       <h3>Filters</h3>
