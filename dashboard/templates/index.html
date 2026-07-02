@@ -651,6 +651,90 @@
       font-size: 11px; font-weight: 900; color: transparent;
     }
     .kw-mobile-class-check.checked { background: #111; border-color: #111; color: #fff; }
+
+    /* ── Accordion filter sheet (Concept A) ── */
+    .mobile-sheet-body { padding: 0 !important; gap: 0 !important; }
+    .sheet-total-badge {
+      display: inline-flex; align-items: center; justify-content: center;
+      background: #E8563A; color: #fff; font-size: 10px; font-weight: 800;
+      padding: 0 6px; line-height: 18px; border-radius: 9px; min-width: 18px;
+    }
+    .sheet-clear-top {
+      background: none; border: none; color: #E8563A;
+      font-family: 'Montserrat', sans-serif; font-size: 11px; font-weight: 800;
+      letter-spacing: .5px; text-transform: uppercase; cursor: pointer; padding: 4px 0;
+    }
+    .sheet-search { padding: 10px 18px 8px; border-bottom: 1px solid #f5f5f3; }
+    .sheet-search-inner {
+      display: flex; align-items: center; gap: 8px;
+      background: #f7f7f5; border-radius: 10px; padding: 9px 13px;
+    }
+    .sheet-search-inner svg { width: 14px; height: 14px; color: #bbb; flex-shrink: 0; }
+    .sheet-search-inner input {
+      border: none; background: transparent; font-size: 13px; font-weight: 500;
+      font-family: 'Montserrat', sans-serif; color: #111; outline: none; width: 100%;
+    }
+    .sheet-search-inner input::placeholder { color: #bbb; }
+    .sheet-acc { border-bottom: 1px solid #f5f5f3; }
+    .sheet-acc-head {
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 13px 18px; cursor: pointer; user-select: none; -webkit-user-select: none;
+    }
+    .sheet-acc-title-row { display: flex; align-items: center; gap: 8px; }
+    .sheet-acc-title { font-size: 13px; font-weight: 700; color: #111; }
+    .sheet-acc-badge {
+      display: inline-flex; align-items: center; justify-content: center;
+      background: #E8563A; color: #fff; font-size: 10px; font-weight: 800;
+      padding: 0 6px; line-height: 18px; border-radius: 9px; min-width: 18px;
+    }
+    .sheet-acc-chevron { font-size: 11px; color: #bbb; transition: transform .2s ease; flex-shrink: 0; }
+    .sheet-acc.open .sheet-acc-chevron { transform: rotate(180deg); }
+    .sheet-acc-body { display: none; padding: 0 18px 12px; }
+    .sheet-acc.open .sheet-acc-body { display: block; }
+    .sheet-cb-row {
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 9px 0; cursor: pointer; -webkit-tap-highlight-color: transparent;
+    }
+    .sheet-cb-row:active { opacity: .7; }
+    .sheet-cb-left { display: flex; align-items: center; gap: 11px; }
+    .sheet-cb-box {
+      width: 19px; height: 19px; border-radius: 4px; flex-shrink: 0;
+      display: flex; align-items: center; justify-content: center;
+      transition: background .1s, border-color .1s;
+    }
+    .sheet-cb-box.on { background: #111; border: none; }
+    .sheet-cb-box.off { border: 1.5px solid #ddd; background: #fff; }
+    .sheet-cb-tick { color: #fff; font-size: 12px; font-weight: 800; line-height: 1; }
+    .sheet-cb-label { font-size: 13px; font-weight: 600; color: #666; }
+    .sheet-cb-label.on { font-weight: 700; color: #111; }
+    .sheet-rb-row {
+      display: flex; align-items: center; gap: 11px;
+      padding: 9px 0; cursor: pointer; -webkit-tap-highlight-color: transparent;
+    }
+    .sheet-rb-row:active { opacity: .7; }
+    .sheet-rb-circle {
+      width: 19px; height: 19px; border-radius: 50%; flex-shrink: 0;
+      border: 1.5px solid #ddd; background: #fff;
+      display: flex; align-items: center; justify-content: center;
+      transition: border-color .1s, border-width .1s;
+    }
+    .sheet-rb-circle.on { border-color: #111; border-width: 5px; }
+    .sheet-rb-label { font-size: 13px; font-weight: 600; color: #666; }
+    .sheet-rb-label.on { font-weight: 700; color: #111; }
+    .sheet-acc-search { padding: 4px 0 8px; }
+    .sheet-acc-search input {
+      width: 100%; border: 1.5px solid #e8e8e8; border-radius: 22px;
+      padding: 7px 13px; font-size: 12px; font-family: 'Montserrat', sans-serif;
+      color: #111; outline: none; background: #f7f7f5; box-sizing: border-box;
+    }
+    .sheet-acc-search input:focus { border-color: #bbb; background: #fff; }
+    .sheet-show-btn {
+      width: 100%; background: #111; color: #fff; border: none; border-radius: 10px;
+      padding: 15px; font-size: 13px; font-weight: 800;
+      font-family: 'Montserrat', sans-serif; letter-spacing: .5px;
+      text-transform: uppercase; cursor: pointer;
+    }
+    .sheet-show-btn:active { background: #333; }
   }
 
   /* Hide keyword mobile controls on desktop */
@@ -1323,6 +1407,8 @@ function clearMobileFilters() {
     clearAllFilters();
   }
   updateMobileFilterBadge();
+  const sheet = document.getElementById('mobile-sheet');
+  if (sheet && sheet.classList.contains('open')) renderMobileAccordion();
 }
 
 // ── Keywords mobile classification pulldown ───────────────────────────────────
@@ -1532,6 +1618,12 @@ function renderTable() {
 function renderMobileCards(vis) {
   const container = document.getElementById('mobile-cards-rankings');
   if (!container) return;
+  const showBtn = document.getElementById('sheet-show-btn');
+  if (showBtn) {
+    showBtn.textContent = vis.length === 0
+      ? 'No results found'
+      : `Show ${vis.length.toLocaleString()} result${vis.length !== 1 ? 's' : ''}`;
+  }
   if (!vis.length) {
     container.innerHTML = `<div class="empty-state"><strong>No products found.</strong></div>`;
     return;
@@ -1989,70 +2081,324 @@ let allSuccess = [];
 
 
 // ═══════════════════════════════════════════════════
-// MOBILE: filter bottom sheet (DOM-portal: relocate real
-// filter controls into the sheet on open, restore on close)
+// MOBILE: accordion filter sheet (Concept A)
 // ═══════════════════════════════════════════════════
-const MOBILE_FILTER_CONFIG = {
-  rankings: [
-    { id: 'col-filter-name',     label: 'Product name' },
-    { id: 'ms-wrap-retailer',    label: 'Retailer' },
-    { id: 'ms-wrap-category',    label: 'Gender' },
-    { id: 'ms-wrap-subcategory', label: 'Subcategory' },
-    { id: 'ms-wrap-signal',      label: 'Signals' },
-    { id: 'col-filter-score',    label: 'Score' },
-    { id: 'col-filter-price',    label: 'Price' },
-    { id: 'col-filter-rank',     label: 'Page rank' },
-    { id: 'col-filter-age',      label: 'Age' },
-  ],
-  keywords: [{ sel: '#tab-keywords .controls', label: null }],
-};
-
-let _mobileSheetPortals = [];
+const _sheetAccOpen = {};
 
 function openMobileSheet() {
-  const body = document.getElementById('mobile-sheet-body');
-  const sheet = document.getElementById('mobile-sheet');
+  renderMobileAccordion();
+  const sheet    = document.getElementById('mobile-sheet');
   const backdrop = document.getElementById('mobile-sheet-backdrop');
-  if (!body || !sheet || !backdrop) return;
-
-  const defs = [{ sel: '.date-bar', label: null }].concat(MOBILE_FILTER_CONFIG[currentTab] || []);
-  _mobileSheetPortals = [];
-  body.innerHTML = '';
-
-  defs.forEach(def => {
-    const el = def.id ? document.getElementById(def.id) : document.querySelector(def.sel);
-    if (!el) return;
-    _mobileSheetPortals.push({ el, parent: el.parentNode, next: el.nextSibling });
-    if (def.label) {
-      const field = document.createElement('div');
-      field.className = 'ms-field';
-      const lbl = document.createElement('div');
-      lbl.className = 'ms-field-label';
-      lbl.textContent = def.label;
-      field.appendChild(lbl);
-      field.appendChild(el);
-      body.appendChild(field);
-    } else {
-      body.appendChild(el);
-    }
-  });
-
-  sheet.classList.add('open');
-  backdrop.classList.add('open');
+  if (sheet)    sheet.classList.add('open');
+  if (backdrop) backdrop.classList.add('open');
 }
 
 function closeMobileSheet() {
-  _mobileSheetPortals.forEach(({ el, parent, next }) => {
-    if (!parent) return;
-    if (next && next.parentNode === parent) parent.insertBefore(el, next);
-    else parent.appendChild(el);
-  });
-  _mobileSheetPortals = [];
-  const sheet = document.getElementById('mobile-sheet');
+  const sheet    = document.getElementById('mobile-sheet');
   const backdrop = document.getElementById('mobile-sheet-backdrop');
-  if (sheet) sheet.classList.remove('open');
+  if (sheet)    sheet.classList.remove('open');
   if (backdrop) backdrop.classList.remove('open');
   updateMobileFilterBadge();
+}
+
+function renderMobileAccordion() {
+  const body = document.getElementById('mobile-sheet-body');
+  if (!body) return;
+  body.innerHTML = '';
+  if (currentTab === 'rankings') _renderRankingsAccordion(body);
+  else _renderKeywordsAccordion(body);
+  updateSheetTotalBadge();
+}
+
+function _renderRankingsAccordion(body) {
+  const nameVal = (document.getElementById('col-filter-name') || {}).value || '';
+  body.insertAdjacentHTML('beforeend', `
+    <div class="sheet-search">
+      <div class="sheet-search-inner">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+        <input type="text" id="sheet-name-input" placeholder="Search product name…" value="${nameVal.replace(/"/g,'&quot;')}"
+          oninput="document.getElementById('col-filter-name').value=this.value;renderTable();updateSheetTotalBadge()">
+      </div>
+    </div>`);
+  _buildCheckboxAcc(body, 'retailer',    'Retailer',    _msOptions.retailer    || [], msSelections.retailer,    false);
+  _buildCheckboxAcc(body, 'category',    'Category',    CATEGORY_OPTIONS,            msSelections.category,     false);
+  _buildCheckboxAcc(body, 'subcategory', 'Subcategory', _msOptions.subcategory || [], msSelections.subcategory,  true);
+  _buildCheckboxAcc(body, 'signal',      'Signals',     SIGNAL_OPTIONS,              msSelections.signal,       false);
+  const scoreEl = document.getElementById('col-filter-score');
+  _buildRadioAcc(body, 'score', 'Score', [
+    {value:'',      label:'Any score'},
+    {value:'lt250', label:'Less than 250'},
+    {value:'gt250', label:'Greater than 250'},
+    {value:'gt500', label:'Greater than 500'},
+    {value:'gt750', label:'Greater than 750'},
+    {value:'gt1000',label:'Greater than 1,000'},
+  ], scoreEl ? scoreEl.value : '', 'col-filter-score');
+  const priceEl  = document.getElementById('col-filter-price');
+  const priceOpts = [{value:'',label:'Any price'}].concat(
+    Array.from(priceEl ? priceEl.options : []).slice(1)
+         .map(o => ({value: o.value, label: `Max £${parseFloat(o.value).toFixed(2)}`}))
+  );
+  _buildRadioAcc(body, 'price', 'Price', priceOpts, priceEl ? priceEl.value : '', 'col-filter-price');
+  const rankEl = document.getElementById('col-filter-rank');
+  _buildRadioAcc(body, 'rank', 'Page rank', [
+    {value:'',    label:'Any rank'},
+    {value:'25',  label:'Top 25'},
+    {value:'50',  label:'Top 50'},
+    {value:'100', label:'Top 100'},
+    {value:'200', label:'Top 200'},
+  ], rankEl ? rankEl.value : '', 'col-filter-rank');
+  const ageEl = document.getElementById('col-filter-age');
+  _buildRadioAcc(body, 'age', 'Age', [
+    {value:'',    label:'Any age'},
+    {value:'14',  label:'Less than 14 days'},
+    {value:'28',  label:'Less than 28 days'},
+    {value:'90',  label:'Less than 90 days'},
+    {value:'180', label:'Less than 180 days'},
+  ], ageEl ? ageEl.value : '', 'col-filter-age');
+}
+
+function _renderKeywordsAccordion(body) {
+  const kwRetItems = Array.from(document.querySelectorAll('#msd-retailer-panel .kw-msd-item'))
+    .map(el => {
+      const chk = el.querySelector('.kw-msd-check');
+      const key = chk ? chk.id.replace('msd-check-retailer-', '') : '';
+      return {key, label: el.textContent.trim()};
+    }).filter(r => r.key);
+  _buildCheckboxAccKw(body, 'retailer', 'Retailer', kwRetItems, kwMsd.retailer);
+  _buildCheckboxAccKw(body, 'category', 'Category', [
+    {key:'women',label:'Women'},{key:'men',label:'Men'},
+    {key:'girls',label:'Girls'},{key:'boys',label:'Boys'}
+  ], kwMsd.category);
+  const kwSubItems = Array.from(document.querySelectorAll('#msd-subcategory-panel .kw-msd-item'))
+    .map(el => {
+      const chk = el.querySelector('.kw-msd-check');
+      const key = chk ? chk.id.replace('msd-check-subcategory-', '') : '';
+      return {key, label: el.textContent.trim()};
+    }).filter(r => r.key);
+  _buildCheckboxAccKw(body, 'subcategory', 'Subcategory', kwSubItems, kwMsd.subcategory);
+  _buildCheckboxAccKw(body, 'classification', 'Classification', [
+    {key:'colour',label:'Colour'},{key:'material',label:'Material'},
+    {key:'trim',label:'Trim'},{key:'pattern',label:'Pattern'},
+    {key:'type',label:'Type'},{key:'fit',label:'Fit'},{key:'brand',label:'Brand'}
+  ], kwMsd.classification);
+  const kwAgeEl = document.getElementById('kw-filter-age');
+  _buildRadioAccKw(body, 'kw-age', 'Age', [
+    {value:'',    label:'Any age'},
+    {value:'14',  label:'Last 14 days'},
+    {value:'30',  label:'Last 30 days'},
+    {value:'60',  label:'Last 60 days'},
+    {value:'90',  label:'Last 90 days'},
+    {value:'180', label:'Last 180 days'},
+  ], kwAgeEl ? kwAgeEl.value : '', 'kw-filter-age');
+}
+
+function _buildCheckboxAcc(body, key, title, options, selections, searchable) {
+  const hasActive = selections.length > 0;
+  const isOpen = key in _sheetAccOpen ? _sheetAccOpen[key] : (hasActive || key === 'retailer');
+  const searchHtml = searchable
+    ? `<div class="sheet-acc-search"><input type="text" placeholder="Search…" oninput="_filterAccRows(this,'sheet-body-${key}')"></div>`
+    : '';
+  const rowsHtml = options.map(opt => {
+    const isOn = selections.includes(opt);
+    const e = opt.replace(/\\/g,'\\\\').replace(/'/g,"\\'");
+    return `<div class="sheet-cb-row" onclick="sheetAccToggleMs('${key}','${e}',this)">
+      <div class="sheet-cb-left">
+        <div class="sheet-cb-box ${isOn?'on':'off'}">${isOn?'<span class="sheet-cb-tick">✓</span>':''}</div>
+        <span class="sheet-cb-label${isOn?' on':''}">${cap(opt)}</span>
+      </div>
+    </div>`;
+  }).join('');
+  body.insertAdjacentHTML('beforeend', `
+    <div class="sheet-acc${isOpen?' open':''}" id="sheet-acc-${key}">
+      <div class="sheet-acc-head" onclick="toggleSheetAcc('${key}')">
+        <div class="sheet-acc-title-row">
+          <span class="sheet-acc-title">${title}</span>
+          <span class="sheet-acc-badge" id="sheet-badge-${key}" style="${hasActive?'':'display:none'}">${hasActive?selections.length:''}</span>
+        </div>
+        <span class="sheet-acc-chevron">▾</span>
+      </div>
+      <div class="sheet-acc-body" id="sheet-body-${key}">
+        ${searchHtml}${rowsHtml||'<div style="padding:8px 0;font-size:12px;color:#bbb;font-style:italic;">Loading…</div>'}
+      </div>
+    </div>`);
+}
+
+function _buildCheckboxAccKw(body, key, title, items, setObj) {
+  const hasActive = setObj.size > 0;
+  const accKey = 'kw-' + key;
+  const isOpen = accKey in _sheetAccOpen ? _sheetAccOpen[accKey] : (hasActive || key === 'retailer');
+  const rowsHtml = items.map(item => {
+    const isOn = setObj.has(item.key);
+    const e = item.key.replace(/\\/g,'\\\\').replace(/'/g,"\\'");
+    return `<div class="sheet-cb-row" onclick="sheetAccToggleKw('${key}','${e}',this)">
+      <div class="sheet-cb-left">
+        <div class="sheet-cb-box ${isOn?'on':'off'}">${isOn?'<span class="sheet-cb-tick">✓</span>':''}</div>
+        <span class="sheet-cb-label${isOn?' on':''}">${item.label}</span>
+      </div>
+    </div>`;
+  }).join('');
+  body.insertAdjacentHTML('beforeend', `
+    <div class="sheet-acc${isOpen?' open':''}" id="sheet-acc-${accKey}">
+      <div class="sheet-acc-head" onclick="toggleSheetAcc('${accKey}')">
+        <div class="sheet-acc-title-row">
+          <span class="sheet-acc-title">${title}</span>
+          <span class="sheet-acc-badge" id="sheet-badge-${accKey}" style="${hasActive?'':'display:none'}">${hasActive?setObj.size:''}</span>
+        </div>
+        <span class="sheet-acc-chevron">▾</span>
+      </div>
+      <div class="sheet-acc-body" id="sheet-body-${accKey}">
+        ${rowsHtml||'<div style="padding:8px 0;font-size:12px;color:#bbb;font-style:italic;">Loading…</div>'}
+      </div>
+    </div>`);
+}
+
+function _buildRadioAcc(body, sectionKey, title, opts, currentVal, fieldId) {
+  const hasActive = !!currentVal;
+  const isOpen = sectionKey in _sheetAccOpen ? _sheetAccOpen[sectionKey] : hasActive;
+  const rowsHtml = opts.map(opt => {
+    const isOn = currentVal === opt.value;
+    const e = opt.value.replace(/'/g,"\\'");
+    return `<div class="sheet-rb-row" onclick="sheetAccSetRadio('${fieldId}','${e}',this,'${sectionKey}')">
+      <div class="sheet-rb-circle${isOn&&opt.value?' on':''}"></div>
+      <span class="sheet-rb-label${isOn&&opt.value?' on':''}">${opt.label}</span>
+    </div>`;
+  }).join('');
+  body.insertAdjacentHTML('beforeend', `
+    <div class="sheet-acc${isOpen?' open':''}" id="sheet-acc-${sectionKey}">
+      <div class="sheet-acc-head" onclick="toggleSheetAcc('${sectionKey}')">
+        <div class="sheet-acc-title-row">
+          <span class="sheet-acc-title">${title}</span>
+          <span class="sheet-acc-badge" id="sheet-badge-${sectionKey}" style="${hasActive?'':'display:none'}">${hasActive?'1':''}</span>
+        </div>
+        <span class="sheet-acc-chevron">▾</span>
+      </div>
+      <div class="sheet-acc-body" id="sheet-body-${sectionKey}">${rowsHtml}</div>
+    </div>`);
+}
+
+function _buildRadioAccKw(body, sectionKey, title, opts, currentVal, fieldId) {
+  const hasActive = !!currentVal;
+  const isOpen = sectionKey in _sheetAccOpen ? _sheetAccOpen[sectionKey] : hasActive;
+  const rowsHtml = opts.map(opt => {
+    const isOn = currentVal === opt.value;
+    const e = opt.value.replace(/'/g,"\\'");
+    return `<div class="sheet-rb-row" onclick="sheetAccSetKwRadio('${fieldId}','${e}',this,'${sectionKey}')">
+      <div class="sheet-rb-circle${isOn&&opt.value?' on':''}"></div>
+      <span class="sheet-rb-label${isOn&&opt.value?' on':''}">${opt.label}</span>
+    </div>`;
+  }).join('');
+  body.insertAdjacentHTML('beforeend', `
+    <div class="sheet-acc${isOpen?' open':''}" id="sheet-acc-${sectionKey}">
+      <div class="sheet-acc-head" onclick="toggleSheetAcc('${sectionKey}')">
+        <div class="sheet-acc-title-row">
+          <span class="sheet-acc-title">${title}</span>
+          <span class="sheet-acc-badge" id="sheet-badge-${sectionKey}" style="${hasActive?'':'display:none'}">${hasActive?'1':''}</span>
+        </div>
+        <span class="sheet-acc-chevron">▾</span>
+      </div>
+      <div class="sheet-acc-body" id="sheet-body-${sectionKey}">${rowsHtml}</div>
+    </div>`);
+}
+
+function toggleSheetAcc(key) {
+  const acc = document.getElementById('sheet-acc-' + key);
+  if (!acc) return;
+  acc.classList.toggle('open');
+  _sheetAccOpen[key] = acc.classList.contains('open');
+}
+
+function sheetAccToggleMs(key, val, rowEl) {
+  const sel = msSelections[key];
+  const idx = sel.indexOf(val);
+  if (idx === -1) sel.push(val); else sel.splice(idx, 1);
+  const isOn = sel.includes(val);
+  const box = rowEl.querySelector('.sheet-cb-box');
+  const lbl = rowEl.querySelector('.sheet-cb-label');
+  if (box) { box.className = 'sheet-cb-box ' + (isOn?'on':'off'); box.innerHTML = isOn?'<span class="sheet-cb-tick">✓</span>':''; }
+  if (lbl) lbl.className = 'sheet-cb-label' + (isOn?' on':'');
+  const badge = document.getElementById('sheet-badge-' + key);
+  if (badge) { badge.textContent = sel.length||''; badge.style.display = sel.length?'':'none'; }
+  msUpdateTrigger(key);
+  renderTable();
+  updateSheetTotalBadge();
+}
+
+function sheetAccSetRadio(fieldId, val, rowEl, sectionKey) {
+  const el = document.getElementById(fieldId);
+  if (el) el.value = val;
+  const body = document.getElementById('sheet-body-' + sectionKey);
+  if (body) {
+    body.querySelectorAll('.sheet-rb-row').forEach(r => {
+      const isSelf = r === rowEl;
+      const circle = r.querySelector('.sheet-rb-circle');
+      const lbl    = r.querySelector('.sheet-rb-label');
+      if (circle) circle.className = 'sheet-rb-circle' + (isSelf&&val?' on':'');
+      if (lbl)    lbl.className    = 'sheet-rb-label'  + (isSelf&&val?' on':'');
+    });
+  }
+  const badge = document.getElementById('sheet-badge-' + sectionKey);
+  if (badge) { badge.textContent = val?'1':''; badge.style.display = val?'':'none'; }
+  renderTable();
+  updateSheetTotalBadge();
+}
+
+function sheetAccToggleKw(key, val, rowEl) {
+  if (kwMsd[key].has(val)) kwMsd[key].delete(val); else kwMsd[key].add(val);
+  const isOn = kwMsd[key].has(val);
+  const box = rowEl.querySelector('.sheet-cb-box');
+  const lbl = rowEl.querySelector('.sheet-cb-label');
+  if (box) { box.className = 'sheet-cb-box ' + (isOn?'on':'off'); box.innerHTML = isOn?'<span class="sheet-cb-tick">✓</span>':''; }
+  if (lbl) lbl.className = 'sheet-cb-label' + (isOn?' on':'');
+  const accKey = 'kw-' + key;
+  const badge = document.getElementById('sheet-badge-' + accKey);
+  if (badge) { badge.textContent = kwMsd[key].size||''; badge.style.display = kwMsd[key].size?'':'none'; }
+  _updateMsdUi(key);
+  loadKeywords();
+  updateSheetTotalBadge();
+}
+
+function sheetAccSetKwRadio(fieldId, val, rowEl, sectionKey) {
+  const el = document.getElementById(fieldId);
+  if (el) el.value = val;
+  const body = document.getElementById('sheet-body-' + sectionKey);
+  if (body) {
+    body.querySelectorAll('.sheet-rb-row').forEach(r => {
+      const isSelf = r === rowEl;
+      const circle = r.querySelector('.sheet-rb-circle');
+      const lbl    = r.querySelector('.sheet-rb-label');
+      if (circle) circle.className = 'sheet-rb-circle' + (isSelf&&val?' on':'');
+      if (lbl)    lbl.className    = 'sheet-rb-label'  + (isSelf&&val?' on':'');
+    });
+  }
+  const badge = document.getElementById('sheet-badge-' + sectionKey);
+  if (badge) { badge.textContent = val?'1':''; badge.style.display = val?'':'none'; }
+  loadKeywords();
+  updateSheetTotalBadge();
+}
+
+function _filterAccRows(input, bodyId) {
+  const q = input.value.toLowerCase();
+  const body = document.getElementById(bodyId);
+  if (!body) return;
+  body.querySelectorAll('.sheet-cb-row').forEach(row => {
+    const lbl = row.querySelector('.sheet-cb-label');
+    row.style.display = lbl && lbl.textContent.toLowerCase().includes(q) ? '' : 'none';
+  });
+}
+
+function updateSheetTotalBadge() {
+  let count = 0;
+  if (currentTab === 'rankings') {
+    Object.values(msSelections).forEach(a => { count += a.length; });
+    ['col-filter-name','col-filter-score','col-filter-price','col-filter-rank','col-filter-age']
+      .forEach(id => { const el = document.getElementById(id); if (el && el.value) count++; });
+  } else {
+    kwMsdKeys.forEach(k => { count += kwMsd[k].size; });
+    const kwAgeEl = document.getElementById('kw-filter-age');
+    if (kwAgeEl && kwAgeEl.value) count++;
+  }
+  const badge = document.getElementById('sheet-total-badge');
+  if (badge) { badge.textContent = count; badge.style.display = count ? '' : 'none'; }
 }
 
 _initDateBar();
@@ -2073,12 +2419,15 @@ loadKeywords();
 <div class="mobile-sheet" id="mobile-sheet">
   <div class="mobile-sheet-handle"></div>
   <div class="mobile-sheet-head">
-    <h3>Filters</h3>
-    <button class="mobile-sheet-done" onclick="closeMobileSheet()">Done</button>
+    <div style="display:flex;align-items:center;gap:8px;">
+      <h3>Filters</h3>
+      <span class="sheet-total-badge" id="sheet-total-badge" style="display:none;"></span>
+    </div>
+    <button class="sheet-clear-top" onclick="clearMobileFilters()">Clear all</button>
   </div>
   <div class="mobile-sheet-body" id="mobile-sheet-body"></div>
   <div class="mobile-sheet-footer">
-    <button class="mobile-sheet-clear" onclick="clearMobileFilters()">Clear all filters</button>
+    <button class="sheet-show-btn" id="sheet-show-btn" onclick="closeMobileSheet()">Show results</button>
   </div>
 </div>
 
