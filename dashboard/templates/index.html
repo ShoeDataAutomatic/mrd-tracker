@@ -388,20 +388,23 @@
     #tab-rankings .table-wrap { padding: 0 !important; }
     #mobile-cards-rankings { padding: 10px 12px 0; }
 
-    /* ── Keywords: stretch table to fill above bottom nav ── */
+    /* ── Keywords: fixed-height column so only tbody scrolls ── */
     #tab-keywords {
       display: flex;
       flex-direction: column;
+      height: calc(100svh - 52px);
+      overflow: hidden;
     }
     #tab-keywords .kw-layout {
       flex: 1;
       overflow: hidden;
       min-height: 0;
+      grid-template-rows: 1fr;
     }
     #tab-keywords .kw-list-panel {
       max-height: none !important;
-      min-height: calc(100svh - 280px);
       overflow-y: auto;
+      padding-bottom: calc(62px + env(safe-area-inset-bottom, 0px));
     }
 
     /* ── Keywords stats: hide top keyword, no overflow ── */
