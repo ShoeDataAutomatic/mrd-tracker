@@ -395,6 +395,7 @@
     }
     #tab-keywords .kw-layout {
       flex: 1;
+      overflow: hidden;
       min-height: 0;
     }
     #tab-keywords .kw-list-panel {
@@ -1882,13 +1883,17 @@ function renderKwFilterChips() {
 
 function openKwMobilePanel() {
   const panel = document.getElementById('kw-products-panel');
-  if (panel) panel.classList.add('open');
+  if (!panel) return;
+  // Move panel to body so no ancestor overflow:hidden clips it on iOS Safari
+  if (panel.parentElement !== document.body) document.body.appendChild(panel);
+  panel.classList.add('open');
   document.body.style.overflow = 'hidden';
 }
 
 function closeKwMobilePanel() {
   const panel = document.getElementById('kw-products-panel');
-  if (panel) panel.classList.remove('open');
+  if (!panel) return;
+  panel.classList.remove('open');
   document.body.style.overflow = '';
 }
 
