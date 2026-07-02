@@ -395,7 +395,6 @@
     }
     #tab-keywords .kw-layout {
       flex: 1;
-      overflow: hidden;
       min-height: 0;
     }
     #tab-keywords .kw-list-panel {
@@ -424,7 +423,7 @@
       height: 62px;
       background: #fff;
       border-top: 1px solid #e8e8e5;
-      z-index: 500;
+      z-index: 995;
       padding-bottom: env(safe-area-inset-bottom, 0);
     }
     .bn-item {
@@ -589,15 +588,13 @@
     .kw-mobile-back svg { width: 14px; height: 14px; }
 
     .kw-products-panel {
-      position: fixed; top: 0; right: 0;
-      bottom: calc(62px + env(safe-area-inset-bottom, 0px));
-      left: 0;
+      position: fixed; top: 0; right: 0; bottom: 0; left: 0;
       background: #f7f7f5;
       transform: translateX(100%);
       transition: transform .25s ease;
-      z-index: 1000;
+      z-index: 990;
       overflow-y: auto;
-      padding: 16px;
+      padding: 16px 16px calc(62px + env(safe-area-inset-bottom, 0px));
     }
     .kw-products-panel.open { transform: translateX(0); }
     .kw-products-panel .kw-active-filters { display: none !important; }
