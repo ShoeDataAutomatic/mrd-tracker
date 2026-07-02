@@ -356,23 +356,23 @@
   @media (max-width: 760px) {
     .tab-bar { display: none; }
 
-    /* ── Header: stack logo above user links ── */
+    /* ── Header: single row, fixed height ── */
     .header {
-      flex-wrap: wrap;
-      height: auto;
-      padding: 10px 16px 8px;
-      row-gap: 4px;
+      flex-wrap: nowrap;
+      height: 52px;
+      padding: 0 16px;
+      row-gap: 0;
     }
-    .header-logo { flex: 0 0 100%; }
+    .header-logo { flex: 0 0 auto; }
     .header-username { display: none; }
     .header-admin-link { font-size: 10px; }
     .header-logout { font-size: 10px; }
 
-    /* ── Rankings stats: sticky below header ── */
+    /* ── Rankings stats: sticky immediately below header ── */
     #tab-rankings .stat-card:nth-child(n+3) { display: none; }
     #tab-rankings .stats {
       position: sticky !important;
-      top: 56px;
+      top: 52px;
       z-index: 99;
       display: grid !important;
       grid-template-columns: 1fr 1fr;
@@ -463,7 +463,7 @@
       justify-content: center;
     }
 
-    body { padding-bottom: 74px; }
+    body { padding-bottom: 74px; touch-action: manipulation; }
 
     .date-bar, .controls { display: none; }
 
@@ -589,7 +589,9 @@
     .kw-mobile-back svg { width: 14px; height: 14px; }
 
     .kw-products-panel {
-      position: fixed; top: 0; right: 0; bottom: 62px; left: 0;
+      position: fixed; top: 0; right: 0;
+      bottom: calc(62px + env(safe-area-inset-bottom, 0px));
+      left: 0;
       background: #f7f7f5;
       transform: translateX(100%);
       transition: transform .25s ease;
@@ -1883,11 +1885,13 @@ function renderKwFilterChips() {
 function openKwMobilePanel() {
   const panel = document.getElementById('kw-products-panel');
   if (panel) panel.classList.add('open');
+  document.body.style.overflow = 'hidden';
 }
 
 function closeKwMobilePanel() {
   const panel = document.getElementById('kw-products-panel');
   if (panel) panel.classList.remove('open');
+  document.body.style.overflow = '';
 }
 
 function renderKeywords() {
@@ -2127,6 +2131,10 @@ function closeMobileSheet() {
 let _sheetSwipeY = 0;
 function _sheetHandleTouchStart(e) { _sheetSwipeY = e.touches[0].clientY; }
 function _sheetHandleTouchEnd(e)   { if (e.changedTouches[0].clientY - _sheetSwipeY > 60) closeMobileSheet(); }
+
+// Prevent pinch-to-zoom on iOS (Safari ignores viewport user-scalable=no)
+document.addEventListener('gesturestart',  e => e.preventDefault(), { passive: false });
+document.addEventListener('gesturechange', e => e.preventDefault(), { passive: false });
 
 function renderMobileAccordion() {
   const body = document.getElementById('mobile-sheet-body');
