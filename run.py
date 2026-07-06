@@ -65,12 +65,18 @@ def run_scrape():
             logger.warning(f'No products returned for {key}.')
             continue
 
-        # For New Look: check availability of brand-new SKUs before inserting.
-        # Products confirmed OOS on first sight are flagged is_clearance=True so
-        # the scorer suppresses the new_arrival signal for clearance re-listings.
+        # For New Look: two-pass availability check.
+        #
+        # Pass 1 — new SKUs only: products confirmed OOS on first sight are
+        # flagged is_clearance=True so the scorer suppresses new_arrival.
         if hasattr(scraper, 'check_new_product_availability'):
             existing_skus = db.get_existing_skus(retailer=key)
             scraper.check_new_product_availability(products, existing_skus)
+        #
+        # Pass 2 — all products: sets raw_data['is_oos'] per product so the
+        # scorer can flag still-in-sitemap OOS products as removed.
+        if hasattr(scraper, 'check_all_availability'):
+            scraper.check_all_availability(products)
 
         for p in products:
             product_id = db.upsert_product(
