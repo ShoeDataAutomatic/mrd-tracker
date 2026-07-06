@@ -212,54 +212,57 @@ class PrimarkScraper(BaseScraper):
 
     def check_all_availability(self, products):
         """
-        Check OOS status for all Primark products via GetStoreSpecificColourAvailability.
+        Check OOS status for all Primark products.
 
-        Strategy:
-          1. Open one Playwright browser session.
-          2. Load one product page — this triggers the ColourAvailability API call,
-             which lets us capture the persisted-query hash we need.
-          3. After the hash is captured, use page.evaluate() to fire batched fetch()
-             calls to the same API endpoint from within the live browser context.
-          4. Mark raw_data['is_oos'] = True for any product where ALL size variants
-             return isAvailable: false.
+        Uses the NonStoreSpecificColourAvailability GraphQL API on
+        api001-arh.primark.com/bff-cae-green.  Each product requires one call
+        with variables {"locale":"en-gb","styleCode":"<9-digit code>"}, where
+        the styleCode is the first 9 digits of the 12-digit trailing number in
+        the product URL (e.g. .../p/name-991169064804 → styleCode "991169064").
 
-        NOTE: api001-arh.primark.com uses its own PerimeterX instance separate from
-        primark.com.  Datacenter IPs (e.g. Railway) are blocked even inside a live
-        Playwright session.  A residential proxy is required to enable this check.
-        When blocked the method logs once and returns early without spamming warnings.
+        To bypass PerimeterX on the API subdomain we:
+          1. Navigate to a product page on primark.com to capture the persisted
+             query hash from the intercepted network response.
+          2. Navigate to the API subdomain directly to establish a PX session
+             cookie for that domain.
+          3. Fire parallel fetch() calls (20 at a time via Promise.all) from
+             within the primark.com page context with credentials: 'include' so
+             the PX cookie is sent.
+
+        On Railway (datacenter IP) the API subdomain still blocks with PX.
+        We detect the HTML error body and bail after one warning.
         """
+        import re as _re
         try:
             from playwright.sync_api import sync_playwright
         except ImportError:
             self.warn('[Primark] Playwright not installed — skipping availability check')
             return
 
-        from urllib.parse import urlparse, parse_qs, unquote
+        from urllib.parse import urlparse as _up, parse_qs as _pqs, unquote as _uq
 
-        checkable = [p for p in products if p.get('size_skus')]
+        def get_style_code(url):
+            m = _re.search(r'-(\d{12})$', (url or '').rstrip('/'))
+            return m.group(1)[:9] if m else None
+
+        checkable = [p for p in products if get_style_code(p.get('url', ''))]
         if not checkable:
-            self.log('[Primark] No size SKU data on products — skipping availability check')
+            self.log('[Primark] No valid product URLs for OOS check — skipping')
             return
 
-        self.log(f'[Primark] Availability check: {len(checkable)}/{len(products)} products have size data')
+        self.log(f'[Primark] OOS check: {len(checkable)}/{len(products)} products')
 
-        captured   = {'extensions': None}
-        avail_map  = {}   # skuId (str) -> isAvailable (bool)
+        # ── Phase 1: navigate to a product page, intercept the hash ──────────
+        captured = {'extensions': None}
 
         def on_response(response):
-            if 'ColourAvailability' not in response.url:
+            if 'NonStoreSpecificColourAvailability' not in response.url:
                 return
             try:
-                # Capture the extensions parameter (contains the persisted-query hash)
-                if captured['extensions'] is None:
-                    params = parse_qs(urlparse(response.url).query)
-                    ext_raw = params.get('extensions', [''])[0]
-                    if ext_raw:
-                        captured['extensions'] = unquote(ext_raw)
-                # Also consume the response body for this first product
-                body = json.loads(response.body())
-                for entry in (body.get('data', {}).get('NonStoreColorSelectorInventory') or []):
-                    avail_map[str(entry.get('skuId', ''))] = bool(entry.get('isAvailable', True))
+                params  = _pqs(_up(response.url).query)
+                ext_raw = params.get('extensions', [''])[0]
+                if ext_raw and not captured['extensions']:
+                    captured['extensions'] = _uq(ext_raw)
             except Exception:
                 pass
 
@@ -282,101 +285,128 @@ class PrimarkScraper(BaseScraper):
             page = ctx.new_page()
             page.on('response', on_response)
 
-            # Load the first product page to capture the persisted-query hash.
             self.log('[Primark] Loading product page to capture API hash...')
             try:
                 page.goto(checkable[0]['url'], wait_until='networkidle', timeout=45000)
-                page.wait_for_timeout(2000)
+                page.wait_for_timeout(3000)
             except Exception as e:
                 self.warn(f'[Primark] Product page load error: {e}')
 
             if not captured['extensions']:
-                self.warn('[Primark] Could not capture ColourAvailability hash — skipping check')
+                self.warn(
+                    '[Primark] OOS check: could not capture persisted query hash '
+                    '— skipping.'
+                )
                 browser.close()
                 return
 
+            # ── Phase 2: warm up api subdomain so PX sets a cookie ───────────
+            api_page = ctx.new_page()
+            try:
+                api_page.goto(
+                    'https://api001-arh.primark.com/bff-cae-green'
+                    '?operationName=NonStoreSpecificColourAvailability'
+                    '&variables=%7B%22locale%22%3A%22en-gb%22%2C%22styleCode%22%3A%22%22%7D',
+                    wait_until='networkidle',
+                    timeout=20000,
+                )
+                api_page.wait_for_timeout(2000)
+            except Exception as e:
+                self.warn(f'[Primark] API subdomain warmup error (continuing): {e}')
+            api_page.close()
+
             extensions_str = captured['extensions']
-            self.log('[Primark] Hash captured. Batch-fetching availability...')
+            self.log('[Primark] Hash captured. Fetching availability...')
 
-            # Collect all size SKUs not yet in avail_map (first product's were populated
-            # by on_response above).
-            all_skus = []
-            for prod in checkable:
-                for sku in (prod.get('size_skus') or []):
-                    if sku not in avail_map:
-                        all_skus.append(sku)
-
-            # Deduplicate while preserving order
-            seen = set()
-            unique_skus = []
-            for s in all_skus:
-                if s not in seen:
-                    seen.add(s)
-                    unique_skus.append(s)
-
-            # Batch-fetch via page.evaluate() — each call stays inside the live
-            # browser session so PerimeterX doesn't challenge us.
-            BATCH = 40
+            # ── Phase 3: parallel fetch per product, 20 at a time ────────────
+            PARALLEL   = 20
             px_blocked = False
-            for i in range(0, len(unique_skus), BATCH):
-                batch          = unique_skus[i:i + BATCH]
-                variables_json = json.dumps({'skuIds': batch}, separators=(',', ':'))
+            avail_map  = {}   # styleCode -> bool (True = at least one size available)
 
-                js = """
-(async () => {
-    const url = new URL('https://api001-arh.primark.com/bff-cas-green');
-    url.searchParams.set('operationName', 'GetStoreSpecificColourAvailability');
-    url.searchParams.set('variables', VARIABLES_PLACEHOLDER);
-    url.searchParams.set('extensions', EXTENSIONS_PLACEHOLDER);
-    const resp = await fetch(url.toString(), {
-        headers: {
-            'accept': 'application/json',
-            'accept-language': 'en-GB,en;q=0.9',
-        }
-    });
-    return await resp.json();
-})()
-""".replace('VARIABLES_PLACEHOLDER', json.dumps(variables_json)) \
-   .replace('EXTENSIONS_PLACEHOLDER', json.dumps(extensions_str))
+            for i in range(0, len(checkable), PARALLEL):
+                if px_blocked:
+                    break
 
+                batch       = checkable[i:i + PARALLEL]
+                style_codes = [get_style_code(p['url']) for p in batch]
+                sc_js       = json.dumps(style_codes)
+
+                js = f"""
+(async () => {{
+    const styleCodes = {sc_js};
+    const ext = {json.dumps(extensions_str)};
+    const results = await Promise.all(styleCodes.map(async (sc) => {{
+        const url = new URL('https://api001-arh.primark.com/bff-cae-green');
+        url.searchParams.set('operationName', 'NonStoreSpecificColourAvailability');
+        url.searchParams.set('variables', JSON.stringify({{locale: 'en-gb', styleCode: sc}}));
+        url.searchParams.set('extensions', ext);
+        try {{
+            const resp = await fetch(url.toString(), {{
+                headers: {{'accept': 'application/json', 'accept-language': 'en-GB,en;q=0.9'}},
+                credentials: 'include'
+            }});
+            const text = await resp.text();
+            return {{sc, status: resp.status, body: text}};
+        }} catch (e) {{
+            return {{sc, status: 0, body: ''}};
+        }}
+    }}));
+    return results;
+}})()
+"""
                 try:
-                    result = page.evaluate(js)
-                    for entry in (result.get('data', {}).get('NonStoreColorSelectorInventory') or []):
-                        avail_map[str(entry.get('skuId', ''))] = bool(entry.get('isAvailable', True))
+                    results = page.evaluate(js)
                 except Exception as e:
-                    # PerimeterX returns an HTML page; page.evaluate() then raises a
-                    # SyntaxError when it tries to JSON-parse "<!DOCTYPE ...".
-                    # Detect this once, log clearly, and stop — no point continuing.
-                    if '<!DOCTYPE' in str(e) or 'Unexpected token' in str(e):
-                        px_blocked = True
-                        self.warn(
-                            '[Primark] OOS check blocked by PerimeterX on '
-                            'api001-arh.primark.com (datacenter IP rejected). '
-                            'A residential proxy is required. Skipping.'
-                        )
-                        break
-                    self.warn(f'[Primark] Fetch batch error at offset {i}: {e}')
+                    self.warn(f'[Primark] Batch evaluate error at offset {i}: {e}')
+                    continue
 
-                if i % (BATCH * 5) == 0 and i > 0:
-                    self.log(f'[Primark] OOS check: {min(i + BATCH, len(unique_skus))}/{len(unique_skus)} SKUs fetched')
+                for r in results:
+                    sc   = r.get('sc', '')
+                    body = r.get('body', '')
+                    if not body:
+                        continue
+                    if '<!DOCTYPE' in body or 'px-captcha' in body:
+                        px_blocked = True
+                        break
+                    try:
+                        data  = json.loads(body)
+                        inv   = ((data.get('data') or {})
+                                 .get('nonStoreColorSelectorInventory') or {})
+                        sizes = inv.get('skuColorAvailability') or []
+                        if sizes:
+                            avail_map[sc] = any(s.get('isAvailable') for s in sizes)
+                    except Exception:
+                        pass
+
+                if px_blocked:
+                    self.warn(
+                        '[Primark] OOS check blocked by PerimeterX on '
+                        'api001-arh.primark.com (datacenter IP rejected). '
+                        'A residential proxy is required. Skipping.'
+                    )
+                    break
+
+                if i % (PARALLEL * 5) == 0 and i > 0:
+                    done = min(i + PARALLEL, len(checkable))
+                    self.log(f'[Primark] OOS check: {done}/{len(checkable)} fetched')
 
             browser.close()
 
         if px_blocked:
             return
 
-        # Apply results to products
+        # ── Phase 4: apply results ────────────────────────────────────────────
         oos_count = 0
         for prod in checkable:
-            size_skus = prod.get('size_skus') or []
-            known     = [avail_map[s] for s in size_skus if s in avail_map]
-            # OOS only if we got data back AND every size is unavailable
-            is_oos    = bool(known) and not any(known)
+            sc = get_style_code(prod['url'])
+            if sc not in avail_map:
+                continue
+            is_oos = not avail_map[sc]
             prod.setdefault('raw_data', {})['is_oos'] = is_oos
             if is_oos:
                 oos_count += 1
 
-        self.log(f'[Primark] OOS check done: {oos_count}/{len(checkable)} products confirmed OOS')
+        self.log(f'[Primark] OOS check done: {oos_count}/{len(checkable)} confirmed OOS.')
 
     # -----------------------------------------------------------------------
     # Scroll fallback
