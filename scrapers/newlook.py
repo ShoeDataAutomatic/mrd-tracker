@@ -359,14 +359,24 @@ class NewLookScraper(BaseScraper):
 
         self.log(f'OOS check (all products): fetching {len(products)} pages …')
 
+        # Diagnostic counters — logged at the end to help identify root cause
+        # if OOS count is unexpectedly zero.
+        diag = {'ok': 0, 'non200': 0, 'err': 0, 'in_stock': 0, 'oos': 0, 'no_avail': 0}
+        _sample_body = None  # first 500 chars of a suspect page for PerimeterX check
+
         def fetch_one(product):
+            """Return (sku, http_status, avail, sample_body).
+            avail: True=InStock, False=OOS, None=not found / not fetched.
+            sample_body: short snippet for diagnosis when avail is None."""
             try:
                 r = requests.get(product['url'], headers=_HEADERS, timeout=12)
                 if r.status_code == 200:
-                    return product['sku'], self._extract_availability(r.text)
-            except Exception:
-                pass
-            return product['sku'], None
+                    avail = self._extract_availability(r.text)
+                    snippet = r.text[:500] if avail is None else None
+                    return product['sku'], 200, avail, snippet
+                return product['sku'], r.status_code, None, r.text[:500]
+            except Exception as exc:
+                return product['sku'], None, None, str(exc)[:200]
 
         sku_map = {p['sku']: p for p in products}
         oos_count = 0
@@ -375,7 +385,25 @@ class NewLookScraper(BaseScraper):
         with ThreadPoolExecutor(max_workers=max_workers) as ex:
             futures = {ex.submit(fetch_one, p): p for p in products}
             for fut in as_completed(futures):
-                sku, avail = fut.result()
+                sku, status, avail, snippet = fut.result()
+
+                # Diagnostic tallying
+                if status is None:
+                    diag['err'] += 1
+                elif status == 200:
+                    diag['ok'] += 1
+                    if avail is True:
+                        diag['in_stock'] += 1
+                    elif avail is False:
+                        diag['oos'] += 1
+                    else:
+                        diag['no_avail'] += 1
+                else:
+                    diag['non200'] += 1
+                if snippet and _sample_body is None:
+                    _sample_body = snippet
+
+                # Update product OOS flag
                 if sku in sku_map:
                     p = sku_map[sku]
                     if not isinstance(p.get('raw_data'), dict):
@@ -385,11 +413,19 @@ class NewLookScraper(BaseScraper):
                         oos_count += 1
                     elif avail is True:
                         p['raw_data']['is_oos'] = False
+
                 done += 1
                 if done % 200 == 0:
                     self.log(f'OOS check: {done}/{len(products)} fetched ({oos_count} OOS so far)')
 
-        self.log(f'OOS check done: {oos_count}/{len(products)} confirmed out of stock.')
+        self.log(
+            f'OOS check done: {oos_count}/{len(products)} confirmed OOS. '
+            f'HTTP: {diag["ok"]} ok / {diag["non200"]} non-200 / {diag["err"]} errors. '
+            f'Avail field: {diag["in_stock"]} in-stock / {diag["oos"]} oos / {diag["no_avail"]} not-found.'
+        )
+        if _sample_body:
+            is_px = any(k in _sample_body for k in ('px-captcha', 'PerimeterX', '_pxParam', 'pxScript'))
+            self.log(f'Sample suspect body (PerimeterX={is_px}): {_sample_body[:300]}')
 
     @staticmethod
     def _extract_availability(html):
