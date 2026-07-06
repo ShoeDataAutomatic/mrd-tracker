@@ -71,9 +71,11 @@ def _score_product(product):
     last_seen  = _parse_date(product.get('last_seen', ''))
 
     # ------------------------------------------------------------------
-    # 1. New arrival
+    # 1. New arrival — suppressed if the product was OOS on first sight
+    #    (clearance/markdown re-listing rather than a genuine new launch)
     # ------------------------------------------------------------------
-    if first_seen and (today - first_seen).days <= 7:
+    is_clearance = bool(product.get('is_clearance'))
+    if first_seen and (today - first_seen).days <= 7 and not is_clearance:
         signals['new_arrival'] = SCORING['new_arrival']
         score += SCORING['new_arrival']
 

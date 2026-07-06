@@ -65,15 +65,23 @@ def run_scrape():
             logger.warning(f'No products returned for {key}.')
             continue
 
+        # For New Look: check availability of brand-new SKUs before inserting.
+        # Products confirmed OOS on first sight are flagged is_clearance=True so
+        # the scorer suppresses the new_arrival signal for clearance re-listings.
+        if hasattr(scraper, 'check_new_product_availability'):
+            existing_skus = db.get_existing_skus(retailer=key)
+            scraper.check_new_product_availability(products, existing_skus)
+
         for p in products:
             product_id = db.upsert_product(
-                retailer    = key,
-                sku         = p['sku'],
-                name        = p['name'],
-                url         = p['url'],
-                category    = p.get('category'),
-                subcategory = p.get('subcategory'),
-                image_url   = p.get('image_url'),
+                retailer     = key,
+                sku          = p['sku'],
+                name         = p['name'],
+                url          = p['url'],
+                category     = p.get('category'),
+                subcategory  = p.get('subcategory'),
+                image_url    = p.get('image_url'),
+                is_clearance = p.get('is_clearance', False),
             )
             db.save_snapshot(
                 product_id      = product_id,

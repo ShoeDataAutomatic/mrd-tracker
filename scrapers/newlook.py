@@ -291,6 +291,77 @@ class NewLookScraper(BaseScraper):
                 if done % 100 == 0:
                     self.log(f'Prices: {done}/{len(products)} fetched')
 
+    def check_new_product_availability(self, products, known_skus, max_workers=8):
+        """
+        For products not yet in the database, fetch the product page and check
+        stock availability from the schema.org markup.
+
+        Products confirmed as Out Of Stock on their very first appearance are
+        flagged with p['is_clearance'] = True so that:
+          - run.py passes the flag to upsert_product()
+          - scorer.py suppresses the new_arrival signal for these products
+
+        Only new SKUs are fetched (avg ~12/day for New Look), so overhead is
+        negligible (~2–5 s with 8 parallel workers).
+        """
+        new_products = [p for p in products if p['sku'] not in known_skus]
+        if not new_products:
+            self.log('Availability check: no new SKUs to check.')
+            return
+
+        self.log(f'Availability check: fetching {len(new_products)} new SKU(s) …')
+
+        def fetch_one(product):
+            try:
+                r = requests.get(product['url'], headers=_HEADERS, timeout=12)
+                if r.status_code == 200:
+                    return product['sku'], self._extract_availability(r.text)
+            except Exception:
+                pass
+            return product['sku'], None
+
+        sku_map = {p['sku']: p for p in new_products}
+        confirmed_oos = 0
+
+        with ThreadPoolExecutor(max_workers=max_workers) as ex:
+            futures = {ex.submit(fetch_one, p): p for p in new_products}
+            for fut in as_completed(futures):
+                sku, avail = fut.result()
+                if sku in sku_map:
+                    p = sku_map[sku]
+                    if avail is False:   # confirmed Out Of Stock on first sight
+                        p['is_clearance'] = True
+                        confirmed_oos += 1
+                        self.log(f'  Clearance (OOS on first sight): {p["name"]}')
+
+        self.log(
+            f'Availability check done: {confirmed_oos}/{len(new_products)} '
+            f'new SKU(s) flagged as clearance.'
+        )
+
+    @staticmethod
+    def _extract_availability(html):
+        """
+        Parse stock availability from schema.org markup embedded in product page HTML.
+
+        New Look renders this in their LD+JSON block, e.g.:
+            "availability": "https://schema.org/OutOfStock"
+            "availability": "https://schema.org/InStock"
+
+        Returns:
+            True  — product is in stock (InStock / PreOrder / LimitedAvailability)
+            False — product is out of stock (OutOfStock / Discontinued / SoldOut)
+            None  — availability not found in page
+        """
+        m = re.search(r'"availability"\s*:\s*"(https://schema\.org/[^"]+)"', html)
+        if m:
+            val = m.group(1)
+            if any(s in val for s in ('InStock', 'PreOrder', 'PreSale', 'LimitedAvailability')):
+                return True
+            if any(s in val for s in ('OutOfStock', 'Discontinued', 'SoldOut')):
+                return False
+        return None
+
     def _extract_price(self, html):
         """
         Extract current and was-price from product page HTML.

@@ -57,6 +57,7 @@ def init_db():
         ('subcategory',        'TEXT'),
         ('image_blob',         'BLOB'),
         ('image_content_type', 'TEXT'),
+        ('is_clearance',       'INTEGER DEFAULT 0'),
     ]:
         try:
             c.execute(f'ALTER TABLE products ADD COLUMN {col} {definition}')
@@ -247,17 +248,26 @@ def review_keyword_classification(keyword, decision, attrs=None):
 # Products
 # ---------------------------------------------------------------------------
 
-def upsert_product(retailer, sku, name, url, category, subcategory=None, image_url=None):
-    """Insert or update a product. Returns the product's id."""
+def upsert_product(retailer, sku, name, url, category, subcategory=None, image_url=None,
+                   is_clearance=False):
+    """Insert or update a product. Returns the product's id.
+
+    is_clearance: set True when a product is confirmed OOS on its very first
+    scrape (e.g. a New Look OOS/markdown re-listing).  The flag is written
+    only on INSERT and intentionally never overwritten on UPDATE — once a
+    product is flagged as clearance, that label sticks for the scorer's
+    7-day new_arrival window.
+    """
     conn = get_connection()
     c = conn.cursor()
     now = datetime.utcnow().isoformat()
+    clearance_int = 1 if is_clearance else 0
 
     # Only update image_refreshed_at when we actually have a fresh image URL
     if image_url:
         c.execute('''
-            INSERT INTO products (retailer, sku, name, url, category, subcategory, image_url, image_refreshed_at, first_seen, last_seen)
-            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+            INSERT INTO products (retailer, sku, name, url, category, subcategory, image_url, image_refreshed_at, first_seen, last_seen, is_clearance)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
             ON CONFLICT(retailer, sku) DO UPDATE SET
                 name               = excluded.name,
                 category           = excluded.category,
@@ -265,23 +275,33 @@ def upsert_product(retailer, sku, name, url, category, subcategory=None, image_u
                 image_url          = excluded.image_url,
                 image_refreshed_at = excluded.image_refreshed_at,
                 last_seen          = excluded.last_seen
-        ''', (retailer, sku, name, url, category, subcategory, image_url, now, now, now))
+        ''', (retailer, sku, name, url, category, subcategory, image_url, now, now, now, clearance_int))
     else:
         c.execute('''
-            INSERT INTO products (retailer, sku, name, url, category, subcategory, image_url, first_seen, last_seen)
-            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+            INSERT INTO products (retailer, sku, name, url, category, subcategory, image_url, first_seen, last_seen, is_clearance)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
             ON CONFLICT(retailer, sku) DO UPDATE SET
                 name        = excluded.name,
                 category    = excluded.category,
                 subcategory = excluded.subcategory,
                 last_seen   = excluded.last_seen
-        ''', (retailer, sku, name, url, category, subcategory, image_url, now, now))
+        ''', (retailer, sku, name, url, category, subcategory, image_url, now, now, clearance_int))
 
     conn.commit()
     c.execute('SELECT id FROM products WHERE retailer=? AND sku=?', (retailer, sku))
     row = c.fetchone()
     conn.close()
     return row['id']
+
+
+def get_existing_skus(retailer):
+    """Return the set of SKUs already tracked for a given retailer."""
+    conn = get_connection()
+    c = conn.cursor()
+    c.execute('SELECT sku FROM products WHERE retailer = ?', (retailer,))
+    skus = {row['sku'] for row in c.fetchall()}
+    conn.close()
+    return skus
 
 
 def update_product_image(retailer, sku, image_url):
