@@ -207,6 +207,164 @@ class PrimarkScraper(BaseScraper):
         return None
 
     # -----------------------------------------------------------------------
+    # Availability check (OOS detection via ColourAvailability API)
+    # -----------------------------------------------------------------------
+
+    def check_all_availability(self, products):
+        """
+        Check OOS status for all Primark products via GetStoreSpecificColourAvailability.
+
+        Strategy:
+          1. Open one Playwright browser session.
+          2. Load one product page — this triggers the ColourAvailability API call,
+             which lets us capture the persisted-query hash we need.
+          3. After the hash is captured, use page.evaluate() to fire batched fetch()
+             calls to the same API endpoint from within the live browser context.
+             The established session cookies bypass PerimeterX; no new page loads needed.
+          4. Mark raw_data['is_oos'] = True for any product where ALL size variants
+             return isAvailable: false.
+
+        Adds roughly 1–2 minutes to the scrape (one page load + ~110 lightweight
+        fetch calls for ~687 products).
+        """
+        try:
+            from playwright.sync_api import sync_playwright
+        except ImportError:
+            self.warn('[Primark] Playwright not installed — skipping availability check')
+            return
+
+        from urllib.parse import urlparse, parse_qs, unquote
+
+        checkable = [p for p in products if p.get('size_skus')]
+        if not checkable:
+            self.log('[Primark] No size SKU data on products — skipping availability check')
+            return
+
+        self.log(f'[Primark] Availability check: {len(checkable)}/{len(products)} products have size data')
+
+        captured   = {'extensions': None}
+        avail_map  = {}   # skuId (str) -> isAvailable (bool)
+
+        def on_response(response):
+            if 'ColourAvailability' not in response.url:
+                return
+            try:
+                # Capture the extensions parameter (contains the persisted-query hash)
+                if captured['extensions'] is None:
+                    params = parse_qs(urlparse(response.url).query)
+                    ext_raw = params.get('extensions', [''])[0]
+                    if ext_raw:
+                        captured['extensions'] = unquote(ext_raw)
+                # Also consume the response body for this first product
+                body = json.loads(response.body())
+                for entry in (body.get('data', {}).get('NonStoreColorSelectorInventory') or []):
+                    avail_map[str(entry.get('skuId', ''))] = bool(entry.get('isAvailable', True))
+            except Exception:
+                pass
+
+        with sync_playwright() as pw:
+            browser = pw.chromium.launch(
+                headless=True,
+                args=['--disable-blink-features=AutomationControlled'],
+            )
+            ctx = browser.new_context(
+                user_agent=(
+                    'Mozilla/5.0 (Windows NT 10.0; Win64; x64) '
+                    'AppleWebKit/537.36 (KHTML, like Gecko) '
+                    'Chrome/124.0.0.0 Safari/537.36'
+                ),
+                viewport={'width': 1280, 'height': 900},
+            )
+            ctx.add_init_script(
+                'Object.defineProperty(navigator, "webdriver", {get: () => undefined})'
+            )
+            page = ctx.new_page()
+            page.on('response', on_response)
+
+            # Load the first product page to capture the persisted-query hash.
+            self.log('[Primark] Loading product page to capture API hash...')
+            try:
+                page.goto(checkable[0]['url'], wait_until='networkidle', timeout=45000)
+                page.wait_for_timeout(2000)
+            except Exception as e:
+                self.warn(f'[Primark] Product page load error: {e}')
+
+            if not captured['extensions']:
+                self.warn('[Primark] Could not capture ColourAvailability hash — skipping check')
+                browser.close()
+                return
+
+            extensions_str = captured['extensions']
+            self.log('[Primark] Hash captured. Batch-fetching availability...')
+
+            # Collect all size SKUs not yet in avail_map (first product's were populated
+            # by on_response above).
+            all_skus = []
+            for prod in checkable:
+                for sku in (prod.get('size_skus') or []):
+                    if sku not in avail_map:
+                        all_skus.append(sku)
+
+            # Deduplicate while preserving order
+            seen = set()
+            unique_skus = []
+            for s in all_skus:
+                if s not in seen:
+                    seen.add(s)
+                    unique_skus.append(s)
+
+            # Batch-fetch via page.evaluate() — each call stays inside the live
+            # browser session so PerimeterX doesn't challenge us.
+            BATCH = 40
+            for i in range(0, len(unique_skus), BATCH):
+                batch        = unique_skus[i:i + BATCH]
+                variables_json = json.dumps({'skuIds': batch}, separators=(',', ':'))
+
+                js = """
+(async () => {
+    const url = new URL('https://api001-arh.primark.com/bff-cas-green');
+    url.searchParams.set('operationName', 'GetStoreSpecificColourAvailability');
+    url.searchParams.set('variables', VARIABLES_PLACEHOLDER);
+    url.searchParams.set('extensions', EXTENSIONS_PLACEHOLDER);
+    const resp = await fetch(url.toString(), {
+        headers: {
+            'accept': 'application/json',
+            'accept-language': 'en-GB,en;q=0.9',
+        }
+    });
+    return await resp.json();
+})()
+""".replace('VARIABLES_PLACEHOLDER', json.dumps(variables_json)) \
+   .replace('EXTENSIONS_PLACEHOLDER', json.dumps(extensions_str))
+
+                try:
+                    result = page.evaluate(js)
+                    for entry in (result.get('data', {}).get('NonStoreColorSelectorInventory') or []):
+                        avail_map[str(entry.get('skuId', ''))] = bool(entry.get('isAvailable', True))
+                except Exception as e:
+                    self.warn(f'[Primark] Fetch batch error at offset {i}: {e}')
+
+                checked_so_far = len(avail_map)
+                total_needed   = len(unique_skus) + len(checkable[0].get('size_skus') or [])
+                if i % (BATCH * 5) == 0 and i > 0:
+                    self.log(f'[Primark] OOS check: {min(i + BATCH, len(unique_skus))}/{len(unique_skus)} SKUs fetched')
+
+            browser.close()
+
+        # Apply results to products
+        oos_count = 0
+        for prod in checkable:
+            size_skus = prod.get('size_skus') or []
+            known     = [avail_map[s] for s in size_skus if s in avail_map]
+            # OOS only if we got data back AND every size is unavailable
+            is_oos    = bool(known) and not any(known)
+            prod.setdefault('raw_data', {})['is_oos'] = is_oos
+            if is_oos:
+                oos_count += 1
+
+        self.log(f'[Primark] OOS check done: {oos_count}/{len(checkable)} products confirmed OOS')
+
+    # -----------------------------------------------------------------------
     # Scroll fallback
     # -----------------------------------------------------------------------
 
@@ -301,8 +459,12 @@ class PrimarkScraper(BaseScraper):
         # the first (displayed) variant's sku_color holds the colour swatch shown
         # on the card (e.g. "tan", "chocolate"). Fold it into the name so the
         # keyword classifier (which only tokenises `name`) can pick it up.
-        variants = item.get('variants') or []
-        colour   = (variants[0].get('sku_color') or '').strip().lower() if variants else ''
+        variants  = item.get('variants') or []
+        colour    = (variants[0].get('sku_color') or '').strip().lower() if variants else ''
+        # Size-level SKU IDs — used by check_all_availability() for OOS detection.
+        # Stored at the product level (not in raw_data) so they're available during
+        # the scrape but are not persisted to the DB snapshot.
+        size_skus = [str(v['skuId']) for v in variants if v.get('skuId')]
         title    = self.clean_text(item.get('title', 'Unknown'))
         name     = f'{title} {colour.title()}' if colour else title
 
@@ -324,6 +486,7 @@ class PrimarkScraper(BaseScraper):
             'sizes_oos':       [],
             'is_featured':     rank <= 4,
             'image_url':       image_url,
+            'size_skus':       size_skus or None,   # ephemeral — used by check_all_availability, not stored
             'raw_data': {
                 'description': item.get('description'),
                 'colour':      colour or None,
