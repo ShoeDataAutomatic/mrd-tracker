@@ -464,7 +464,11 @@ class PrimarkScraper(BaseScraper):
         # Size-level SKU IDs — used by check_all_availability() for OOS detection.
         # Stored at the product level (not in raw_data) so they're available during
         # the scrape but are not persisted to the DB snapshot.
+        # Prefer variant-level skuIds (size-specific); fall back to masterSkuId
+        # (product/colour level) which is consistently populated in PLP responses.
         size_skus = [str(v['skuId']) for v in variants if v.get('skuId')]
+        if not size_skus and item.get('masterSkuId'):
+            size_skus = [str(item['masterSkuId'])]
         title    = self.clean_text(item.get('title', 'Unknown'))
         name     = f'{title} {colour.title()}' if colour else title
 
