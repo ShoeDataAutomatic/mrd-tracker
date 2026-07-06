@@ -231,7 +231,8 @@
     .tag-selling  { border: 1.5px solid #00a651; color: #00a651; }
     .tag-review   { border: 1.5px solid #888; color: #888; }
     .tag-markdown { border: 1.5px solid #ddd; color: #bbb; }
-    .tag-removed  { background: #E8563A; color: #fff; }
+    .tag-removed   { background: #E8563A; color: #fff; }
+    .tag-soldout   { border: 1.5px solid #E8563A; color: #E8563A; }
     .sparkline { width: 60px; height: 24px; }
     .empty-state { text-align: center; padding: 60px 20px; color: #bbb; }
     .empty-state p { margin-top: 8px; font-size: 12px; font-weight: 500; }
@@ -1227,7 +1228,7 @@ const msSelections = { retailer: [], category: [], subcategory: [], signal: [] }
 
 const SIGNAL_OPTIONS = [
   'New arrival','Long runner','Featured','Rising',
-  'Restocked','Selling through','Review spike','Marked down','Removed'
+  'Restocked','Selling through','Review spike','Marked down','Removed','Sold Out'
 ];
 const CATEGORY_OPTIONS = ['women','men','girls','boys'];
 
@@ -1468,7 +1469,7 @@ function toggleShowRemoved() {
 const TAG_CLASSES = {
   'New arrival':'tag-new','Long runner':'tag-runner','Featured':'tag-featured',
   'Rising':'tag-rising','Restocked':'tag-restock','Selling through':'tag-selling',
-  'Review spike':'tag-review','Marked down':'tag-markdown','Removed':'tag-removed',
+  'Review spike':'tag-review','Marked down':'tag-markdown','Removed':'tag-removed','Sold Out':'tag-soldout',
 };
 
 function setCategory(cat) {
@@ -1549,8 +1550,9 @@ function renderTable() {
     const nm  = (p.name        || '').toLowerCase();
     const ret = (p.retailer    || '').toLowerCase();
 
-    // Removed products filter
-    if (!showRemoved && (p.signal_tags || []).includes('Removed')) return false;
+    // Removed / Sold Out filter — both hidden unless the toggle is active
+    const tags = p.signal_tags || [];
+    if (!showRemoved && (tags.includes('Removed') || tags.includes('Sold Out'))) return false;
 
     // Category pills (top-bar quick filter)
     if (activeCategory && !cat.split('/').includes(activeCategory)) return false;

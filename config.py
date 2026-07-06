@@ -95,6 +95,7 @@ SCORING = {
     'review_velocity':    2,    # Review count grew by >10% since last check
     'price_markdown':    -4,    # Price dropped (potential slow mover clearance)
     'product_removed':   -3,    # Disappeared from the site entirely
+    'product_sold_out':  -3,    # Still in sitemap but confirmed Out Of Stock
 }
 
 ROLLING_WINDOW_DAYS = 30   # Days to sum scores over for rankings

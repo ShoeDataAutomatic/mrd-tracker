@@ -70,6 +70,12 @@ def _score_product(product):
     first_seen = _parse_date(product.get('first_seen', ''))
     last_seen  = _parse_date(product.get('last_seen', ''))
 
+    # Parse latest snapshot raw_data once — used across multiple signal checks
+    try:
+        raw = json.loads(latest.get('raw_data') or '{}')
+    except Exception:
+        raw = {}
+
     # ------------------------------------------------------------------
     # 1. New arrival — suppressed if the product was OOS on first sight
     #    (clearance/markdown re-listing rather than a genuine new launch)
@@ -83,10 +89,12 @@ def _score_product(product):
     # 2. Long runner
     #    Primark cycles their online catalog quickly, so a product that
     #    has been present for 30+ days is likely a sustained performer.
-    #    Not awarded if the product has since been removed.
+    #    Not awarded if the product has been delisted or is sold out.
     # ------------------------------------------------------------------
-    is_removed = last_seen and (today - last_seen).days >= 3
-    if first_seen and (today - first_seen).days >= 30 and not is_removed:
+    is_oos     = raw.get('is_oos', False)   # set by New Look per-scrape OOS check
+    is_removed = bool(last_seen and (today - last_seen).days >= 3)
+    is_sold_out = is_oos and not is_removed  # in sitemap but OOS (not already counted as removed)
+    if first_seen and (today - first_seen).days >= 30 and not is_removed and not is_sold_out:
         signals['long_runner'] = SCORING['long_runner']
         score += SCORING['long_runner']
 
@@ -98,11 +106,19 @@ def _score_product(product):
         score += SCORING['featured']
 
     # ------------------------------------------------------------------
-    # 4. Product removed (last_seen is not today)
+    # 4. Product removed (delisted — missing from sitemap 3+ days)
     # ------------------------------------------------------------------
     if is_removed:
         signals['product_removed'] = SCORING['product_removed']
         score += SCORING['product_removed']
+
+    # ------------------------------------------------------------------
+    # 4b. Sold out (still in sitemap but confirmed Out Of Stock)
+    #     Filtered out of rankings alongside "Removed" products.
+    # ------------------------------------------------------------------
+    if is_sold_out:
+        signals['product_sold_out'] = SCORING['product_sold_out']
+        score += SCORING['product_sold_out']
 
     # ------------------------------------------------------------------
     # Signals that require a previous snapshot for comparison
@@ -151,10 +167,6 @@ def _score_product(product):
         # (catches products that arrived already marked down)
         prev_price = previous.get('price')
         curr_price = latest.get('price')
-        try:
-            raw = json.loads(latest.get('raw_data') or '{}')
-        except Exception:
-            raw = {}
         is_markdown_flag = raw.get('is_markdown', False)
         was_price        = raw.get('was_price')
 
@@ -235,6 +247,7 @@ def _signals_to_tags(signals):
     if 'review_velocity'  in signals: tags.append('Review spike')
     if 'price_markdown'   in signals: tags.append('Marked down')
     if 'product_removed'  in signals: tags.append('Removed')
+    if 'product_sold_out' in signals: tags.append('Sold Out')
     return tags
 
 

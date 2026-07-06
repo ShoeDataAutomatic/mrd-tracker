@@ -339,6 +339,58 @@ class NewLookScraper(BaseScraper):
             f'new SKU(s) flagged as clearance.'
         )
 
+    def check_all_availability(self, products, max_workers=8):
+        """
+        Fetch product pages for ALL New Look products in the current scrape
+        and check stock availability from schema.org markup.
+
+        Sets raw_data['is_oos'] = True  for confirmed Out Of Stock products.
+        Sets raw_data['is_oos'] = False for confirmed In Stock products.
+        Leaves raw_data['is_oos'] unchanged (defaults to False) if the page
+        could not be fetched or the availability string was not found.
+
+        The scorer uses is_oos to flag still-in-sitemap OOS products with the
+        same 'product_removed' signal as fully delisted products.
+
+        Adds roughly 2-3 minutes to the scrape with 8 workers over ~1,355 products.
+        """
+        if not products:
+            return
+
+        self.log(f'OOS check (all products): fetching {len(products)} pages …')
+
+        def fetch_one(product):
+            try:
+                r = requests.get(product['url'], headers=_HEADERS, timeout=12)
+                if r.status_code == 200:
+                    return product['sku'], self._extract_availability(r.text)
+            except Exception:
+                pass
+            return product['sku'], None
+
+        sku_map = {p['sku']: p for p in products}
+        oos_count = 0
+        done = 0
+
+        with ThreadPoolExecutor(max_workers=max_workers) as ex:
+            futures = {ex.submit(fetch_one, p): p for p in products}
+            for fut in as_completed(futures):
+                sku, avail = fut.result()
+                if sku in sku_map:
+                    p = sku_map[sku]
+                    if not isinstance(p.get('raw_data'), dict):
+                        p['raw_data'] = {}
+                    if avail is False:
+                        p['raw_data']['is_oos'] = True
+                        oos_count += 1
+                    elif avail is True:
+                        p['raw_data']['is_oos'] = False
+                done += 1
+                if done % 200 == 0:
+                    self.log(f'OOS check: {done}/{len(products)} fetched ({oos_count} OOS so far)')
+
+        self.log(f'OOS check done: {oos_count}/{len(products)} confirmed out of stock.')
+
     @staticmethod
     def _extract_availability(html):
         """
