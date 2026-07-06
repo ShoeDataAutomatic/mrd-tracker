@@ -682,6 +682,46 @@ def export_keyword_classifications():
 
 
 # ---------------------------------------------------------------------------
+# Local OOS API  (called by run_oos_local.py on Mitch's machine)
+# ---------------------------------------------------------------------------
+
+def _check_oos_api_key():
+    """Return True if the request carries a valid OOS_API_KEY."""
+    expected = os.environ.get('OOS_API_KEY', '')
+    if not expected:
+        return False   # key not configured — reject all
+    auth = request.headers.get('Authorization', '')
+    provided = auth.replace('Bearer ', '').strip()
+    return provided == expected
+
+
+@app.route('/api/oos/products')
+def api_oos_products():
+    if not _check_oos_api_key():
+        return jsonify({'error': 'unauthorized'}), 401
+    retailer = request.args.get('retailer')
+    products = db.get_products_for_oos(retailer=retailer)
+    return jsonify({'products': products})
+
+
+@app.route('/api/oos/update', methods=['POST'])
+def api_oos_update():
+    if not _check_oos_api_key():
+        return jsonify({'error': 'unauthorized'}), 401
+    updates = (request.get_json() or {}).get('updates', [])
+    ok = 0
+    for u in updates:
+        retailer = u.get('retailer')
+        sku      = u.get('sku')
+        is_oos   = u.get('is_oos')
+        price    = u.get('price')
+        if retailer and sku is not None and is_oos is not None:
+            if db.update_oos_status(retailer, sku, is_oos, price=price):
+                ok += 1
+    return jsonify({'updated': ok, 'received': len(updates)})
+
+
+# ---------------------------------------------------------------------------
 # Run
 # ---------------------------------------------------------------------------
 

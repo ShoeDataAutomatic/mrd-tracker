@@ -21,6 +21,10 @@ venv/
 
 # Secrets — never commit these
 credentials.json
+oos_config.env
+
+# Local OOS test output
+test_local_oos_output.txt
 
 # Logs
 *.log

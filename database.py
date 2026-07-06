@@ -689,3 +689,56 @@ def update_user_access(user_id, can_rankings, can_keywords):
     )
     conn.commit()
     conn.close()
+
+
+# ---------------------------------------------------------------------------
+# Local OOS / price updates (written back from run_oos_local.py)
+# ---------------------------------------------------------------------------
+
+def get_products_for_oos(retailer=None):
+    """Return list of {retailer, sku, url} for all tracked products."""
+    conn = get_connection()
+    c = conn.cursor()
+    if retailer:
+        c.execute('SELECT retailer, sku, url FROM products WHERE retailer = ?', (retailer,))
+    else:
+        c.execute('SELECT retailer, sku, url FROM products')
+    rows = [dict(r) for r in c.fetchall()]
+    conn.close()
+    return rows
+
+
+def update_oos_status(retailer, sku, is_oos, price=None):
+    """
+    Update is_oos (and optionally price) in the most recent snapshot for this product.
+    Called by the local OOS cron via the /api/oos/update endpoint.
+    """
+    conn = get_connection()
+    c = conn.cursor()
+
+    # Find the most recent snapshot
+    c.execute('''
+        SELECT s.id, s.raw_data, s.price FROM snapshots s
+        JOIN products p ON p.id = s.product_id
+        WHERE p.retailer = ? AND p.sku = ?
+        ORDER BY s.scraped_at DESC
+        LIMIT 1
+    ''', (retailer, sku))
+    row = c.fetchone()
+    if not row:
+        conn.close()
+        return False
+
+    raw_data = json.loads(row['raw_data'] or '{}')
+    raw_data['is_oos'] = bool(is_oos)
+
+    # Optionally update price (New Look prices not captured by Railway scraper)
+    new_price = price if price is not None else row['price']
+
+    c.execute(
+        'UPDATE snapshots SET raw_data = ?, price = ? WHERE id = ?',
+        (json.dumps(raw_data), new_price, row['id'])
+    )
+    conn.commit()
+    conn.close()
+    return True
