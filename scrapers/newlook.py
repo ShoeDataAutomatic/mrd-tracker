@@ -349,61 +349,64 @@ class NewLookScraper(BaseScraper):
         Leaves raw_data['is_oos'] unchanged (defaults to False) if the page
         could not be fetched or the availability string was not found.
 
-        The scorer uses is_oos to flag still-in-sitemap OOS products with the
-        same 'product_removed' signal as fully delisted products.
-
-        Adds roughly 2-3 minutes to the scrape with 8 workers over ~1,355 products.
+        NOTE: New Look product pages are protected by PerimeterX. Datacenter IPs
+        (e.g. Railway) receive a bot-block response for every request. When this is
+        detected via a 3-page probe, the full check is skipped immediately rather
+        than wasting 2–3 minutes fetching 1,355 blocked pages. A residential proxy
+        is required to enable this check.
         """
         if not products:
             return
 
+        # ── Early probe ──────────────────────────────────────────────────────
+        # Fetch 3 pages before committing to the full run.  If all are blocked
+        # (non-200 or PerimeterX HTML) bail immediately with a single log line.
+        _PX_MARKERS = ('px-captcha', 'PerimeterX', '_pxParam', 'pxScript')
+        _PROBE_N    = 3
+        probe_ok    = 0
+        probe_body  = None
+
+        for p in products[:_PROBE_N]:
+            try:
+                r = requests.get(p['url'], headers=_HEADERS, timeout=12)
+                if r.status_code == 200:
+                    probe_ok += 1
+                elif probe_body is None:
+                    probe_body = r.text[:400]
+            except Exception:
+                pass
+
+        if probe_ok == 0:
+            is_px = probe_body and any(m in probe_body for m in _PX_MARKERS)
+            self.warn(
+                f'OOS check: all {_PROBE_N} probe pages blocked '
+                f'(PerimeterX={bool(is_px)}) — skipping full check. '
+                'A residential proxy is required.'
+            )
+            return
+
+        # ── Full check ───────────────────────────────────────────────────────
         self.log(f'OOS check (all products): fetching {len(products)} pages …')
 
-        # Diagnostic counters — logged at the end to help identify root cause
-        # if OOS count is unexpectedly zero.
-        diag = {'ok': 0, 'non200': 0, 'err': 0, 'in_stock': 0, 'oos': 0, 'no_avail': 0}
-        _sample_body = None  # first 500 chars of a suspect page for PerimeterX check
-
         def fetch_one(product):
-            """Return (sku, http_status, avail, sample_body).
-            avail: True=InStock, False=OOS, None=not found / not fetched.
-            sample_body: short snippet for diagnosis when avail is None."""
+            """Return (sku, http_status, avail).
+            avail: True=InStock, False=OOS, None=not found / not fetched."""
             try:
                 r = requests.get(product['url'], headers=_HEADERS, timeout=12)
                 if r.status_code == 200:
-                    avail = self._extract_availability(r.text)
-                    snippet = r.text[:500] if avail is None else None
-                    return product['sku'], 200, avail, snippet
-                return product['sku'], r.status_code, None, r.text[:500]
-            except Exception as exc:
-                return product['sku'], None, None, str(exc)[:200]
+                    return product['sku'], 200, self._extract_availability(r.text)
+                return product['sku'], r.status_code, None
+            except Exception:
+                return product['sku'], None, None
 
-        sku_map = {p['sku']: p for p in products}
+        sku_map   = {p['sku']: p for p in products}
         oos_count = 0
-        done = 0
+        done      = 0
 
         with ThreadPoolExecutor(max_workers=max_workers) as ex:
             futures = {ex.submit(fetch_one, p): p for p in products}
             for fut in as_completed(futures):
-                sku, status, avail, snippet = fut.result()
-
-                # Diagnostic tallying
-                if status is None:
-                    diag['err'] += 1
-                elif status == 200:
-                    diag['ok'] += 1
-                    if avail is True:
-                        diag['in_stock'] += 1
-                    elif avail is False:
-                        diag['oos'] += 1
-                    else:
-                        diag['no_avail'] += 1
-                else:
-                    diag['non200'] += 1
-                if snippet and _sample_body is None:
-                    _sample_body = snippet
-
-                # Update product OOS flag
+                sku, status, avail = fut.result()
                 if sku in sku_map:
                     p = sku_map[sku]
                     if not isinstance(p.get('raw_data'), dict):
@@ -413,19 +416,11 @@ class NewLookScraper(BaseScraper):
                         oos_count += 1
                     elif avail is True:
                         p['raw_data']['is_oos'] = False
-
                 done += 1
                 if done % 200 == 0:
                     self.log(f'OOS check: {done}/{len(products)} fetched ({oos_count} OOS so far)')
 
-        self.log(
-            f'OOS check done: {oos_count}/{len(products)} confirmed OOS. '
-            f'HTTP: {diag["ok"]} ok / {diag["non200"]} non-200 / {diag["err"]} errors. '
-            f'Avail field: {diag["in_stock"]} in-stock / {diag["oos"]} oos / {diag["no_avail"]} not-found.'
-        )
-        if _sample_body:
-            is_px = any(k in _sample_body for k in ('px-captcha', 'PerimeterX', '_pxParam', 'pxScript'))
-            self.log(f'Sample suspect body (PerimeterX={is_px}): {_sample_body[:300]}')
+        self.log(f'OOS check done: {oos_count}/{len(products)} confirmed OOS.')
 
     @staticmethod
     def _extract_availability(html):

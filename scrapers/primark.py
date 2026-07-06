@@ -220,12 +220,13 @@ class PrimarkScraper(BaseScraper):
              which lets us capture the persisted-query hash we need.
           3. After the hash is captured, use page.evaluate() to fire batched fetch()
              calls to the same API endpoint from within the live browser context.
-             The established session cookies bypass PerimeterX; no new page loads needed.
           4. Mark raw_data['is_oos'] = True for any product where ALL size variants
              return isAvailable: false.
 
-        Adds roughly 1–2 minutes to the scrape (one page load + ~110 lightweight
-        fetch calls for ~687 products).
+        NOTE: api001-arh.primark.com uses its own PerimeterX instance separate from
+        primark.com.  Datacenter IPs (e.g. Railway) are blocked even inside a live
+        Playwright session.  A residential proxy is required to enable this check.
+        When blocked the method logs once and returns early without spamming warnings.
         """
         try:
             from playwright.sync_api import sync_playwright
@@ -316,8 +317,9 @@ class PrimarkScraper(BaseScraper):
             # Batch-fetch via page.evaluate() — each call stays inside the live
             # browser session so PerimeterX doesn't challenge us.
             BATCH = 40
+            px_blocked = False
             for i in range(0, len(unique_skus), BATCH):
-                batch        = unique_skus[i:i + BATCH]
+                batch          = unique_skus[i:i + BATCH]
                 variables_json = json.dumps({'skuIds': batch}, separators=(',', ':'))
 
                 js = """
@@ -342,14 +344,26 @@ class PrimarkScraper(BaseScraper):
                     for entry in (result.get('data', {}).get('NonStoreColorSelectorInventory') or []):
                         avail_map[str(entry.get('skuId', ''))] = bool(entry.get('isAvailable', True))
                 except Exception as e:
+                    # PerimeterX returns an HTML page; page.evaluate() then raises a
+                    # SyntaxError when it tries to JSON-parse "<!DOCTYPE ...".
+                    # Detect this once, log clearly, and stop — no point continuing.
+                    if '<!DOCTYPE' in str(e) or 'Unexpected token' in str(e):
+                        px_blocked = True
+                        self.warn(
+                            '[Primark] OOS check blocked by PerimeterX on '
+                            'api001-arh.primark.com (datacenter IP rejected). '
+                            'A residential proxy is required. Skipping.'
+                        )
+                        break
                     self.warn(f'[Primark] Fetch batch error at offset {i}: {e}')
 
-                checked_so_far = len(avail_map)
-                total_needed   = len(unique_skus) + len(checkable[0].get('size_skus') or [])
                 if i % (BATCH * 5) == 0 and i > 0:
                     self.log(f'[Primark] OOS check: {min(i + BATCH, len(unique_skus))}/{len(unique_skus)} SKUs fetched')
 
             browser.close()
+
+        if px_blocked:
+            return
 
         # Apply results to products
         oos_count = 0
