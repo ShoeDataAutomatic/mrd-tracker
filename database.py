@@ -721,7 +721,7 @@ def update_oos_status(retailer, sku, is_oos, price=None):
         SELECT s.id, s.raw_data, s.price FROM snapshots s
         JOIN products p ON p.id = s.product_id
         WHERE p.retailer = ? AND p.sku = ?
-        ORDER BY s.scraped_at DESC
+        ORDER BY s.timestamp DESC
         LIMIT 1
     ''', (retailer, sku))
     row = c.fetchone()
