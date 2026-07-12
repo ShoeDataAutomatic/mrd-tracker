@@ -35,6 +35,15 @@ import logging
 import requests
 from concurrent.futures import ThreadPoolExecutor, as_completed
 
+# curl_cffi mimics Chrome's TLS fingerprint — used for product-page OOS checks
+# where plain requests is blocked. Falls back gracefully if not installed.
+try:
+    from curl_cffi import requests as _cffi_requests
+    _CFFI_AVAILABLE = True
+except ImportError:
+    _cffi_requests = None
+    _CFFI_AVAILABLE = False
+
 from scrapers.base import BaseScraper
 
 logger = logging.getLogger(__name__)
@@ -366,9 +375,13 @@ class NewLookScraper(BaseScraper):
         probe_ok    = 0
         probe_body  = None
 
+        _get = (_cffi_requests.get if _CFFI_AVAILABLE
+                else requests.get)
+        _get_kwargs = {'impersonate': 'chrome'} if _CFFI_AVAILABLE else {}
+
         for p in products[:_PROBE_N]:
             try:
-                r = requests.get(p['url'], headers=_HEADERS, timeout=12)
+                r = _get(p['url'], headers=_HEADERS, timeout=12, **_get_kwargs)
                 if r.status_code == 200:
                     probe_ok += 1
                 elif probe_body is None:
@@ -392,7 +405,7 @@ class NewLookScraper(BaseScraper):
             """Return (sku, http_status, avail).
             avail: True=InStock, False=OOS, None=not found / not fetched."""
             try:
-                r = requests.get(product['url'], headers=_HEADERS, timeout=12)
+                r = _get(product['url'], headers=_HEADERS, timeout=12, **_get_kwargs)
                 if r.status_code == 200:
                     return product['sku'], 200, self._extract_availability(r.text)
                 return product['sku'], r.status_code, None
@@ -964,16 +977,4 @@ class NewLookScraper(BaseScraper):
                     html2 = page.content()
                     price, was = self._extract_price(html2)
                     print(f'  price=£{price}  was_price=£{was}')
-                    nd2 = re.search(r'id="__NEXT_DATA__"[^>]*>(.*?)</script>', html2, re.DOTALL)
-                    if nd2:
-                        snippet = nd2.group(1)[:500]
-                        print(f'  __NEXT_DATA__ snippet: {snippet}')
-
-            except Exception as e:
-                print(f'  Playwright error: {e}')
-            finally:
-                browser.close()
-
-        print(f'\n  Summary: {len(api_hits)} product API endpoints captured')
-        for h in api_hits:
-            print(f'    total={h["total"]}  count={h["count"]}  url={h["url"][:100]}')
+                    nd2 = re.search(r'id="__NEXT_DATA__"[^>]*>(.*?)</script>', html2

@@ -127,7 +127,8 @@ class PrimarkScraper(BaseScraper):
         # ── Phase 1: browser ──────────────────────────────────────────────
         with sync_playwright() as p:
             browser = p.chromium.launch(
-                headless=True,
+                channel='chrome',    # Use real installed Chrome — bypasses headless fingerprinting
+                headless=False,      # Visible mode: PX JS challenge completes properly
                 args=['--disable-blink-features=AutomationControlled'],
             )
             ctx = browser.new_context(
@@ -142,6 +143,11 @@ class PrimarkScraper(BaseScraper):
                 'Object.defineProperty(navigator, "webdriver", {get: () => undefined})'
             )
             page = ctx.new_page()
+            try:
+                from playwright_stealth import stealth_sync
+                stealth_sync(page)
+            except Exception:
+                pass
             page.route('https://api001-arh.primark.com/*', on_route)
             try:
                 # expect_response BLOCKS until the matching response arrives,
@@ -295,7 +301,8 @@ class PrimarkScraper(BaseScraper):
 
         with sync_playwright() as pw:
             browser = pw.chromium.launch(
-                headless=True,
+                channel='chrome',
+                headless=False,
                 args=['--disable-blink-features=AutomationControlled'],
             )
             ctx = browser.new_context(
@@ -310,6 +317,11 @@ class PrimarkScraper(BaseScraper):
                 'Object.defineProperty(navigator, "webdriver", {get: () => undefined})'
             )
             page = ctx.new_page()
+            try:
+                from playwright_stealth import stealth_sync
+                stealth_sync(page)
+            except Exception:
+                pass
             page.on('response', on_response)
 
             self.log('[Primark] Loading product page to capture API hash...')
@@ -708,11 +720,4 @@ class PrimarkScraper(BaseScraper):
         marked_pp  = [d for d in all_docs if d.get('pricePrevious') and d.get('price') and d['pricePrevious'] > d['price']]
         marked_cp  = [d for d in all_docs if d.get('changePercent') and d['changePercent'] < 0]
         print(f'\n  sale_price < price:     {len(marked_sp)} products')
-        print(f'  pricePrevious > price:  {len(marked_pp)} products')
-        print(f'  changePercent < 0:      {len(marked_cp)} products')
-
-        for label, group in [('sale_price<price', marked_sp), ('pricePrevious>price', marked_pp), ('changePercent<0', marked_cp)]:
-            if group:
-                d = group[0]
-                print(f'\nSample [{label}]: {d.get("title")}')
-                print(f'  price={d.get("price")}  sale_price={d.get("sale_price")}  pricePrevious={d.get("pricePrevious")}  changePercent={d.get("changePercent")}')
+        print(f'  pricePrevious
