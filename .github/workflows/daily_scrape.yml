@@ -13,8 +13,8 @@ permissions:
 
 jobs:
   scrape:
-    runs-on: ubuntu-latest
-    timeout-minutes: 30
+    runs-on: self-hosted
+    timeout-minutes: 45   # Increased — New Look OOS now runs fully on residential IP (~7 min extra)
 
     steps:
       - name: Check out repository
@@ -27,24 +27,11 @@ jobs:
         with:
           python-version: '3.11'
 
-      - name: Cache pip packages
-        uses: actions/cache@v4
-        with:
-          path: ~/.cache/pip
-          key: ${{ runner.os }}-pip-${{ hashFiles('requirements.txt') }}
-          restore-keys: ${{ runner.os }}-pip-
-
       - name: Install Python dependencies
         run: pip install -r requirements.txt
 
-      - name: Install Playwright browser and dependencies
-        run: |
-          playwright install chromium
-          sudo apt-get install -y --no-install-recommends \
-            libasound2t64 libatk1.0-0 libatk-bridge2.0-0 \
-            libcups2 libdrm2 libgtk-3-0 libgbm1 libnss3 \
-            libxcomposite1 libxdamage1 libxfixes3 libxrandr2 \
-            libxss1 libxtst6 xvfb
+      - name: Install Playwright browser
+        run: playwright install chromium
 
       - name: Initialise database (safe on first run)
         run: python run.py --init
@@ -74,10 +61,10 @@ jobs:
         continue-on-error: true   # Don't fail the whole run if Sheets isn't configured
 
       - name: Checkpoint database (flush WAL before commit)
-        run: |
-          python -c "import sqlite3; conn = sqlite3.connect('mrd_tracker.db'); conn.execute('PRAGMA wal_checkpoint(TRUNCATE);'); conn.close()"
+        run: python -c "import sqlite3; conn = sqlite3.connect('mrd_tracker.db'); conn.execute('PRAGMA wal_checkpoint(TRUNCATE);'); conn.close()"
 
       - name: Commit updated database to repo
+        shell: bash
         run: |
           git config user.email "github-actions[bot]@users.noreply.github.com"
           git config user.name  "github-actions[bot]"
