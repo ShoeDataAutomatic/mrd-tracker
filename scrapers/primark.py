@@ -35,12 +35,35 @@ class PrimarkScraper(BaseScraper):
         api            = config.get('api', {})
         self.page_size = api.get('page_size', 24)
         self.rows_override = api.get('rows_override', 500)
+        self._px_blocked = False   # set True after first PX block; skips remaining categories
 
     # -----------------------------------------------------------------------
     # Public interface
     # -----------------------------------------------------------------------
 
+    def scrape_all(self):
+        """Override to break immediately when PX blocks the first category."""
+        self.results = []
+        for category_path in self.config.get('categories', []):
+            if self._px_blocked:
+                self.warn('PX blocked — aborting remaining Primark categories')
+                break
+            logger.info(f'[{self.config["name"]}] Scraping category: {category_path}')
+            try:
+                products = self.scrape_category(category_path)
+                self.results.extend(products)
+                logger.info(f'[{self.config["name"]}] Found {len(products)} products in {category_path}')
+            except Exception as e:
+                logger.error(f'[{self.config["name"]}] Failed on {category_path}: {e}')
+            if not self._px_blocked:
+                time.sleep(2)
+        return self.results
+
     def scrape_category(self, category_path):
+        if self._px_blocked:
+            self.warn(f'Skipping {category_path} — PX blocked on first category')
+            return []
+
         try:
             from playwright.sync_api import sync_playwright
         except ImportError:
@@ -123,11 +146,14 @@ class PrimarkScraper(BaseScraper):
             try:
                 # expect_response BLOCKS until the matching response arrives,
                 # so the browser won't close before we've read the payload.
+                # 12 s timeout: PX challenge pages never fire getPlpProducts,
+                # so a short timeout lets us detect blocking quickly and bail
+                # before wasting time on all remaining categories.
                 with page.expect_response(
                     lambda r: 'getPlpProducts' in r.url,
-                    timeout=35000,
+                    timeout=12000,
                 ) as resp_info:
-                    page.goto(url, wait_until='domcontentloaded', timeout=40000)
+                    page.goto(url, wait_until='domcontentloaded', timeout=20000)
                     try:
                         self._dismiss_cookie_banner(page)
                     except Exception:
@@ -148,7 +174,8 @@ class PrimarkScraper(BaseScraper):
                 except Exception as e:
                     self.warn(f'Response parse error: {e}')
             except Exception as e:
-                self.warn(f'Browser load error: {e}')
+                self.warn(f'Browser load error (PX block?): {e}')
+                self._px_blocked = True
             finally:
                 browser.close()
 
@@ -287,7 +314,7 @@ class PrimarkScraper(BaseScraper):
 
             self.log('[Primark] Loading product page to capture API hash...')
             try:
-                page.goto(checkable[0]['url'], wait_until='networkidle', timeout=45000)
+                page.goto(checkable[0]['url'], wait_until='domcontentloaded', timeout=15000)
                 page.wait_for_timeout(3000)
             except Exception as e:
                 self.warn(f'[Primark] Product page load error: {e}')

@@ -92,7 +92,7 @@ def _score_product(product):
     #    Not awarded if the product has been delisted or is sold out.
     # ------------------------------------------------------------------
     is_oos     = raw.get('is_oos', False)   # set per-scrape by New Look / Primark OOS check
-    is_removed = bool(last_seen and (today - last_seen).days >= 3)
+    is_removed = bool(last_seen and (today - last_seen).days >= 14)
     is_sold_out = is_oos and not is_removed  # in sitemap but OOS (not already counted as removed)
     if first_seen and (today - first_seen).days >= 30 and not is_removed and not is_sold_out:
         signals['long_runner'] = SCORING['long_runner']
