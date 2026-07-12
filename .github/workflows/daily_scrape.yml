@@ -25,6 +25,10 @@ jobs:
       - name: Install Python dependencies
         run: pip install -r requirements.txt
 
+      - name: Install curl_cffi (optional — TLS fingerprint bypass for New Look OOS)
+        run: pip install "curl_cffi>=0.7.0"
+        continue-on-error: true
+
       - name: Install Playwright browser
         run: python -m playwright install chromium
 
