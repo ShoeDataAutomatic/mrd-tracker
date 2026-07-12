@@ -59,11 +59,16 @@ jobs:
         run: python -c "import sqlite3; conn = sqlite3.connect('mrd_tracker.db'); conn.execute('PRAGMA wal_checkpoint(TRUNCATE);'); conn.close()"
 
       - name: Commit updated database to repo
-        shell: bash
+        shell: pwsh
         run: |
           git config user.email "github-actions[bot]@users.noreply.github.com"
           git config user.name  "github-actions[bot]"
           git add mrd_tracker.db
-          git diff --staged --quiet \
-            && echo "No database changes to commit." \
-            || (git commit -m "data: daily scrape $(date +'%Y-%m-%d')" && git push)
+          git diff --staged --quiet
+          if ($LASTEXITCODE -ne 0) {
+            $d = Get-Date -Format 'yyyy-MM-dd'
+            git commit -m "data: daily scrape $d"
+            git push
+          } else {
+            Write-Output "No database changes to commit."
+          }
