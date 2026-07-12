@@ -76,7 +76,10 @@ def run_scrape():
         # Pass 2 — all products: sets raw_data['is_oos'] per product so the
         # scorer can flag still-in-sitemap OOS products as removed.
         if hasattr(scraper, 'check_all_availability'):
-            scraper.check_all_availability(products)
+            try:
+                scraper.check_all_availability(products)
+            except Exception as _e:
+                logger.warning(f'check_all_availability failed for {key} (skipping): {_e}')
 
         for p in products:
             product_id = db.upsert_product(
