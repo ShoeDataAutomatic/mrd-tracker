@@ -193,6 +193,14 @@ class PrimarkScraper(BaseScraper):
                 pass
 
             try:
+                # ── Warm up PX session on the homepage first ─────────────────
+                # PX is more likely to trust a session that starts at the root
+                # domain rather than landing directly on a deep category URL.
+                self.log('Warming up PX session on homepage...')
+                page.goto('https://www.primark.com', wait_until='domcontentloaded', timeout=20000)
+                page.wait_for_timeout(3000)
+
+                # Now navigate to the actual category page
                 page.goto(url, wait_until='domcontentloaded', timeout=30000)
 
                 # Cookie banner loads asynchronously — wait for it then dismiss
@@ -204,14 +212,22 @@ class PrimarkScraper(BaseScraper):
                         timeout=8000,
                     )
                     self._dismiss_cookie_banner(page)
-                    page.wait_for_timeout(1500)
+                    page.wait_for_timeout(2000)
                 except Exception:
                     pass
 
-                # Wait for at least one product link to appear in the SSR HTML
+                # Wait for product links — longer timeout to allow JS hydration
                 try:
-                    page.wait_for_selector('a[href*="/en-gb/p/"]', timeout=15000)
+                    page.wait_for_selector('a[href*="/en-gb/p/"]', timeout=30000)
                 except Exception:
+                    # Log a page snippet so we know what PX is actually serving
+                    try:
+                        snippet = page.evaluate(
+                            "document.body.innerText.replace(/\\s+/g,' ').slice(0,400)"
+                        )
+                        self.warn(f'Page body snippet: {snippet}')
+                    except Exception:
+                        pass
                     self.warn(f'No product links found on {url} — PX may be blocking')
                     self._px_blocked = True
                     browser.close()
