@@ -157,9 +157,9 @@ class PrimarkScraper(BaseScraper):
                 # before wasting time on all remaining categories.
                 with page.expect_response(
                     lambda r: 'getPlpProducts' in r.url,
-                    timeout=12000,
+                    timeout=45000,
                 ) as resp_info:
-                    page.goto(url, wait_until='domcontentloaded', timeout=20000)
+                    page.goto(url, wait_until='domcontentloaded', timeout=30000)
                     try:
                         self._dismiss_cookie_banner(page)
                     except Exception:
@@ -720,4 +720,11 @@ class PrimarkScraper(BaseScraper):
         marked_pp  = [d for d in all_docs if d.get('pricePrevious') and d.get('price') and d['pricePrevious'] > d['price']]
         marked_cp  = [d for d in all_docs if d.get('changePercent') and d['changePercent'] < 0]
         print(f'\n  sale_price < price:     {len(marked_sp)} products')
-        print(f'  pricePrevious
+        print(f'  pricePrevious > price:  {len(marked_pp)} products')
+        print(f'  changePercent < 0:      {len(marked_cp)} products')
+
+        for label, group in [('sale_price<price', marked_sp), ('pricePrevious>price', marked_pp), ('changePercent<0', marked_cp)]:
+            if group:
+                d = group[0]
+                print(f'\nSample [{label}]: {d.get("title")}')
+                print(f'  price={d.get("price")}  sale_price={d.get("sale_price")}  pricePrevious={d.get("pricePrevious")}  changePercent={d.get("changePercent")}')
