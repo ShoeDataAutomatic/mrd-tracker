@@ -1,19 +1,20 @@
 """
-scrapers/primark.py — Primark scraper using capture-and-replay pagination.
+scrapers/primark.py — Primark SSR DOM scraper.
 
 Strategy:
-  Phase 1 — Browser: load the category page once in a headless browser.
-    The browser fires a real getPlpProducts GET request to Primark's API.
-    We capture the request URL (which contains all auth/locale/query params)
-    and the first 24 products from the response.
+  Primark uses Next.js App Router with Server-Side Rendering (SSR) — products
+  are embedded in the HTML at page-load time, not fetched via a separate API
+  call.  The old getPlpProducts capture-and-replay approach no longer works.
 
-  Phase 2 — Direct HTTP: for every remaining page we decode the captured
-    URL, update the `start` offset in the JSON `variables` parameter, and
-    replay the GET request directly via the requests library.
-    No browser needed — each page is a single HTTP call (~200 ms).
+  Phase 1 — Browser: load the category page in a real Chrome window,
+    dismiss the cookie banner, then wait for product links to appear in the
+    rendered DOM (selector: a[href*="/en-gb/p/"]).
 
-  This is reliable regardless of scroll mechanics or endpoint naming, and
-  automatically picks up any endpoint change (blue/green) without config edits.
+  Phase 2 — Pagination: scroll to the bottom and click "Load N more" until
+    the button disappears, then run a single JS extraction over the full page.
+
+  Product IDs are derived from the URL slug — the trailing numeric segment:
+    /en-gb/p/strappy-block-heel-sandals-black-991169064804  →  PID 991169064804
 """
 
 import re
@@ -34,7 +35,6 @@ class PrimarkScraper(BaseScraper):
         super().__init__(config)
         api            = config.get('api', {})
         self.page_size = api.get('page_size', 24)
-        self.rows_override = api.get('rows_override', 500)
         self._px_blocked = False   # set True after first PX block; skips remaining categories
 
     # -----------------------------------------------------------------------
@@ -87,40 +87,91 @@ class PrimarkScraper(BaseScraper):
         subcategory = None if slug in _base_slugs else parts[-1].replace('-', ' ')
 
         all_docs = []
-        total    = self._load_all_by_capture_and_replay(slug, url, all_docs)
+        self._load_all_from_dom(slug, url, all_docs)
 
         self.log(f'Complete: {len(all_docs)} products for {slug}')
 
         products = []
         for rank, item in enumerate(all_docs, start=1):
-            product = self._parse_product(item, category_path, rank, category_label, subcategory)
+            product = self._parse_dom_product(item, category_path, rank, category_label, subcategory)
             if product:
                 products.append(product)
         return products
 
-    def _load_all_by_capture_and_replay(self, slug, url, all_docs):
+    def _load_all_from_dom(self, slug, url, all_docs):
         """
-        Phase 1: browser loads the page, captures the getPlpProducts request
-                 URL and returns the first 24 products.
-        Phase 2: direct HTTP GET calls (via requests) paginate through the
-                 remaining products by incrementing the `start` variable.
+        Extract all products from Primark's SSR HTML DOM.
 
-        Returns the total product count reported by the API.
+        Primark switched to Next.js App Router (SSR) — products are rendered
+        server-side in the initial HTML, not loaded via a getPlpProducts API
+        call.  This method:
+          1. Launches a real Chrome window (bypasses PerimeterX fingerprinting)
+          2. Dismisses the cookie banner
+          3. Waits for a[href*="/en-gb/p/"] links to appear
+          4. Clicks "Load N more" until exhausted
+          5. Runs a single JS extraction over the fully-loaded DOM
         """
         try:
             from playwright.sync_api import sync_playwright
         except ImportError:
-            return None
+            return
 
-        captured  = [None]   # will hold {'url': ..., 'headers': ...}
-        total     = [None]
-        seen_pids = set()
+        # JavaScript that walks every product link and gathers name / price / img
+        # from the nearest ancestor that contains both fields.
+        JS_EXTRACT = r'''
+            () => {
+                const results = [];
+                const seen = new Set();
+                document.querySelectorAll('a[href*="/en-gb/p/"]').forEach(a => {
+                    const href = a.href;
+                    if (!href || seen.has(href)) return;
+                    seen.add(href);
 
-        # ── Phase 1: browser ──────────────────────────────────────────────
+                    let el = a.parentElement;
+                    let name = null, price = null, img = null;
+
+                    for (let i = 0; i < 12 && el; i++) {
+                        if (!name) {
+                            const nameEl = el.querySelector(
+                                '[data-testautomation-id="product-name"],' +
+                                '[class*="ProductName"],[class*="product-name"]'
+                            );
+                            if (nameEl) name = nameEl.innerText.trim();
+                        }
+                        if (!price) {
+                            const priceEl = el.querySelector(
+                                '[data-testautomation-id="price"],' +
+                                '[data-testautomation-id*="Price"],' +
+                                '[class*="Price"],[class*="price"]'
+                            );
+                            if (priceEl) price = priceEl.innerText.trim().replace(/\s+/g, ' ');
+                        }
+                        if (!img) {
+                            const imgEl = el.querySelector(
+                                'img[src*="primedia"],img[data-src*="primedia"],' +
+                                'img[srcset*="primedia"]'
+                            );
+                            if (imgEl) {
+                                const src = imgEl.src || imgEl.dataset.src || '';
+                                if (src && !src.startsWith('data:')) img = src;
+                            }
+                        }
+                        if (name && price) break;
+                        el = el.parentElement;
+                    }
+
+                    if (name || price) {
+                        results.push({ url: href, name: name, price: price, img: img });
+                    }
+                });
+                return results;
+            }
+        '''
+
         with sync_playwright() as p:
             browser = p.chromium.launch(
-                channel='chrome',    # Use real installed Chrome — bypasses headless fingerprinting
-                headless=False,      # Visible mode: PX JS challenge completes properly
+                channel='chrome',    # real installed Chrome — avoids headless fingerprint
+                headless=False,      # visible mode: PX JS challenge completes properly
                 args=['--disable-blink-features=AutomationControlled'],
             )
             ctx = browser.new_context(
@@ -141,108 +192,82 @@ class PrimarkScraper(BaseScraper):
             except Exception:
                 pass
 
-            # Listen to ALL responses — fires whenever the API call happens,
-            # regardless of timing. More robust than expect_response context manager.
-            def on_response(response):
-                if 'getPlpProducts' not in response.url or captured[0] is not None:
-                    return
-                captured[0] = {
-                    'url':     response.request.url,
-                    'headers': dict(response.request.headers),
-                }
-                try:
-                    data = response.json()
-                    docs, num = self._extract_docs(data)
-                    if num:
-                        total[0] = num
-                    new_docs = [d for d in docs if d.get('pid') not in seen_pids]
-                    for d in new_docs:
-                        seen_pids.add(d.get('pid'))
-                    all_docs.extend(new_docs)
-                    self.log(f'Browser response: +{len(new_docs)} products (total={total[0]})')
-                except Exception as ex:
-                    self.warn(f'Response parse error: {ex}')
-
-            page.on('response', on_response)
-
             try:
                 page.goto(url, wait_until='domcontentloaded', timeout=30000)
-                # Wait for cookie banner to actually appear (it loads async),
-                # then dismiss it — product API won't fire while banner is blocking
+
+                # Cookie banner loads asynchronously — wait for it then dismiss
                 try:
                     page.wait_for_selector(
-                        '#onetrust-accept-btn-handler, button:has-text("Accept all"), button:has-text("Accept")',
+                        '#onetrust-accept-btn-handler,'
+                        'button:has-text("Accept all"),'
+                        'button:has-text("Accept")',
                         timeout=8000,
                     )
                     self._dismiss_cookie_banner(page)
-                    page.wait_for_timeout(1500)   # brief pause for banner close + API trigger
+                    page.wait_for_timeout(1500)
                 except Exception:
                     pass
-                # Scroll to trigger product list lazy-load
-                page.evaluate('window.scrollTo(0, 400)')
-                # Poll up to 40 s for the API response to arrive
-                for _ in range(80):
-                    if captured[0] is not None:
-                        break
-                    page.wait_for_timeout(500)
-                if captured[0] is None:
-                    self.warn('getPlpProducts API not captured within 40 s — PX block or endpoint changed')
+
+                # Wait for at least one product link to appear in the SSR HTML
+                try:
+                    page.wait_for_selector('a[href*="/en-gb/p/"]', timeout=15000)
+                except Exception:
+                    self.warn(f'No product links found on {url} — PX may be blocking')
                     self._px_blocked = True
+                    browser.close()
+                    return
+
+                # ── Pagination: click "Load N more" until exhausted ──────────
+                for page_num in range(20):   # safety cap — 20 × 24 = 480 products max
+                    # Scroll to bottom so the "Load more" button is in view
+                    page.evaluate('window.scrollTo(0, document.body.scrollHeight)')
+                    page.wait_for_timeout(1200)
+
+                    more_btn = None
+                    for sel in [
+                        'button:has-text("Load")',
+                        'button:has-text("Show more")',
+                        '[data-testid*="load-more"]',
+                        '[data-testautomation-id*="load-more"]',
+                    ]:
+                        try:
+                            btn = page.query_selector(sel)
+                            if btn and btn.is_visible():
+                                more_btn = btn
+                                break
+                        except Exception:
+                            pass
+
+                    if not more_btn:
+                        self.log(f'All products loaded after {page_num + 1} scroll(s)')
+                        break
+
+                    count_before = page.evaluate(
+                        "document.querySelectorAll('a[href*=\"/en-gb/p/\"]').length"
+                    )
+                    more_btn.click()
+                    self.log(f'Clicked "Load more" (batch {page_num + 2}), waiting...')
+
+                    try:
+                        page.wait_for_function(
+                            f"document.querySelectorAll('a[href*=\"/en-gb/p/\"]').length > {count_before}",
+                            timeout=12000,
+                        )
+                        page.wait_for_timeout(500)
+                    except Exception:
+                        self.log('No new products appeared — stopping pagination')
+                        break
+
+                # ── Final DOM extraction ─────────────────────────────────────
+                products = page.evaluate(JS_EXTRACT)
+                all_docs.extend(products)
+                self.log(f'DOM extracted {len(products)} products from {url}')
+
             except Exception as e:
                 self.warn(f'Browser load error: {e}')
                 self._px_blocked = True
             finally:
                 browser.close()
-
-        self.log(f'Browser phase done: captured={captured[0] is not None}, total={total[0]}, docs={len(all_docs)}')
-        if not captured[0] or not total[0]:
-            self.warn(f'Aborting: captured={captured[0]}, total={total[0]}')
-            return total[0]
-
-        if len(all_docs) >= total[0]:
-            return total[0]
-
-        # ── Phase 2: direct HTTP for remaining pages ──────────────────────
-        base_url = captured[0]['url']
-        headers  = captured[0]['headers']
-
-        parsed = urlparse(base_url)
-        params = parse_qs(parsed.query, keep_blank_values=True)
-
-        if 'variables' not in params:
-            self.warn('Cannot find variables param in captured URL — skipping pagination')
-            return total[0]
-
-        while len(all_docs) < total[0]:
-            try:
-                variables = json.loads(params['variables'][0])
-                variables['start'] = len(all_docs)
-                variables['rows']  = min(100, total[0] - len(all_docs))
-
-                new_params = {k: v[0] for k, v in params.items()}
-                new_params['variables'] = json.dumps(variables, separators=(',', ':'))
-                page_url = parsed._replace(query=urlencode(new_params)).geturl()
-
-                resp = _http.get(page_url, headers=headers, timeout=20)
-                resp.raise_for_status()
-                data     = resp.json()
-                docs, _  = self._extract_docs(data)
-
-                new_docs = [d for d in (docs or []) if d.get('pid') not in seen_pids]
-                if not new_docs:
-                    self.warn(f'No new products at start={len(all_docs)} — stopping')
-                    break
-                for d in new_docs:
-                    seen_pids.add(d.get('pid'))
-                all_docs.extend(new_docs)
-                self.log(f'Direct API +{len(new_docs)} products ({len(all_docs)}/{total[0]})')
-                time.sleep(0.3)
-
-            except Exception as e:
-                self.warn(f'Direct API error at start={len(all_docs)}: {e}')
-                break
-
-        return total[0]
 
 
     def scrape_product(self, product_url):
@@ -457,35 +482,6 @@ class PrimarkScraper(BaseScraper):
         self.log(f'[Primark] OOS check done: {oos_count}/{len(checkable)} confirmed OOS.')
 
     # -----------------------------------------------------------------------
-    # Scroll fallback
-    # -----------------------------------------------------------------------
-
-    def _scroll_for_more(self, page, all_docs, total):
-        no_new_streak = 0
-        for attempt in range(25):
-            if len(all_docs) >= total:
-                break
-            prev = len(all_docs)
-            try:
-                page.mouse.wheel(0, 3000)
-                page.wait_for_timeout(600)
-                page.mouse.wheel(0, 3000)
-                page.wait_for_timeout(600)
-                page.evaluate('window.scrollTo(0, document.body.scrollHeight)')
-                page.wait_for_timeout(600)
-                page.keyboard.press('End')
-                page.wait_for_timeout(2500)
-            except Exception:
-                break
-            if len(all_docs) > prev:
-                self.log(f'Scroll loaded {len(all_docs)-prev} more ({len(all_docs)}/{total})')
-                no_new_streak = 0
-            else:
-                no_new_streak += 1
-                if no_new_streak >= 3:
-                    break
-
-    # -----------------------------------------------------------------------
     # Parsing
     # -----------------------------------------------------------------------
 
@@ -521,7 +517,59 @@ class PrimarkScraper(BaseScraper):
                     return result
         return None, None
 
+    def _parse_dom_product(self, item, category_path, rank, category_label=None, subcategory=None):
+        """Parse a product dict extracted from the SSR DOM by _load_all_from_dom."""
+        url = (item.get('url') or '').strip()
+        if not url:
+            return None
+
+        # PID = trailing numeric segment in the URL slug
+        # e.g. /en-gb/p/strappy-block-heel-sandals-black-991169064804 → 991169064804
+        m = re.search(r'-(\d+)$', url.rstrip('/'))
+        if not m:
+            return None
+        pid = m.group(1)
+
+        name = self.clean_text(item.get('name') or 'Unknown')
+
+        # Price string: "£12.00" or "£8.00 £12.00" (sale then was-price).
+        # Extract up to two numbers; first is current price, second is was-price.
+        price_raw = (item.get('price') or '').strip()
+        price_nums = re.findall(r'\d+\.?\d*', price_raw)
+        price     = float(price_nums[0]) if price_nums else None
+        was_price = float(price_nums[1]) if len(price_nums) >= 2 else None
+        is_markdown = bool(was_price and price and was_price > price)
+
+        image_url = item.get('img') or None
+
+        if not category_label:
+            slug = category_path.split('/en-gb/c/')[-1].strip('/')
+            category_label = slug.split('/')[0]
+
+        return {
+            'sku':             pid,
+            'name':            name,
+            'url':             url,
+            'category':        category_label,
+            'subcategory':     subcategory,
+            'price':           price,
+            'rank':            rank,
+            'review_count':    None,
+            'sizes_available': [],
+            'sizes_oos':       [],
+            'is_featured':     rank <= 4,
+            'image_url':       image_url,
+            'raw_data': {
+                'colour':      None,
+                'color_count': None,
+                'brand':       'Primark',
+                'was_price':   was_price,
+                'is_markdown': is_markdown,
+            },
+        }
+
     def _parse_product(self, item, category_path, rank, category_label=None, subcategory=None):
+        """Parse a product from the old GraphQL API format. Used by discover() only."""
         pid = str(item.get('pid', '')).strip()
         if not pid:
             return None
