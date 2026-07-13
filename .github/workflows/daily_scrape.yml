@@ -64,9 +64,12 @@ jobs:
 
       - name: Commit updated database to repo
         shell: powershell
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           git config user.email "github-actions[bot]@users.noreply.github.com"
           git config user.name  "github-actions[bot]"
+          git remote set-url origin "https://x-access-token:$env:GITHUB_TOKEN@github.com/ShoeDataAutomatic/mrd-tracker.git"
           git add mrd_tracker.db
           git diff --staged --quiet
           if ($LASTEXITCODE -ne 0) {
