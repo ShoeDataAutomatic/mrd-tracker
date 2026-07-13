@@ -40,7 +40,7 @@ from concurrent.futures import ThreadPoolExecutor, as_completed
 try:
     from curl_cffi import requests as _cffi_requests
     _CFFI_AVAILABLE = True
-except ImportError:
+except Exception:
     _cffi_requests = None
     _CFFI_AVAILABLE = False
 
@@ -977,4 +977,16 @@ class NewLookScraper(BaseScraper):
                     html2 = page.content()
                     price, was = self._extract_price(html2)
                     print(f'  price=£{price}  was_price=£{was}')
-                    nd2 = re.search(r'id="__NEXT_DATA__"[^>]*>(.*?)</script>', html2
+                    nd2 = re.search(r'id="__NEXT_DATA__"[^>]*>(.*?)</script>', html2, re.DOTALL)
+                    if nd2:
+                        snippet = nd2.group(1)[:500]
+                        print(f'  __NEXT_DATA__ snippet: {snippet}')
+
+            except Exception as e:
+                print(f'  Playwright error: {e}')
+            finally:
+                browser.close()
+
+        print(f'\n  Summary: {len(api_hits)} product API endpoints captured')
+        for h in api_hits:
+            print(f'    total={h["total"]}  count={h["count"]}  url={h["url"][:100]}')
