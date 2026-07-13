@@ -116,14 +116,6 @@ class PrimarkScraper(BaseScraper):
         total     = [None]
         seen_pids = set()
 
-        def on_route(route, request):
-            if 'getPlpProducts' in request.url and captured[0] is None:
-                captured[0] = {
-                    'url':     request.url,
-                    'headers': dict(request.headers),
-                }
-            route.continue_()
-
         # ── Phase 1: browser ──────────────────────────────────────────────
         with sync_playwright() as p:
             browser = p.chromium.launch(
@@ -148,39 +140,49 @@ class PrimarkScraper(BaseScraper):
                 stealth_sync(page)
             except Exception:
                 pass
-            page.route('https://api001-arh.primark.com/*', on_route)
-            try:
-                # expect_response BLOCKS until the matching response arrives,
-                # so the browser won't close before we've read the payload.
-                # 12 s timeout: PX challenge pages never fire getPlpProducts,
-                # so a short timeout lets us detect blocking quickly and bail
-                # before wasting time on all remaining categories.
-                with page.expect_response(
-                    lambda r: 'getPlpProducts' in r.url,
-                    timeout=45000,
-                ) as resp_info:
-                    page.goto(url, wait_until='domcontentloaded', timeout=30000)
-                    try:
-                        self._dismiss_cookie_banner(page)
-                    except Exception:
-                        pass
-                    page.wait_for_timeout(500)
-                # Context-manager exit WAITS here until response is received
+
+            # Listen to ALL responses — fires whenever the API call happens,
+            # regardless of timing. More robust than expect_response context manager.
+            def on_response(response):
+                if 'getPlpProducts' not in response.url or captured[0] is not None:
+                    return
+                captured[0] = {
+                    'url':     response.request.url,
+                    'headers': dict(response.request.headers),
+                }
                 try:
-                    data = resp_info.value.json()
+                    data = response.json()
                     docs, num = self._extract_docs(data)
                     if num:
                         total[0] = num
-                    if docs:
-                        new_docs = [d for d in docs if d.get('pid') not in seen_pids]
-                        for d in new_docs:
-                            seen_pids.add(d.get('pid'))
-                        all_docs.extend(new_docs)
-                        self.log(f'Browser response: +{len(new_docs)} products (total={total[0]})')
-                except Exception as e:
-                    self.warn(f'Response parse error: {e}')
+                    new_docs = [d for d in docs if d.get('pid') not in seen_pids]
+                    for d in new_docs:
+                        seen_pids.add(d.get('pid'))
+                    all_docs.extend(new_docs)
+                    self.log(f'Browser response: +{len(new_docs)} products (total={total[0]})')
+                except Exception as ex:
+                    self.warn(f'Response parse error: {ex}')
+
+            page.on('response', on_response)
+
+            try:
+                page.goto(url, wait_until='domcontentloaded', timeout=30000)
+                try:
+                    self._dismiss_cookie_banner(page)
+                except Exception:
+                    pass
+                # Scroll to trigger product list lazy-load
+                page.evaluate('window.scrollTo(0, 400)')
+                # Poll up to 40 s for the API response to arrive
+                for _ in range(80):
+                    if captured[0] is not None:
+                        break
+                    page.wait_for_timeout(500)
+                if captured[0] is None:
+                    self.warn('getPlpProducts API not captured within 40 s — PX block or endpoint changed')
+                    self._px_blocked = True
             except Exception as e:
-                self.warn(f'Browser load error (PX block?): {e}')
+                self.warn(f'Browser load error: {e}')
                 self._px_blocked = True
             finally:
                 browser.close()
