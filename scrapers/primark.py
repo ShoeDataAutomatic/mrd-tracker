@@ -167,8 +167,15 @@ class PrimarkScraper(BaseScraper):
 
             try:
                 page.goto(url, wait_until='domcontentloaded', timeout=30000)
+                # Wait for cookie banner to actually appear (it loads async),
+                # then dismiss it — product API won't fire while banner is blocking
                 try:
+                    page.wait_for_selector(
+                        '#onetrust-accept-btn-handler, button:has-text("Accept all"), button:has-text("Accept")',
+                        timeout=8000,
+                    )
                     self._dismiss_cookie_banner(page)
+                    page.wait_for_timeout(1500)   # brief pause for banner close + API trigger
                 except Exception:
                     pass
                 # Scroll to trigger product list lazy-load
